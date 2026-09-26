@@ -76,7 +76,7 @@ export function QuickActions() {
   };
   const logDiaper = async (kind: "Wet" | "Dirty" | "Both") => {
     await addLog({ type: "diaper", value: kind });
-    toast.success(`${kind} diaper logged`);
+    toast.success(`Logged ${kind} diaper`, { duration: 1800 });
   };
   const savePastNap = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
