@@ -8,13 +8,24 @@ import { Button } from "@/components/ui/button";
 function NestlingLogo() {
   return (
     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-logo shadow-soft" aria-hidden="true">
-      <svg viewBox="0 0 40 40" className="h-8 w-8" role="img">
-        <path className="fill-logo-sage" d="M7 22.6c3.1 1 5.5 2.6 7.3 4.8 1.5 1.9 3.5 3.2 5.7 3.8-5.7 1.3-11.1-.8-14.4-5.8-.8-1.3-.2-3.2 1.4-2.8Z" />
-        <path className="fill-logo-sage" d="M33 22.6c-3.1 1-5.5 2.6-7.3 4.8-1.5 1.9-3.5 3.2-5.7 3.8 5.7 1.3 11.1-.8 14.4-5.8.8-1.3.2-3.2-1.4-2.8Z" />
-        <path className="fill-logo-amber" d="M13 23.2c.7-5.7 3.4-10.4 8-14.2.4 3.2 2 5.2 4.8 6.2 3.5 1.2 5 3.5 4.3 6.8-.7 3.6-4.1 6.1-9 6.1-3.5 0-6.2-1.7-8.1-4.9Z" />
-        <path className="fill-logo-cream" d="M18.1 21.8c1.3-3 3.6-4.6 7-4.9-1.7 1.4-2.7 3.3-3.1 5.8l-3.9-.9Z" />
-        <circle className="fill-logo-ink" cx="25.7" cy="19.7" r="1" />
-        <path className="fill-logo-amber-dark" d="m29.4 19.8 4.5 1.7-4.5 1.4Z" />
+      <svg viewBox="0 0 40 40" className="h-8 w-8">
+        <defs>
+          <linearGradient id="nl-sage" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" style={{ stopColor: "var(--logo-sage)", stopOpacity: 0.85 }} />
+            <stop offset="1" style={{ stopColor: "var(--logo-ink)" }} />
+          </linearGradient>
+          <linearGradient id="nl-amber" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" style={{ stopColor: "var(--logo-amber)" }} />
+            <stop offset="1" style={{ stopColor: "var(--logo-amber-dark)" }} />
+          </linearGradient>
+        </defs>
+        {/* left hand rising — first stroke of the N */}
+        <path fill="url(#nl-sage)" d="M9.5 31.5c-1.4 0-2.5-1.1-2.5-2.5V13.2c0-2.6 1.6-4.9 4-5.8 1.1-.4 2.2.4 2.2 1.6v20c0 1.4-1.1 2.5-2.5 2.5h-1.2Z" />
+        {/* amber diagonal — the cradled nest joining both hands */}
+        <path fill="url(#nl-amber)" d="M12.6 9.2c1.2-1 3-.8 4 .4l12.2 16.2c1 1.3.7 3.1-.6 4.1-1.3.9-3 .6-4-.6L11.9 13.1c-.9-1.2-.7-2.9.7-3.9Z" />
+        {/* right hand — closing stroke of the N */}
+        <path fill="url(#nl-sage)" d="M30.5 8.5c1.4 0 2.5 1.1 2.5 2.5v15.8c0 2.6-1.6 4.9-4 5.8-1.1.4-2.2-.4-2.2-1.6V11c0-1.4 1.1-2.5 2.5-2.5h1.2Z" />
+        <circle className="fill-logo-cream" cx="20" cy="19.6" r="1.6" />
       </svg>
     </span>
   );
