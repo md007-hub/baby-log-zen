@@ -6,10 +6,8 @@ import { cn } from "@/lib/utils";
 function DiaperIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M4 6h16" />
-      <path d="M4 6v5a7 7 0 0 0 7 7h2a7 7 0 0 0 7-7V6" />
-      <path d="M4 9h3" />
-      <path d="M20 9h-3" />
+      <rect x="14" y="2" width="7" height="6" rx="2" />
+      <path d="M15 8v9a5 5 0 0 1-10 0V6a2 2 0 0 1 4 0v11" />
     </svg>
   );
 }
