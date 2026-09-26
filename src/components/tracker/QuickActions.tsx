@@ -95,7 +95,7 @@ export function QuickActions() {
       <SectionCard title="Feed" icon={<Milk className="h-5 w-5" />} tone="feed">
         <div className="mb-3 grid grid-cols-2 rounded-lg bg-muted p-1" role="group" aria-label="Feed type">
           {(["bottle", "nursing"] as const).map((mode) => (
-            <Button key={mode} type="button" variant="ghost" aria-pressed={feedMode === mode} onClick={() => setFeedMode(mode)} className={cn("h-11 rounded-md capitalize", feedMode === mode && "bg-card text-foreground shadow-soft")}>{mode}</Button>
+            <Button key={mode} type="button" variant="ghost" aria-pressed={feedMode === mode} onClick={() => setFeedMode(mode)} className={cn("h-11 rounded-md capitalize text-foreground", feedMode === mode && "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground")}>{mode}</Button>
           ))}
         </div>
         {feedMode === "bottle" ? (
@@ -114,7 +114,7 @@ export function QuickActions() {
           <div className="rounded-xl bg-muted/70 p-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex gap-1 rounded-lg bg-background p-1">
-                {(["Left", "Right"] as const).map((s) => <Button key={s} type="button" variant="ghost" disabled={nursing.elapsed > 0} aria-pressed={side === s} onClick={() => setSide(s)} className={cn("h-10 px-3", side === s && "bg-primary text-primary-foreground hover:bg-primary/90")}>{s}</Button>)}
+                {(["Left", "Right"] as const).map((s) => <Button key={s} type="button" variant="ghost" disabled={nursing.elapsed > 0} aria-pressed={side === s} onClick={() => setSide(s)} className={cn("h-10 px-3 text-foreground", side === s && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground")}>{s}</Button>)}
               </div>
               <span className="font-display text-xl font-bold tabular-nums">{formatDuration(nursing.elapsed)}</span>
             </div>
