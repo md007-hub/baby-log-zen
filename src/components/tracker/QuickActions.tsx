@@ -142,7 +142,7 @@ export function QuickActions() {
         )}
       </SectionCard>
 
-      <SectionCard title="Diaper" icon={<Droplets className="h-5 w-5" strokeWidth={2.25} />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
+      <SectionCard title="Diaper" icon={<DiaperIcon className="h-5 w-5" />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
         <div className="flex gap-2">
           {(["Wet", "Dirty", "Both"] as const).map((kind) => <Button key={kind} type="button" onClick={() => void logDiaper(kind)} className={cn(bigButton, "min-w-0 bg-diaper text-diaper-foreground hover:bg-diaper/85")}>{kind}</Button>)}
         </div>
