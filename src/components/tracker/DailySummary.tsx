@@ -13,6 +13,8 @@ export function DailySummary() {
   const feeds = logs.filter((log) => log.type === "feed");
   const diapers = logs.filter((log) => log.type === "diaper");
   const sleep = logs.filter((log) => log.type === "sleep");
+  const nights = sleep.filter((log) => log.value === "Night Sleep").length;
+  const naps = sleep.length - nights;
   const bottleMl = feeds.reduce((sum, log) => sum + (Number(log.value.match(/Bottle · (\d+)ml/)?.[1]) || 0), 0);
   const nursingSeconds = feeds.reduce((sum, log) => sum + (log.value.startsWith("Breastfeed") ? durationSeconds(log.notes) : 0), 0);
   const sleepSeconds = sleep.reduce((sum, log) => sum + durationSeconds(log.notes), 0);
@@ -51,7 +53,7 @@ export function DailySummary() {
       <div className="min-w-0 px-1 text-center">
         <p className="text-xs font-semibold text-muted-foreground">Sleep</p>
         <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{Math.floor(sleepMinutes / 60)}h {sleepMinutes % 60}m</p>
-        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{sleep.length} {sleep.length === 1 ? "nap" : "naps"}</p>
+        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{naps} {naps === 1 ? "nap" : "naps"}{nights > 0 ? ` · ${nights} night` : ""}</p>
       </div>
     </section>
   );

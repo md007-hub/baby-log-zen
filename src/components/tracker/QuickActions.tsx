@@ -65,6 +65,7 @@ export function QuickActions() {
   const [side, setSide] = useState<"Left" | "Right">("Left");
   const [customMl, setCustomMl] = useState(90);
   const [napOpen, setNapOpen] = useState(false);
+  const [sleepKind, setSleepKind] = useState<"Nap" | "Night Sleep">("Nap");
   const [napStart, setNapStart] = useState("");
   const [napEnd, setNapEnd] = useState("");
   const diaperCount = useLiveQuery(() => db.logs.where("timestamp").aboveOrEqual(startOfToday()).filter((log) => log.type === "diaper").count(), [], 0);
@@ -92,7 +93,7 @@ export function QuickActions() {
 
   return (
     <div className="space-y-4">
-      <SectionCard title="Feed" icon={<Milk className="h-5 w-5" />} tone="feed">
+      <SectionCard title="Feed" icon={<Milk className="h-5 w-5" strokeWidth={2.25} />} tone="feed">
         <div className="mb-3 grid grid-cols-2 rounded-lg bg-muted p-1" role="group" aria-label="Feed type">
           {(["bottle", "nursing"] as const).map((mode) => (
             <Button key={mode} type="button" variant="ghost" aria-pressed={feedMode === mode} onClick={() => setFeedMode(mode)} className={cn("h-11 rounded-md capitalize text-foreground", feedMode === mode && "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground")}>{mode}</Button>
@@ -130,24 +131,29 @@ export function QuickActions() {
         )}
       </SectionCard>
 
-      <SectionCard title="Diaper" icon={<Droplets className="h-5 w-5" />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
+      <SectionCard title="Diaper" icon={<Droplets className="h-5 w-5" strokeWidth={2.25} />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
         <div className="flex gap-2">
           {(["Wet", "Dirty", "Both"] as const).map((kind) => <Button key={kind} type="button" onClick={() => void logDiaper(kind)} className={cn(bigButton, "min-w-0 bg-diaper text-diaper-foreground hover:bg-diaper/85")}>{kind}</Button>)}
         </div>
       </SectionCard>
 
-      <SectionCard title="Sleep" icon={<Moon className="h-5 w-5" />} tone="sleep">
+      <SectionCard title="Sleep" icon={<Moon className="h-5 w-5" strokeWidth={2.25} />} tone="sleep">
+        <div className="mb-3 grid grid-cols-2 rounded-lg bg-muted p-1" role="group" aria-label="Sleep type">
+          {(["Nap", "Night Sleep"] as const).map((kind) => (
+            <Button key={kind} type="button" variant="ghost" disabled={sleep.elapsed > 0} aria-pressed={sleepKind === kind} onClick={() => setSleepKind(kind)} className={cn("h-11 rounded-md text-foreground", sleepKind === kind && "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground")}>{kind}</Button>
+          ))}
+        </div>
         <div className="flex items-center justify-between rounded-xl bg-muted/70 px-4 py-3">
-          <span className="text-sm text-muted-foreground">{sleep.active ? "Nap in progress" : "No nap running"}</span>
+          <span className="text-sm text-muted-foreground">{sleep.active ? `${sleepKind} in progress` : `No ${sleepKind.toLowerCase()} running`}</span>
           <span className="font-display text-2xl font-bold tabular-nums">{formatDuration(sleep.elapsed)}</span>
         </div>
         <Button type="button" onClick={async () => {
           if (!sleep.active) { sleep.start(); return; }
           const ms = sleep.stop();
-          await addLog({ type: "sleep", value: "Nap", notes: formatDuration(ms) });
-          toast.success("Nap logged");
+          await addLog({ type: "sleep", value: sleepKind, notes: formatDuration(ms) });
+          toast.success(`${sleepKind} logged`);
         }} className={cn(bigButton, "mt-3 w-full", sleep.active && "bg-destructive text-destructive-foreground hover:bg-destructive/90")}>
-          {sleep.active ? <Square /> : <Play />}{sleep.active ? "Stop Nap" : "Start Nap"}
+          {sleep.active ? <Square /> : <Play />}{sleep.active ? `Stop ${sleepKind}` : `Start ${sleepKind}`}
         </Button>
         <Dialog open={napOpen} onOpenChange={(open) => {
           setNapOpen(open);
