@@ -1,24 +1,38 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { QuickActions } from "@/components/tracker/QuickActions";
+import { Timeline } from "@/components/tracker/Timeline";
+import { useHydrated } from "@/hooks/useOnline";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Tracker — NurseryShift" },
+      {
+        name: "description",
+        content:
+          "One-tap feed, diaper and sleep tracking for new parents. Works fully offline on your phone.",
+      },
+      { property: "og:title", content: "Tracker — NurseryShift" },
+      {
+        property: "og:description",
+        content: "One-tap feed, diaper and sleep tracking that works fully offline.",
+      },
+    ],
+  }),
+  component: TrackerPage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function TrackerPage() {
+  const hydrated = useHydrated();
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div>
+      <QuickActions />
+      {hydrated ? (
+        <Timeline />
+      ) : (
+        <div className="mt-6 h-24 animate-pulse rounded-2xl bg-muted/60" />
+      )}
     </div>
   );
 }
