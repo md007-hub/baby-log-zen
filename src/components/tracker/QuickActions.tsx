@@ -35,6 +35,17 @@ function useStopwatch() {
   };
 }
 
+function DiaperIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 6h16" />
+      <path d="M4 6v5a7 7 0 0 0 7 7h2a7 7 0 0 0 7-7V6" />
+      <path d="M4 9h3" />
+      <path d="M20 9h-3" />
+    </svg>
+  );
+}
+
 function SectionCard({ title, icon, tone, extra, children }: {
   title: string; icon: React.ReactNode; tone: "feed" | "diaper" | "sleep";
   extra?: React.ReactNode; children: React.ReactNode;
