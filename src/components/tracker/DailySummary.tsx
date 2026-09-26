@@ -16,8 +16,9 @@ export function DailySummary() {
   const bottleMl = feeds.reduce((sum, log) => sum + (Number(log.value.match(/Bottle · (\d+)ml/)?.[1]) || 0), 0);
   const nursingSeconds = feeds.reduce((sum, log) => sum + (log.value.startsWith("Breastfeed") ? durationSeconds(log.notes) : 0), 0);
   const sleepSeconds = sleep.reduce((sum, log) => sum + durationSeconds(log.notes), 0);
-  const wet = diapers.filter((log) => log.value === "Wet" || log.value === "Both").length;
-  const dirty = diapers.filter((log) => log.value === "Dirty" || log.value === "Both").length;
+  const wetOnly = diapers.filter((log) => log.value === "Wet").length;
+  const dirtyOnly = diapers.filter((log) => log.value === "Dirty").length;
+  const both = diapers.filter((log) => log.value === "Both").length;
   const sleepMinutes = Math.floor(sleepSeconds / 60);
   const nursingMinutes = Math.floor(nursingSeconds / 60);
   const hasBottle = bottleMl > 0;
@@ -29,6 +30,11 @@ export function DailySummary() {
       : hasNursing
         ? `${nursingMinutes}m nursed`
         : `${bottleMl}ml total`;
+  const diaperDetail = diapers.length === 0
+    ? "No diapers yet"
+    : both > 0
+      ? `${wetOnly} Wet · ${dirtyOnly} Dirty · ${both} Both`
+      : `${wetOnly} Wet · ${dirtyOnly} Dirty`;
 
   return (
     <section aria-label="Today's summary" className="mb-4 grid grid-cols-[1.25fr_1fr_1fr] divide-x divide-border rounded-xl border border-border/60 bg-card py-3.5 shadow-soft">
@@ -40,7 +46,7 @@ export function DailySummary() {
       <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Diapers</p>
         <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{diapers.length} {diapers.length === 1 ? "diaper" : "diapers"}</p>
-        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{wet}W · {dirty}D</p>
+        <p className="min-h-4 whitespace-nowrap text-xs leading-4 text-muted-foreground">{diaperDetail}</p>
       </div>
       <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Sleep</p>
