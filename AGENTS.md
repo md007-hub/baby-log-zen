@@ -11,3 +11,6 @@
 
 ## App architecture
 - Keep local-first tracking in Dexie and derive dashboard totals from live log queries, so offline writes immediately update the tracker.
+
+## Brand system
+- Build the Nestling header mark from semantic logo color tokens and a filled inline SVG, so it stays crisp and theme-aware without external artwork.

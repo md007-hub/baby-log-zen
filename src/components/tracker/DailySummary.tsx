@@ -22,21 +22,21 @@ export function DailySummary() {
   const nursingMinutes = Math.floor(nursingSeconds / 60);
 
   return (
-    <section aria-label="Today's summary" className="mb-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border/60 bg-card py-3 shadow-soft">
-      <div className="min-w-0 px-2 text-center">
+    <section aria-label="Today's summary" className="mb-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border/60 bg-card py-3.5 shadow-soft">
+      <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Feeds</p>
-        <p className="mt-1 font-display text-lg font-bold tabular-nums">{feeds.length}</p>
-        <p className="text-[11px] leading-tight text-muted-foreground">{ml}ml{nursingMinutes > 0 ? ` · ${nursingMinutes}m` : ""}</p>
+        <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{feeds.length} {feeds.length === 1 ? "feed" : "feeds"} · {ml}ml</p>
+        <p className="min-h-4 text-[11px] leading-4 text-muted-foreground">{nursingMinutes > 0 ? `${nursingMinutes}m nursing` : "Bottle total"}</p>
       </div>
-      <div className="min-w-0 px-2 text-center">
+      <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Diapers</p>
-        <p className="mt-1 font-display text-lg font-bold tabular-nums">{diapers.length}</p>
-        <p className="text-[11px] leading-tight text-muted-foreground">{wet}W · {dirty}D</p>
+        <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{diapers.length} {diapers.length === 1 ? "diaper" : "diapers"}</p>
+        <p className="min-h-4 text-[11px] leading-4 text-muted-foreground">{wet}W · {dirty}D</p>
       </div>
-      <div className="min-w-0 px-2 text-center">
+      <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Sleep</p>
-        <p className="mt-1 font-display text-lg font-bold tabular-nums">{Math.floor(sleepMinutes / 60)}h {sleepMinutes % 60}m</p>
-        <p className="text-[11px] leading-tight text-muted-foreground">{sleep.length} {sleep.length === 1 ? "nap" : "naps"}</p>
+        <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{Math.floor(sleepMinutes / 60)}h {sleepMinutes % 60}m</p>
+        <p className="min-h-4 text-[11px] leading-4 text-muted-foreground">{sleep.length} {sleep.length === 1 ? "nap" : "naps"}</p>
       </div>
     </section>
   );

@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 
 function NestlingLogo() {
   return (
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground" aria-hidden="true">
-      <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 30c3.5 7 9 10 15 10s11.5-3 15-10" />
-        <path d="M12 33c4-3 8-4 12-4s8 1 12 4" />
-        <path d="M14 36c4-2 7-2.5 10-2.5S30 34 34 36" />
-        <path d="M18 25c-2-4-1-10 3-13 1 4 4 6 7 7 4 1 6 4 5 8-1 3-4 5-9 5-4 0-7-2-8-5" />
-        <path d="m31 22 6 2-5 2" />
-        <circle cx="27" cy="22" r=".85" fill="currentColor" stroke="none" />
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-logo shadow-soft" aria-hidden="true">
+      <svg viewBox="0 0 40 40" className="h-8 w-8" role="img">
+        <path className="fill-logo-sage" d="M7 22.6c3.1 1 5.5 2.6 7.3 4.8 1.5 1.9 3.5 3.2 5.7 3.8-5.7 1.3-11.1-.8-14.4-5.8-.8-1.3-.2-3.2 1.4-2.8Z" />
+        <path className="fill-logo-sage" d="M33 22.6c-3.1 1-5.5 2.6-7.3 4.8-1.5 1.9-3.5 3.2-5.7 3.8 5.7 1.3 11.1-.8 14.4-5.8.8-1.3.2-3.2-1.4-2.8Z" />
+        <path className="fill-logo-amber" d="M13 23.2c.7-5.7 3.4-10.4 8-14.2.4 3.2 2 5.2 4.8 6.2 3.5 1.2 5 3.5 4.3 6.8-.7 3.6-4.1 6.1-9 6.1-3.5 0-6.2-1.7-8.1-4.9Z" />
+        <path className="fill-logo-cream" d="M18.1 21.8c1.3-3 3.6-4.6 7-4.9-1.7 1.4-2.7 3.3-3.1 5.8l-3.9-.9Z" />
+        <circle className="fill-logo-ink" cx="25.7" cy="19.7" r="1" />
+        <path className="fill-logo-amber-dark" d="m29.4 19.8 4.5 1.7-4.5 1.4Z" />
       </svg>
     </span>
   );
@@ -78,18 +78,18 @@ const tabs = [
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col bg-background">
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/60 bg-background/90 px-4 py-3 backdrop-blur">
-        <div className="flex items-center gap-2.5">
+      <header className="sticky top-0 z-40 isolate flex items-center justify-between gap-3 border-b border-border/70 bg-background/95 px-4 py-3 shadow-soft backdrop-blur-md supports-[backdrop-filter]:bg-background/85">
+        <div className="flex min-w-0 items-center gap-3">
           <NestlingLogo />
-          <div>
-            <p className="font-display text-lg font-bold leading-tight">Nestling</p>
+          <div className="flex min-w-0 flex-col items-start justify-center gap-1">
+            <p className="font-display text-lg font-bold leading-none">Nestling</p>
             <StatusBadge />
           </div>
         </div>
         <ThemeToggle />
       </header>
 
-      <main className="flex-1 px-4 pb-28 pt-4">{children}</main>
+      <main className="relative z-0 flex-1 px-4 pb-28 pt-4">{children}</main>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-border/60 bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
         <div className="grid grid-cols-3">
