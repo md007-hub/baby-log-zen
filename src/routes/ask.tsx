@@ -10,13 +10,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/ask")({
   head: () => ({
     meta: [
-      { title: "Ask AI — NurseryShift" },
+      { title: "Nanny AI — Nestling" },
       {
         name: "description",
         content:
-          "Ask an AI assistant routine baby care questions about feeding, sleep, diapers and soothing.",
+          "Ask Nanny AI routine baby care questions about feeding, sleep, diapers and soothing.",
       },
-      { property: "og:title", content: "Ask AI — NurseryShift" },
+      { property: "og:title", content: "Nanny AI — Nestling" },
       {
         property: "og:description",
         content: "Calm answers to routine baby care questions, any time of night.",
