@@ -1,11 +1,22 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { Droplets, Milk, Moon, Trash2 } from "lucide-react";
+import { Milk, Moon, Trash2 } from "lucide-react";
 import { db, startOfToday, type LogEntry } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
+function DiaperIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 6h16" />
+      <path d="M4 6v5a7 7 0 0 0 7 7h2a7 7 0 0 0 7-7V6" />
+      <path d="M4 9h3" />
+      <path d="M20 9h-3" />
+    </svg>
+  );
+}
+
 const meta = {
   feed: { icon: Milk, className: "bg-feed text-feed-foreground" },
-  diaper: { icon: Droplets, className: "bg-diaper text-diaper-foreground" },
+  diaper: { icon: DiaperIcon, className: "bg-diaper text-diaper-foreground" },
   sleep: { icon: Moon, className: "bg-sleep text-sleep-foreground" },
 } as const;
 
