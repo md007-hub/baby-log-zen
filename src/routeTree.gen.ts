@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AskRouteImport } from './routes/ask'
+import { Route as SoundsRouteImport } from './routes/sounds'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AskRoute = AskRouteImport.update({
+  id: '/ask',
+  path: '/ask',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SoundsRoute = SoundsRouteImport.update({
+  id: '/sounds',
+  path: '/sounds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ask': typeof AskRoute
+  '/sounds': typeof SoundsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ask': typeof AskRoute
+  '/sounds': typeof SoundsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ask': typeof AskRoute
+  '/sounds': typeof SoundsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/ask' | '/sounds'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/ask' | '/sounds'
+  id: '__root__' | '/' | '/ask' | '/sounds'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AskRoute: typeof AskRoute
+  SoundsRoute: typeof SoundsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ask': {
+      id: '/ask'
+      path: '/ask'
+      fullPath: '/ask'
+      preLoaderRoute: typeof AskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sounds': {
+      id: '/sounds'
+      path: '/sounds'
+      fullPath: '/sounds'
+      preLoaderRoute: typeof SoundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AskRoute: AskRoute,
+  SoundsRoute: SoundsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
