@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send, WifiOff } from "lucide-react";
+import { Loader2, Send, Sparkles, WifiOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { askBabyAi } from "@/lib/ai.functions";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
