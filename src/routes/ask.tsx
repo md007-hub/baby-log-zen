@@ -89,12 +89,11 @@ function AskPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-11rem)] flex-col">
-      <h1 className="mb-1 text-2xl font-bold">Ask AI</h1>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Routine baby care questions. For anything urgent, call your pediatrician.
-      </p>
+      <h1 className="mb-4 text-2xl font-bold">Nanny AI</h1>
 
-      <div className="flex-1 space-y-3">
+      {messages.length === 0 && <Greeting />}
+
+      <div className="flex-1 space-y-3 mt-3">
         {messages.length === 0 && (
           <div className="space-y-2">
             {SUGGESTIONS.map((s) => (
