@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Baby, Droplets, Milk, Moon, Pause, Play, Square } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { Droplets, Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
 import { toast } from "sonner";
-import { addLog } from "@/lib/db";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { addLog, db, startOfToday } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
 function formatDuration(ms: number) {
@@ -9,236 +12,157 @@ function formatDuration(ms: number) {
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
-  return [h, m, s]
-    .slice(h > 0 ? 0 : 1)
-    .map((n) => String(n).padStart(2, "0"))
-    .join(":");
+  return [h, m, s].slice(h > 0 ? 0 : 1).map((n) => String(n).padStart(2, "0")).join(":");
 }
 
 function useStopwatch() {
   const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [elapsed, setElapsed] = useState(0);
-  const ref = useRef<ReturnType<typeof setInterval> | null>(null);
-
+  const [accumulated, setAccumulated] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (startedAt === null) return;
-    ref.current = setInterval(() => setElapsed(Date.now() - startedAt), 1000);
-    return () => {
-      if (ref.current) clearInterval(ref.current);
-    };
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
   }, [startedAt]);
-
+  const elapsed = accumulated + (startedAt === null ? 0 : now - startedAt);
   return {
-    running: startedAt !== null,
-    elapsed,
-    start: () => {
-      setElapsed(0);
-      setStartedAt(Date.now());
-    },
-    stop: () => {
-      const started = startedAt;
-      setStartedAt(null);
-      setElapsed(0);
-      return started ? Date.now() - started : 0;
-    },
+    active: startedAt !== null,
+    elapsed: Math.max(0, elapsed),
+    start: () => { setAccumulated(0); setStartedAt(Date.now()); setNow(Date.now()); },
+    resume: () => { setStartedAt(Date.now()); setNow(Date.now()); },
+    pause: () => { if (startedAt !== null) setAccumulated(accumulated + Date.now() - startedAt); setStartedAt(null); },
+    stop: () => { const duration = accumulated + (startedAt === null ? 0 : Date.now() - startedAt); setStartedAt(null); setAccumulated(0); return duration; },
   };
 }
 
-function SectionCard({
-  title,
-  icon,
-  tone,
-  children,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  tone: "feed" | "diaper" | "sleep";
-  children: React.ReactNode;
+function SectionCard({ title, icon, tone, extra, children }: {
+  title: string; icon: React.ReactNode; tone: "feed" | "diaper" | "sleep";
+  extra?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <section
-      className={cn(
-        "rounded-2xl border border-border/60 bg-card p-4 shadow-soft",
-        tone === "feed" && "border-feed/50",
-        tone === "diaper" && "border-diaper/50",
-        tone === "sleep" && "border-sleep/50",
-      )}
-    >
+    <section className={cn("rounded-2xl border border-border/60 bg-card p-4 shadow-soft", tone === "feed" && "border-feed/50", tone === "diaper" && "border-diaper/50", tone === "sleep" && "border-sleep/50")}>
       <div className="mb-3 flex items-center gap-2">
-        <span
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-full",
-            tone === "feed" && "bg-feed text-feed-foreground",
-            tone === "diaper" && "bg-diaper text-diaper-foreground",
-            tone === "sleep" && "bg-sleep text-sleep-foreground",
-          )}
-        >
-          {icon}
-        </span>
+        <span className={cn("flex h-9 w-9 items-center justify-center rounded-full", tone === "feed" && "bg-feed text-feed-foreground", tone === "diaper" && "bg-diaper text-diaper-foreground", tone === "sleep" && "bg-sleep text-sleep-foreground")}>{icon}</span>
         <h2 className="text-base font-bold">{title}</h2>
+        {extra}
       </div>
       {children}
     </section>
   );
 }
 
-const bigButton =
-  "flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-base font-semibold tap-card";
+const bigButton = "min-h-14 flex-1 rounded-xl px-3 text-base font-semibold tap-card";
+
+function localDateTime(date: Date) {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
 
 export function QuickActions() {
-  const breast = useStopwatch();
+  const nursing = useStopwatch();
   const sleep = useStopwatch();
+  const [feedMode, setFeedMode] = useState<"bottle" | "nursing">("bottle");
   const [side, setSide] = useState<"Left" | "Right">("Left");
-  const [diaper, setDiaper] = useState<string[]>([]);
+  const [customMl, setCustomMl] = useState(90);
+  const [napOpen, setNapOpen] = useState(false);
+  const [napStart, setNapStart] = useState("");
+  const [napEnd, setNapEnd] = useState("");
+  const diaperCount = useLiveQuery(() => db.logs.where("timestamp").aboveOrEqual(startOfToday()).filter((log) => log.type === "diaper").count(), [], 0);
 
   const logBottle = async (ml: number) => {
+    if (!Number.isInteger(ml) || ml < 1 || ml > 2000) { toast.error("Enter an amount between 1 and 2000ml"); return; }
     await addLog({ type: "feed", value: `Bottle · ${ml}ml` });
     toast.success(`Bottle ${ml}ml logged`);
   };
-
-  const toggleDiaper = (kind: string) => {
-    setDiaper((prev) => (prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind]));
+  const logDiaper = async (kind: "Wet" | "Dirty" | "Both") => {
+    await addLog({ type: "diaper", value: kind });
+    toast.success(`${kind} diaper logged`);
   };
-
-  const saveDiaper = async () => {
-    if (diaper.length === 0) return;
-    const value = diaper.length === 2 ? "Both" : diaper[0]!;
-    await addLog({ type: "diaper", value });
-    setDiaper([]);
-    toast.success(`Diaper: ${value}`);
+  const savePastNap = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const start = new Date(napStart).getTime();
+    const end = new Date(napEnd).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end || end > Date.now()) {
+      toast.error("Enter a valid past start and end time"); return;
+    }
+    await addLog({ type: "sleep", value: "Nap", notes: formatDuration(end - start), timestamp: end });
+    setNapOpen(false); setNapStart(""); setNapEnd("");
+    toast.success("Past nap logged");
   };
 
   return (
     <div className="space-y-4">
       <SectionCard title="Feed" icon={<Milk className="h-5 w-5" />} tone="feed">
-        <div className="flex gap-2">
-          {[60, 90, 120].map((ml) => (
-            <button
-              key={ml}
-              type="button"
-              onClick={() => logBottle(ml)}
-              className={cn(bigButton, "bg-feed text-feed-foreground")}
-            >
-              {ml}ml
-            </button>
+        <div className="mb-3 grid grid-cols-2 rounded-lg bg-muted p-1" role="group" aria-label="Feed type">
+          {(["bottle", "nursing"] as const).map((mode) => (
+            <Button key={mode} type="button" variant="ghost" aria-pressed={feedMode === mode} onClick={() => setFeedMode(mode)} className={cn("h-11 rounded-md capitalize", feedMode === mode && "bg-card text-foreground shadow-soft")}>{mode}</Button>
           ))}
         </div>
-
-        <div className="mt-3 rounded-xl bg-muted/70 p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1 rounded-lg bg-background p-1">
-              {(["Left", "Right"] as const).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  disabled={breast.running}
-                  onClick={() => setSide(s)}
-                  className={cn(
-                    "rounded-md px-3 py-2 text-sm font-semibold transition-colors disabled:opacity-50",
-                    side === s ? "bg-primary text-primary-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {s}
-                </button>
-              ))}
+        {feedMode === "bottle" ? (
+          <>
+            <div className="flex gap-2">
+              {[60, 90, 120].map((ml) => <Button key={ml} type="button" onClick={() => void logBottle(ml)} className={cn(bigButton, "bg-feed text-feed-foreground hover:bg-feed/85")}>{ml}ml</Button>)}
             </div>
-            <span className="font-display text-xl font-bold tabular-nums">
-              {formatDuration(breast.elapsed)}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={async () => {
-              if (!breast.running) return breast.start();
-              const ms = breast.stop();
-              await addLog({
-                type: "feed",
-                value: `Breastfeed · ${side}`,
-                notes: formatDuration(ms),
-              });
-              toast.success("Breastfeed logged");
-            }}
-            className={cn(
-              bigButton,
-              "mt-3 w-full",
-              breast.running
-                ? "bg-destructive text-destructive-foreground"
-                : "bg-primary text-primary-foreground",
+            <div className="mt-3 flex items-center gap-2">
+              <label htmlFor="custom-ml" className="shrink-0 text-sm font-medium">Custom</label>
+              <input id="custom-ml" type="number" min="1" max="2000" inputMode="numeric" value={customMl} onChange={(e) => setCustomMl(Number(e.target.value))} className="h-12 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-base tabular-nums" />
+              <span className="text-sm text-muted-foreground">ml</span>
+              <Button type="button" onClick={() => void logBottle(customMl)} className="h-12 px-4">Log</Button>
+            </div>
+          </>
+        ) : (
+          <div className="rounded-xl bg-muted/70 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex gap-1 rounded-lg bg-background p-1">
+                {(["Left", "Right"] as const).map((s) => <Button key={s} type="button" variant="ghost" disabled={nursing.elapsed > 0} aria-pressed={side === s} onClick={() => setSide(s)} className={cn("h-10 px-3", side === s && "bg-primary text-primary-foreground hover:bg-primary/90")}>{s}</Button>)}
+              </div>
+              <span className="font-display text-xl font-bold tabular-nums">{formatDuration(nursing.elapsed)}</span>
+            </div>
+            {nursing.elapsed === 0 && !nursing.active ? (
+              <Button type="button" onClick={nursing.start} className={cn(bigButton, "mt-3 w-full")}><Play />Start nursing</Button>
+            ) : (
+              <div className="mt-3 flex gap-2">
+                <Button type="button" variant="secondary" onClick={nursing.active ? nursing.pause : nursing.resume} className={cn(bigButton, "min-w-0")} >{nursing.active ? <Pause /> : <Play />}{nursing.active ? "Pause" : "Resume"}</Button>
+                <Button type="button" onClick={async () => { const ms = nursing.stop(); await addLog({ type: "feed", value: `Breastfeed · ${side}`, notes: formatDuration(ms) }); toast.success("Nursing logged"); }} className={cn(bigButton, "min-w-0")}><Square />Done</Button>
+              </div>
             )}
-          >
-            {breast.running ? <Square className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-            {breast.running ? "Stop breastfeed" : "Start breastfeed"}
-          </button>
-        </div>
+          </div>
+        )}
       </SectionCard>
 
-      <SectionCard title="Diaper" icon={<Droplets className="h-5 w-5" />} tone="diaper">
+      <SectionCard title="Diaper" icon={<Droplets className="h-5 w-5" />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
         <div className="flex gap-2">
-          {["Wet", "Dirty"].map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              onClick={() => toggleDiaper(kind)}
-              className={cn(
-                bigButton,
-                diaper.includes(kind)
-                  ? "bg-diaper text-diaper-foreground ring-2 ring-primary"
-                  : "bg-muted text-foreground",
-              )}
-            >
-              {kind}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setDiaper(["Wet", "Dirty"])}
-            className={cn(
-              bigButton,
-              diaper.length === 2 ? "bg-diaper text-diaper-foreground ring-2 ring-primary" : "bg-muted text-foreground",
-            )}
-          >
-            Both
-          </button>
+          {(["Wet", "Dirty", "Both"] as const).map((kind) => <Button key={kind} type="button" onClick={() => void logDiaper(kind)} className={cn(bigButton, "min-w-0 bg-diaper text-diaper-foreground hover:bg-diaper/85")}>{kind}</Button>)}
         </div>
-        <button
-          type="button"
-          disabled={diaper.length === 0}
-          onClick={saveDiaper}
-          className={cn(bigButton, "mt-3 w-full bg-primary text-primary-foreground disabled:opacity-40")}
-        >
-          <Baby className="h-5 w-5" />
-          Log diaper change
-        </button>
       </SectionCard>
 
       <SectionCard title="Sleep" icon={<Moon className="h-5 w-5" />} tone="sleep">
         <div className="flex items-center justify-between rounded-xl bg-muted/70 px-4 py-3">
-          <span className="text-sm text-muted-foreground">
-            {sleep.running ? "Nap in progress" : "No nap running"}
-          </span>
-          <span className="font-display text-2xl font-bold tabular-nums">
-            {formatDuration(sleep.elapsed)}
-          </span>
+          <span className="text-sm text-muted-foreground">{sleep.active ? "Nap in progress" : "No nap running"}</span>
+          <span className="font-display text-2xl font-bold tabular-nums">{formatDuration(sleep.elapsed)}</span>
         </div>
-        <button
-          type="button"
-          onClick={async () => {
-            if (!sleep.running) return sleep.start();
-            const ms = sleep.stop();
-            await addLog({ type: "sleep", value: "Nap", notes: formatDuration(ms) });
-            toast.success("Nap logged");
-          }}
-          className={cn(
-            bigButton,
-            "mt-3 w-full",
-            sleep.running
-              ? "bg-destructive text-destructive-foreground"
-              : "bg-primary text-primary-foreground",
-          )}
-        >
-          {sleep.running ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-          {sleep.running ? "Stop nap" : "Start nap"}
-        </button>
+        <Button type="button" onClick={async () => {
+          if (!sleep.active) { sleep.start(); return; }
+          const ms = sleep.stop();
+          await addLog({ type: "sleep", value: "Nap", notes: formatDuration(ms) });
+          toast.success("Nap logged");
+        }} className={cn(bigButton, "mt-3 w-full", sleep.active && "bg-destructive text-destructive-foreground hover:bg-destructive/90")}>
+          {sleep.active ? <Square /> : <Play />}{sleep.active ? "Stop Nap" : "Start Nap"}
+        </Button>
+        <Dialog open={napOpen} onOpenChange={(open) => {
+          setNapOpen(open);
+          if (open) { setNapStart(localDateTime(new Date(Date.now() - 3600000))); setNapEnd(localDateTime(new Date())); }
+        }}>
+          <DialogTrigger asChild><Button variant="link" type="button" className="mt-2 h-10 px-0"><Plus />Log Past Nap</Button></DialogTrigger>
+          <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-xl border-border bg-card">
+            <DialogHeader><DialogTitle>Log Past Nap</DialogTitle><DialogDescription>Enter when the nap started and ended.</DialogDescription></DialogHeader>
+            <form onSubmit={(event) => void savePastNap(event)} className="space-y-4">
+              <label className="block text-sm font-medium">Start time<input type="datetime-local" required value={napStart} onChange={(e) => setNapStart(e.target.value)} className="mt-1 h-12 w-full rounded-lg border border-input bg-background px-3 text-base" /></label>
+              <label className="block text-sm font-medium">End time<input type="datetime-local" required value={napEnd} onChange={(e) => setNapEnd(e.target.value)} className="mt-1 h-12 w-full rounded-lg border border-input bg-background px-3 text-base" /></label>
+              <Button type="submit" className="h-12 w-full">Save nap</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </SectionCard>
     </div>
   );
