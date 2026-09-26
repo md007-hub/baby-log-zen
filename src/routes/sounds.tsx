@@ -12,6 +12,8 @@ export const Route = createFileRoute("/sounds")({
           "White, pink and brown noise generated right on your phone, with 15, 30 and 60 minute sleep timers.",
       },
       { property: "og:title", content: "Soothing Sounds — Nestling" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         property: "og:description",
         content: "White, pink and brown noise with sleep timers — no downloads, works offline.",
