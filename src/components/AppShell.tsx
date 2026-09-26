@@ -7,25 +7,17 @@ import { Button } from "@/components/ui/button";
 
 function NestlingLogo() {
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-logo shadow-soft" aria-hidden="true">
-      <svg viewBox="0 0 40 40" className="h-8 w-8">
-        <defs>
-          <linearGradient id="nl-sage" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" style={{ stopColor: "var(--logo-sage)", stopOpacity: 0.85 }} />
-            <stop offset="1" style={{ stopColor: "var(--logo-ink)" }} />
-          </linearGradient>
-          <linearGradient id="nl-amber" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" style={{ stopColor: "var(--logo-amber)" }} />
-            <stop offset="1" style={{ stopColor: "var(--logo-amber-dark)" }} />
-          </linearGradient>
-        </defs>
-        {/* left hand rising — first stroke of the N */}
-        <path fill="url(#nl-sage)" d="M9.5 31.5c-1.4 0-2.5-1.1-2.5-2.5V13.2c0-2.6 1.6-4.9 4-5.8 1.1-.4 2.2.4 2.2 1.6v20c0 1.4-1.1 2.5-2.5 2.5h-1.2Z" />
-        {/* amber diagonal — the cradled nest joining both hands */}
-        <path fill="url(#nl-amber)" d="M12.6 9.2c1.2-1 3-.8 4 .4l12.2 16.2c1 1.3.7 3.1-.6 4.1-1.3.9-3 .6-4-.6L11.9 13.1c-.9-1.2-.7-2.9.7-3.9Z" />
-        {/* right hand — closing stroke of the N */}
-        <path fill="url(#nl-sage)" d="M30.5 8.5c1.4 0 2.5 1.1 2.5 2.5v15.8c0 2.6-1.6 4.9-4 5.8-1.1.4-2.2-.4-2.2-1.6V11c0-1.4 1.1-2.5 2.5-2.5h1.2Z" />
-        <circle className="fill-logo-cream" cx="20" cy="19.6" r="1.6" />
+    <span
+      className="relative inline-flex h-11 w-11 shrink-0 select-none items-center justify-center rounded-full bg-logo shadow-sm"
+      role="img"
+      aria-label="Nestling logo"
+    >
+      <svg viewBox="0 0 100 100" fill="none" className="h-[70%] w-[70%] stroke-logo-ink" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M 28 72 C 22 62 20 46 26 34 C 28 29 33 24 38 27 C 42 30 38 38 36 44 C 33 52 35 62 42 68" strokeWidth="5" />
+        <path d="M 33 34 C 36 29 42 27 45 32 C 48 37 43 45 40 52 C 38 58 41 64 47 67" strokeWidth="4" />
+        <path d="M 44 76 C 58 78 72 74 76 60 C 80 48 76 32 72 24 C 69 19 64 21 64 26 C 64 34 68 45 64 54 C 60 62 50 66 42 66" strokeWidth="5" />
+        <path d="M 64 29 C 61 25 56 27 56 32 C 56 40 60 48 57 56" strokeWidth="4" />
+        <path d="M 50 49 C 48 45 43 46 43 50 C 43 54 50 60 50 60 C 50 60 57 54 57 50 C 57 46 52 45 50 49 Z" className="fill-logo-amber-dark" stroke="none" />
       </svg>
     </span>
   );
