@@ -141,7 +141,7 @@ function AskPage() {
       {offline && (
         <p className="mt-4 flex items-center gap-2 rounded-xl bg-offline/15 px-3 py-2.5 text-sm font-medium text-offline">
           <WifiOff className="h-4 w-4" />
-          AI Assistant requires an internet connection.
+          Nanny AI requires an internet connection.
         </p>
       )}
 
@@ -157,7 +157,7 @@ function AskPage() {
           onChange={(e) => setInput(e.target.value)}
           disabled={offline}
           rows={1}
-          placeholder={offline ? "Offline — AI unavailable" : "Ask a question…"}
+          placeholder={offline ? "Offline — AI unavailable" : "Ask Nanny AI anything..."}
           className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60"
         />
         <button
