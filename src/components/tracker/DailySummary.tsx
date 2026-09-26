@@ -40,12 +40,12 @@ export function DailySummary() {
       <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Diapers</p>
         <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{diapers.length} {diapers.length === 1 ? "diaper" : "diapers"}</p>
-        <p className="min-h-4 text-[11px] leading-4 text-muted-foreground">{wet}W · {dirty}D</p>
+        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{wet}W · {dirty}D</p>
       </div>
       <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Sleep</p>
         <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{Math.floor(sleepMinutes / 60)}h {sleepMinutes % 60}m</p>
-        <p className="min-h-4 text-[11px] leading-4 text-muted-foreground">{sleep.length} {sleep.length === 1 ? "nap" : "naps"}</p>
+        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{sleep.length} {sleep.length === 1 ? "nap" : "naps"}</p>
       </div>
     </section>
   );
