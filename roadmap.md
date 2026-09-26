@@ -1,0 +1,8 @@
+# Current work
+- [x] Update Nestling header with bird/hands badge and restore baby Tracker tab; preserve status and other tabs.
+- [x] Update Nanny AI greeting and disclaimer wording without changing its icon or behavior.
+- [x] Add live daily tracker summary from local logs.
+- [x] Add Bottle/Nursing modes with custom bottle quantity and pausable nursing timer.
+- [x] Make diaper selections one-tap saves and show today's count.
+- [x] Add retroactive nap logging with start/end times.
+- [x] Verify phone layout, dark mode, and working controls.

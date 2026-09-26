@@ -1,8 +1,24 @@
 import { Link } from "@tanstack/react-router";
-import { Feather, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
+import { Baby, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+function NestlingLogo() {
+  return (
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none" className="h-8 w-8" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 30c3.5 7 9 10 15 10s11.5-3 15-10" />
+        <path d="M12 33c4-3 8-4 12-4s8 1 12 4" />
+        <path d="M14 36c4-2 7-2.5 10-2.5S30 34 34 36" />
+        <path d="M18 25c-2-4-1-10 3-13 1 4 4 6 7 7 4 1 6 4 5 8-1 3-4 5-9 5-4 0-7-2-8-5" />
+        <path d="m31 22 6 2-5 2" />
+        <circle cx="27" cy="22" r=".85" fill="currentColor" stroke="none" />
+      </svg>
+    </span>
+  );
+}
 
 function ThemeToggle() {
   const [dark, setDark] = useState(false);
@@ -23,14 +39,15 @@ function ThemeToggle() {
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="secondary"
       onClick={toggle}
       aria-label="Toggle night mode"
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground transition-colors active:bg-muted"
+      className="h-10 w-10 rounded-full p-0 active:bg-muted"
     >
       {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-    </button>
+    </Button>
   );
 }
 
@@ -53,7 +70,7 @@ function StatusBadge() {
 }
 
 const tabs = [
-  { to: "/", label: "Tracker", icon: Feather },
+  { to: "/", label: "Tracker", icon: Baby },
   { to: "/sounds", label: "Sounds", icon: Waves },
   { to: "/ask", label: "Nanny AI", icon: Sparkles },
 ] as const;
@@ -63,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col bg-background">
       <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/60 bg-background/90 px-4 py-3 backdrop-blur">
         <div className="flex items-center gap-2.5">
-          <Feather className="h-6 w-6 text-muted-foreground" strokeWidth={2} />
+          <NestlingLogo />
           <div>
             <p className="font-display text-lg font-bold leading-tight">Nestling</p>
             <StatusBadge />
