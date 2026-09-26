@@ -37,7 +37,7 @@ export function DailySummary() {
       : `${wetOnly} Wet · ${dirtyOnly} Dirty`;
 
   return (
-    <section aria-label="Today's summary" className="mb-4 grid grid-cols-[1.25fr_1fr_1fr] divide-x divide-border rounded-xl border border-border/60 bg-card py-3.5 shadow-soft">
+    <section aria-label="Today's summary" className="mb-4 grid grid-cols-[minmax(0,1.05fr)_minmax(0,1.2fr)_minmax(0,0.45fr)] divide-x divide-border rounded-xl border border-border/60 bg-card py-3.5 shadow-soft">
       <div className="min-w-0 px-1.5 text-center sm:px-2">
         <p className="text-xs font-semibold text-muted-foreground">Feeds</p>
         <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{feeds.length} {feeds.length === 1 ? "feed" : "feeds"}</p>
