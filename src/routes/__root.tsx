@@ -82,16 +82,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "viewport",
         content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1",
       },
-      { title: "NurseryShift — Baby tracker for night shifts" },
+      { title: "Nestling — Baby tracker for night shifts" },
       {
         name: "description",
         content:
-          "Offline-first baby tracker: log feeds, diapers and naps in one tap, play soothing noise and ask an AI assistant.",
+          "Offline-first baby tracker: log feeds, diapers and naps in one tap, play soothing noise and ask Nanny AI.",
       },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "NurseryShift" },
+      { name: "apple-mobile-web-app-title", content: "Nestling" },
       { name: "theme-color", content: "#f7f4ee" },
-      { property: "og:title", content: "NurseryShift" },
+      { property: "og:title", content: "Nestling" },
       {
         property: "og:description",
         content: "Offline-first baby tracker for new parents.",

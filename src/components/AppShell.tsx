@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Baby, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
+import { Feather, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
@@ -53,18 +53,21 @@ function StatusBadge() {
 }
 
 const tabs = [
-  { to: "/", label: "Tracker", icon: Baby },
+  { to: "/", label: "Tracker", icon: Feather },
   { to: "/sounds", label: "Sounds", icon: Waves },
-  { to: "/ask", label: "Ask AI", icon: Sparkles },
+  { to: "/ask", label: "Nanny AI", icon: Sparkles },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col bg-background">
       <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/60 bg-background/90 px-4 py-3 backdrop-blur">
-        <div>
-          <p className="font-display text-lg font-bold leading-tight">NurseryShift</p>
-          <StatusBadge />
+        <div className="flex items-center gap-2.5">
+          <Feather className="h-6 w-6 text-muted-foreground" strokeWidth={2} />
+          <div>
+            <p className="font-display text-lg font-bold leading-tight">Nestling</p>
+            <StatusBadge />
+          </div>
         </div>
         <ThemeToggle />
       </header>

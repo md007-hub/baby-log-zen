@@ -5,13 +5,13 @@ import { useHydrated } from "@/hooks/useOnline";
 export const Route = createFileRoute("/sounds")({
   head: () => ({
     meta: [
-      { title: "Soothing Sounds — NurseryShift" },
+      { title: "Soothing Sounds — Nestling" },
       {
         name: "description",
         content:
           "White, pink and brown noise generated right on your phone, with 15, 30 and 60 minute sleep timers.",
       },
-      { property: "og:title", content: "Soothing Sounds — NurseryShift" },
+      { property: "og:title", content: "Soothing Sounds — Nestling" },
       {
         property: "og:description",
         content: "White, pink and brown noise with sleep timers — no downloads, works offline.",

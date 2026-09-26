@@ -1,7 +1,7 @@
 {
-  "name": "NurseryShift",
-  "short_name": "NurseryShift",
-  "description": "Offline-first baby tracker: feeds, diapers, naps, soothing sounds and an AI helper.",
+  "name": "Nestling",
+  "short_name": "Nestling",
+  "description": "Offline-first baby tracker: feeds, diapers, naps, soothing sounds and a Nanny AI helper.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

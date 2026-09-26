@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send, WifiOff } from "lucide-react";
+import { Loader2, Send, Sparkles, WifiOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { askBabyAi } from "@/lib/ai.functions";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
@@ -10,13 +10,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/ask")({
   head: () => ({
     meta: [
-      { title: "Ask AI — NurseryShift" },
+      { title: "Nanny AI — Nestling" },
       {
         name: "description",
         content:
-          "Ask an AI assistant routine baby care questions about feeding, sleep, diapers and soothing.",
+          "Ask Nanny AI routine baby care questions about feeding, sleep, diapers and soothing.",
       },
-      { property: "og:title", content: "Ask AI — NurseryShift" },
+      { property: "og:title", content: "Nanny AI — Nestling" },
       {
         property: "og:description",
         content: "Calm answers to routine baby care questions, any time of night.",
@@ -33,6 +33,24 @@ const SUGGESTIONS = [
   "Tips for a 4am wake-up",
   "Is this many wet diapers normal?",
 ];
+
+function Greeting() {
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
+      <div className="flex items-center gap-2.5">
+        <Sparkles className="h-5 w-5 text-primary" />
+        <h2 className="font-display text-lg font-bold leading-tight">Nanny AI</h2>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-foreground">
+        Hi, I'm Nanny AI. How can I help you and your baby right now?
+      </p>
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+        I'm here for day-to-day nursery, feeding, and sleep guidance. Always consult your
+        pediatrician for medical emergencies.
+      </p>
+    </div>
+  );
+}
 
 function AskPage() {
   const hydrated = useHydrated();
@@ -71,12 +89,11 @@ function AskPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-11rem)] flex-col">
-      <h1 className="mb-1 text-2xl font-bold">Ask AI</h1>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Routine baby care questions. For anything urgent, call your pediatrician.
-      </p>
+      <h1 className="mb-4 text-2xl font-bold">Nanny AI</h1>
 
-      <div className="flex-1 space-y-3">
+      {messages.length === 0 && <Greeting />}
+
+      <div className="flex-1 space-y-3 mt-3">
         {messages.length === 0 && (
           <div className="space-y-2">
             {SUGGESTIONS.map((s) => (
@@ -124,7 +141,7 @@ function AskPage() {
       {offline && (
         <p className="mt-4 flex items-center gap-2 rounded-xl bg-offline/15 px-3 py-2.5 text-sm font-medium text-offline">
           <WifiOff className="h-4 w-4" />
-          AI Assistant requires an internet connection.
+          Nanny AI requires an internet connection.
         </p>
       )}
 
@@ -140,7 +157,7 @@ function AskPage() {
           onChange={(e) => setInput(e.target.value)}
           disabled={offline}
           rows={1}
-          placeholder={offline ? "Offline — AI unavailable" : "Ask a question…"}
+          placeholder={offline ? "Offline — AI unavailable" : "Ask Nanny AI anything..."}
           className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60"
         />
         <button
