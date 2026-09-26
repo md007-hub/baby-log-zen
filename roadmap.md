@@ -9,3 +9,4 @@
 - [x] Refine sticky header layering, alignment, and premium filled logo badge.
 - [x] Clarify the live feed count and summed bottle volume in the daily glance bar.
 - [x] Confirm fast one-tap diaper feedback and verify the updated phone layout.
+- [x] Show a clear bottle/nursing breakdown under today's feed count in the glance bar.
