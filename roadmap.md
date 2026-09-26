@@ -6,6 +6,6 @@
 - [x] Make diaper selections one-tap saves and show today's count.
 - [x] Add retroactive nap logging with start/end times.
 - [x] Verify phone layout, dark mode, and working controls.
-- [ ] Refine sticky header layering, alignment, and premium filled logo badge.
-- [ ] Clarify the live feed count and summed bottle volume in the daily glance bar.
-- [ ] Confirm fast one-tap diaper feedback and verify the updated phone layout.
+- [x] Refine sticky header layering, alignment, and premium filled logo badge.
+- [x] Clarify the live feed count and summed bottle volume in the daily glance bar.
+- [x] Confirm fast one-tap diaper feedback and verify the updated phone layout.
