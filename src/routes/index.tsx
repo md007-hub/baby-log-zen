@@ -6,13 +6,13 @@ import { useHydrated } from "@/hooks/useOnline";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Tracker — NurseryShift" },
+      { title: "Tracker — Nestling" },
       {
         name: "description",
         content:
           "One-tap feed, diaper and sleep tracking for new parents. Works fully offline on your phone.",
       },
-      { property: "og:title", content: "Tracker — NurseryShift" },
+      { property: "og:title", content: "Tracker — Nestling" },
       {
         property: "og:description",
         content: "One-tap feed, diaper and sleep tracking that works fully offline.",
