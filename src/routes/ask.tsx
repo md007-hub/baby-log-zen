@@ -34,6 +34,24 @@ const SUGGESTIONS = [
   "Is this many wet diapers normal?",
 ];
 
+function Greeting() {
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
+      <div className="flex items-center gap-2.5">
+        <Sparkles className="h-5 w-5 text-primary" />
+        <h2 className="font-display text-lg font-bold leading-tight">Nanny AI</h2>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-foreground">
+        Hi, I'm Nanny AI. How can I help you and your baby right now?
+      </p>
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+        I'm here for day-to-day nursery, feeding, and sleep guidance. Always consult your
+        pediatrician for medical emergencies.
+      </p>
+    </div>
+  );
+}
+
 function AskPage() {
   const hydrated = useHydrated();
   const online = useOnline();
