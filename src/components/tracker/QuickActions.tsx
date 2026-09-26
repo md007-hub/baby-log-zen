@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Droplets, Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
+import { Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -33,6 +33,17 @@ function useStopwatch() {
     pause: () => { if (startedAt !== null) setAccumulated(accumulated + Date.now() - startedAt); setStartedAt(null); },
     stop: () => { const duration = accumulated + (startedAt === null ? 0 : Date.now() - startedAt); setStartedAt(null); setAccumulated(0); return duration; },
   };
+}
+
+function DiaperIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 6h16" />
+      <path d="M4 6v5a7 7 0 0 0 7 7h2a7 7 0 0 0 7-7V6" />
+      <path d="M4 9h3" />
+      <path d="M20 9h-3" />
+    </svg>
+  );
 }
 
 function SectionCard({ title, icon, tone, extra, children }: {
@@ -131,7 +142,7 @@ export function QuickActions() {
         )}
       </SectionCard>
 
-      <SectionCard title="Diaper" icon={<Droplets className="h-5 w-5" strokeWidth={2.25} />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
+      <SectionCard title="Diaper" icon={<DiaperIcon className="h-5 w-5" />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
         <div className="flex gap-2">
           {(["Wet", "Dirty", "Both"] as const).map((kind) => <Button key={kind} type="button" onClick={() => void logDiaper(kind)} className={cn(bigButton, "min-w-0 bg-diaper text-diaper-foreground hover:bg-diaper/85")}>{kind}</Button>)}
         </div>
