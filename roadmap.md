@@ -11,3 +11,4 @@
 - [x] Confirm fast one-tap diaper feedback and verify the updated phone layout.
 - [x] Show a clear bottle/nursing breakdown under today's feed count in the glance bar.
 - [x] Show a diaper breakdown whose parts add up to the total, including a Both count.
+- [x] Use the safety pin as the Diaper icon in the card badge and timeline rows.
