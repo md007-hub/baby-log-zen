@@ -17,6 +17,8 @@ export const Route = createFileRoute("/ask")({
           "Ask Nanny AI routine baby care questions about feeding, sleep, diapers and soothing.",
       },
       { property: "og:title", content: "Nanny AI — Nestling" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         property: "og:description",
         content: "Calm answers to routine baby care questions, any time of night.",
@@ -42,10 +44,10 @@ function Greeting() {
         <h2 className="font-display text-lg font-bold leading-tight">Nanny AI</h2>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-foreground">
-        Hi, I'm Nanny AI. How can I help you and your baby right now?
+        Hi, I'm Nanny AI. Need tips for improving nap duration or feeding?
       </p>
       <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-        I'm here for day-to-day nursery, feeding, and sleep guidance. Always consult your
+        I'm here for routine nursery, feeding, and sleep guidance. Always consult your
         pediatrician for medical emergencies.
       </p>
     </div>
