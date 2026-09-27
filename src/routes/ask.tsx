@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Loader2, Send, Sparkles, WifiOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { askBabyAi } from "@/lib/ai.functions";
+import { buildBabyContext } from "@/lib/babyContext";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
 
@@ -30,10 +31,11 @@ export const Route = createFileRoute("/ask")({
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const SUGGESTIONS = [
-  "How much should a 3-month-old eat?",
-  "Tips for a 4am wake-up",
-  "Is this many wet diapers normal?",
+const CHIPS = [
+  { label: "🍼 Last feed time & amount", prompt: "When did baby last eat, and how much?" },
+  { label: "⏱️ Current wake window", prompt: "How long has baby been awake in the current wake window?" },
+  { label: "📊 Today's daily summary", prompt: "Give me a summary of today's feeds, diapers and sleep." },
+  { label: "💡 Fussy baby soothing tips", prompt: "Baby is fussy. What soothing tips could help right now, given today's log?" },
 ];
 
 function Greeting() {
@@ -77,7 +79,8 @@ function AskPage() {
     setInput("");
     setLoading(true);
     try {
-      const res = await ask({ data: { messages: next } });
+      const context = await buildBabyContext().catch(() => undefined);
+      const res = await ask({ data: { messages: next, context } });
       setMessages([...next, { role: "assistant", content: res.reply }]);
     } catch {
       setMessages([
@@ -96,22 +99,6 @@ function AskPage() {
       {messages.length === 0 && <Greeting />}
 
       <div className="flex-1 space-y-3 mt-3">
-        {messages.length === 0 && (
-          <div className="space-y-2">
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                disabled={offline}
-                onClick={() => send(s)}
-                className="tap-card w-full border border-border/60 bg-card p-3 text-left text-sm shadow-soft disabled:opacity-50"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
-
         {messages.map((m, i) => (
           <div
             key={i}
@@ -147,12 +134,26 @@ function AskPage() {
         </p>
       )}
 
+      <div className="sticky bottom-[9.25rem] -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+        {CHIPS.map((c) => (
+          <button
+            key={c.label}
+            type="button"
+            disabled={offline || loading}
+            onClick={() => void send(c.prompt)}
+            className="min-h-11 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
           void send(input);
         }}
-        className="sticky bottom-24 mt-3 flex items-end gap-2 rounded-2xl border border-border/60 bg-card p-2 shadow-lift"
+        className="sticky bottom-24 mt-2 flex items-end gap-2 rounded-2xl border border-border/60 bg-card p-2 shadow-lift"
       >
         <textarea
           value={input}
@@ -166,7 +167,7 @@ function AskPage() {
           type="submit"
           disabled={offline || loading || input.trim().length === 0}
           aria-label="Send"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-40"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-40"
         >
           <Send className="h-5 w-5" />
         </button>

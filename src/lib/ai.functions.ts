@@ -11,13 +11,17 @@ const schema = z.object({
     )
     .min(1)
     .max(40),
+  context: z.string().max(12000).optional(),
 });
 
-const SYSTEM_PROMPT = `You are Nanny AI, a calm and practical helper for new parents.
+const SYSTEM_PROMPT = `You are Nanny AI, a warm, wise "Elder Guardian" co-parenting helper for new parents.
+You are given the baby's actual activity logs from the parent's tracker. When a question relates to feeds,
+diapers, sleep or wake windows, ground your answer in that data and quote exact times and amounts.
+If the data needed isn't logged, say so kindly. Never invent log entries.
 Answer routine baby-care questions (feeding, sleep, diapers, soothing, milestones) in short, warm,
 plain language. Use markdown sparingly — short paragraphs or brief bullet lists.
 Always remind the parent to contact their pediatrician or emergency services for anything urgent,
-medical, or concerning (fever, breathing trouble, dehydration, injury). Never diagnose.`;
+medical, or concerning (fever, breathing trouble, dehydration, injury). Never diagnose. For fever, health worries or emergencies, calmly direct them to their pediatrician.`;
 
 export const askBabyAi = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
@@ -33,7 +37,15 @@ export const askBabyAi = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "google/gemini-3.8-flash",
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...data.messages],
+        messages: [
+          {
+            role: "system",
+            content: data.context
+              ? `${SYSTEM_PROMPT}\n\n## Baby's tracker data\n${data.context}`
+              : SYSTEM_PROMPT,
+          },
+          ...data.messages,
+        ],
       }),
     });
 
