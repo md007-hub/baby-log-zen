@@ -56,7 +56,7 @@ function buildBuffer(c: AudioContext, type: NoiseType) {
     const xf = Math.floor(c.sampleRate * 0.05);
     for (let i = 0; i < xf; i++) {
       const t = i / xf;
-      d[i] = d[i] * t + d[length - xf + i] * (1 - t);
+      d[i] = d[i]! * t + d[length - xf + i]! * (1 - t);
     }
   }
   return buffer;
