@@ -12,7 +12,7 @@ type State = {
 };
 
 const FADE_SECONDS = 5;
-let state: State = { active: null, volume: 0.6, minutes: 0, endsAt: null, fading: false };
+let state: State = { active: null, volume: 0.5, minutes: 0, endsAt: null, fading: false };
 const listeners = new Set<() => void>();
 const buffers = new Map<NoiseType, AudioBuffer>();
 
@@ -92,13 +92,46 @@ function fadeOut() {
   fadeTimer = setTimeout(stop, FADE_SECONDS * 1000 + 50);
 }
 
+// iOS: a playing <audio> element moves the audio session to "playback",
+// so Web Audio is heard even with the hardware silent switch on.
+let silentEl: HTMLAudioElement | null = null;
+function silentWavUrl() {
+  const rate = 8000, samples = 800; // 0.1s of 8-bit silence
+  const buf = new ArrayBuffer(44 + samples);
+  const v = new DataView(buf);
+  const str = (o: number, s: string) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, "RIFF"); v.setUint32(4, 36 + samples, true); str(8, "WAVE"); str(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate, true); v.setUint16(32, 1, true);
+  v.setUint16(34, 8, true); str(36, "data"); v.setUint32(40, samples, true);
+  for (let i = 0; i < samples; i++) v.setUint8(44 + i, 128);
+  return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+}
+function unlockIosSession() {
+  try {
+    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    if (nav.audioSession) nav.audioSession.type = "playback";
+  } catch { /* unsupported */ }
+  if (!silentEl) {
+    silentEl = new Audio(silentWavUrl());
+    silentEl.loop = true;
+    silentEl.setAttribute("playsinline", "");
+    silentEl.setAttribute("x-webkit-airplay", "deny");
+  }
+  void silentEl.play().catch(() => { /* ignore */ });
+}
+
 export async function play(type: NoiseType) {
+  // Everything below up to the first await runs synchronously inside the tap gesture.
+  unlockIosSession();
   ctx ??= new AudioContext();
-  await ctx.resume();
+  const resuming = ctx.state !== "running" ? ctx.resume() : null;
   if (!master) {
     master = ctx.createGain();
+    master.gain.value = state.volume;
     master.connect(ctx.destination);
   }
+  if (resuming) await resuming;
   stopSource(); // one sound at a time
   let buf = buffers.get(type);
   if (!buf) buffers.set(type, (buf = buildBuffer(ctx, type)));
