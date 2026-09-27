@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Baby, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
+import { Baby, Feather, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
