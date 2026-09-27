@@ -151,6 +151,7 @@ export async function play(type: NoiseType) {
 export function stop() {
   clearTimers();
   stopSource();
+  silentEl?.pause();
   if (master && ctx) master.gain.setValueAtTime(state.volume, ctx.currentTime);
   set({ active: null, endsAt: null, fading: false });
 }
