@@ -13,4 +13,4 @@
 - Keep local-first tracking in Dexie and derive dashboard totals from live log queries, so offline writes immediately update the tracker.
 
 ## Brand system
-- Build the Nestling header mark from semantic logo color tokens and a filled inline SVG, so it stays crisp and theme-aware without external artwork.
+- The Nestling header mark is the muted Lucide `<Feather />` icon beside the app name — no badge, no custom SVG. Do not reintroduce bird/nest illustrations in the header.
