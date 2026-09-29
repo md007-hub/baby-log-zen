@@ -14,13 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      babies: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          invite_code: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          invite_code?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      baby_logs: {
+        Row: {
+          baby_id: string
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          ts: number
+          type: string
+          value: string
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          created_by?: string
+          id: string
+          notes?: string | null
+          ts: number
+          type: string
+          value: string
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          ts?: number
+          type?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baby_logs_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      baby_members: {
+        Row: {
+          baby_id: string
+          created_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baby_members_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_baby: {
+        Args: { _name: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "babies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      is_baby_member: { Args: { _baby: string }; Returns: boolean }
+      join_baby: {
+        Args: { _code: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "babies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
