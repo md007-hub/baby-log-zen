@@ -1,9 +1,28 @@
 import { Link } from "@tanstack/react-router";
-import { Baby, Feather, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
+import { Baby, Feather, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useFamily } from "@/hooks/useFamily";
+
+function FamilyChip() {
+  const { ready, user, baby, memberCount } = useFamily();
+  if (!ready) return null;
+  const label = !user ? "Sign in" : !baby ? "Set up baby" : memberCount > 1 ? "Synced with Partner" : "Invite Partner";
+  const Icon = baby && memberCount > 1 ? Users : UserPlus;
+  return (
+    <Link to={user ? "/family" : "/auth"} className="inline-flex h-10 items-center gap-1.5 rounded-full bg-secondary px-3 text-xs font-semibold text-secondary-foreground">
+      <Icon className="h-4 w-4" />
+      {label}
+    </Link>
+  );
+}
+
+function HeaderTitle() {
+  const { baby } = useFamily();
+  return <p className="font-display text-lg font-bold leading-none">{baby ? baby.name : "Nestling"}</p>;
+}
 
 function NestlingLogo() {
   return (
@@ -77,11 +96,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex min-w-0 items-center gap-3">
           <NestlingLogo />
           <div className="flex min-w-0 flex-col items-start justify-center gap-1">
-            <p className="font-display text-lg font-bold leading-none">Nestling</p>
+            <HeaderTitle />
             <StatusBadge />
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <FamilyChip />
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="relative z-0 flex-1 px-4 pb-28 pt-4">{children}</main>

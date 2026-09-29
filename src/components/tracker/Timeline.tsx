@@ -1,6 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { Milk, Moon, Trash2 } from "lucide-react";
-import { db, startOfToday, type LogEntry } from "@/lib/db";
+import { Baby, Milk, Moon, Trash2 } from "lucide-react";
+import { db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
+import { useFamily } from "@/hooks/useFamily";
 import { cn } from "@/lib/utils";
 
 function DiaperIcon({ className }: { className?: string }) {
@@ -16,6 +17,7 @@ const meta = {
   feed: { icon: Milk, className: "bg-feed text-feed-foreground" },
   diaper: { icon: DiaperIcon, className: "bg-diaper text-diaper-foreground" },
   sleep: { icon: Moon, className: "bg-sleep text-sleep-foreground" },
+  tummy: { icon: Baby, className: "bg-feed text-feed-foreground" },
 } as const;
 
 function time(ts: number) {
@@ -23,6 +25,7 @@ function time(ts: number) {
 }
 
 export function Timeline() {
+  const { baby } = useFamily();
   const logs = useLiveQuery(
     () => db.logs.where("timestamp").aboveOrEqual(startOfToday()).reverse().sortBy("timestamp"),
     [],
@@ -53,13 +56,13 @@ export function Timeline() {
                   <p className="text-xs text-muted-foreground">
                     {time(log.timestamp)}
                     {log.notes ? ` · ${log.notes}` : ""}
-                    {log.sync_status === "pending" ? " · saved offline" : ""}
+                    {baby && log.sync_status === "pending" ? " · not synced yet" : ""}
                   </p>
                 </div>
                 <button
                   type="button"
                   aria-label="Delete entry"
-                  onClick={() => log.id && db.logs.delete(log.id)}
+                  onClick={() => deleteLog(log)}
                   className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
                 >
                   <Trash2 className="h-4 w-4" />
