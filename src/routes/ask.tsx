@@ -134,7 +134,7 @@ function AskPage() {
 
       {messages.length === 0 && <Greeting />}
 
-      <div className="flex-1 space-y-3 mt-3">
+      <div className="mt-3 flex-1 space-y-3 pb-36">
         {messages.map((m, i) => (
           <div
             key={i}
@@ -160,24 +160,25 @@ function AskPage() {
             <Loader2 className="h-4 w-4 animate-spin" /> Thinking…
           </div>
         )}
-        <div ref={endRef} />
+        <div ref={endRef} className="scroll-mb-40" />
       </div>
 
       {offline && (
-        <p className="mt-4 flex items-center gap-2 rounded-xl bg-offline/15 px-3 py-2.5 text-sm font-medium text-offline">
+        <p className="mb-2 flex items-center gap-2 rounded-xl bg-offline/15 px-3 py-2.5 text-sm font-medium text-offline">
           <WifiOff className="h-4 w-4" />
           Nanny AI requires an internet connection.
         </p>
       )}
 
-      <div className="sticky bottom-[9.25rem] -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+      <div className="sticky bottom-20 z-10 -mx-4 bg-background/95 px-4 pb-2 pt-2 backdrop-blur">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
         {CHIPS.map((c) => (
           <button
             key={c.label}
             type="button"
             disabled={offline || loading}
             onClick={() => void send(c.prompt)}
-            className="min-h-11 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition-colors hover:bg-muted disabled:opacity-50"
+            className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition-colors hover:bg-muted disabled:opacity-50"
           >
             {c.label}
           </button>
@@ -189,7 +190,7 @@ function AskPage() {
           e.preventDefault();
           void send(input);
         }}
-        className="sticky bottom-24 mt-2 flex items-end gap-2 rounded-2xl border border-border/60 bg-card p-2 shadow-lift"
+        className="flex items-end gap-2 rounded-2xl border border-border/60 bg-card p-2 shadow-lift"
       >
         <textarea
           value={input}
@@ -208,6 +209,10 @@ function AskPage() {
           <Send className="h-5 w-5" />
         </button>
       </form>
+      <p className="mt-1.5 text-center text-[11px] leading-snug text-muted-foreground">
+        Nanny AI provides general guidance and is not a substitute for professional medical advice.
+      </p>
+      </div>
     </div>
   );
 }

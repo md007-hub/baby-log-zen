@@ -92,6 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Offline-first baby tracker: log feeds, diapers and naps in one tap, play soothing noise and ask Nanny AI.",
       },
       { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "Nestling" },
       { name: "theme-color", content: "#f7f4ee" },
       { property: "og:title", content: "Nestling" },

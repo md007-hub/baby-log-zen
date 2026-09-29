@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { QuickActions } from "@/components/tracker/QuickActions";
 import { DailySummary } from "@/components/tracker/DailySummary";
 import { Timeline } from "@/components/tracker/Timeline";
+import { ExportPdfButton } from "@/components/tracker/ExportPdfButton";
 import { useHydrated } from "@/hooks/useOnline";
 import { Link } from "@tanstack/react-router";
 import { useFamily } from "@/hooks/useFamily";
@@ -45,6 +46,7 @@ function TrackerPage() {
     <div>
       {hydrated && <SyncBanner />}
       {hydrated && <DailySummary />}
+      {hydrated && <ExportPdfButton />}
       <QuickActions />
       {hydrated ? (
         <Timeline />

@@ -5,6 +5,7 @@ import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "@/hooks/useFamily";
+import { usePro } from "@/hooks/usePro";
 
 function FamilyChip() {
   const { ready, user, baby, memberCount } = useFamily();
@@ -21,7 +22,17 @@ function FamilyChip() {
 
 function HeaderTitle() {
   const { baby } = useFamily();
-  return <p className="font-display text-lg font-bold leading-none">{baby ? baby.name : "Nestling"}</p>;
+  const { isPro } = usePro();
+  return (
+    <p className="flex items-center gap-1.5 font-display text-lg font-bold leading-none">
+      <span className="truncate">{baby ? baby.name : "Nestling"}</span>
+      {isPro && (
+        <span className="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-sans text-[10px] font-semibold tracking-wider text-primary">
+          PRO
+        </span>
+      )}
+    </p>
+  );
 }
 
 function NestlingLogo() {
