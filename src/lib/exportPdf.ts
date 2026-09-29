@@ -75,7 +75,7 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
       const extra =
         e.type === "sleep" && e.notes ? ` (${fmtDur(Number(e.notes))})` : e.notes && e.type !== "feed" ? ` — ${e.notes}` : "";
       doc.text(time, 56, y);
-      doc.text(e.type[0].toUpperCase() + e.type.slice(1), 130, y);
+      doc.text(e.type.charAt(0).toUpperCase() + e.type.slice(1), 130, y);
       doc.text(`${e.value}${extra}`.slice(0, 80), 200, y);
       y += 15;
     }
