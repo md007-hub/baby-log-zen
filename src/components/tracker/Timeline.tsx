@@ -1,6 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { Milk, Moon, Trash2 } from "lucide-react";
-import { db, startOfToday, type LogEntry } from "@/lib/db";
+import { db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
+import { useFamily } from "@/hooks/useFamily";
 import { cn } from "@/lib/utils";
 
 function DiaperIcon({ className }: { className?: string }) {
@@ -53,13 +54,13 @@ export function Timeline() {
                   <p className="text-xs text-muted-foreground">
                     {time(log.timestamp)}
                     {log.notes ? ` · ${log.notes}` : ""}
-                    {log.sync_status === "pending" ? " · saved offline" : ""}
+                    {baby && log.sync_status === "pending" ? " · not synced yet" : ""}
                   </p>
                 </div>
                 <button
                   type="button"
                   aria-label="Delete entry"
-                  onClick={() => log.id && db.logs.delete(log.id)}
+                  onClick={() => deleteLog(log)}
                   className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
                 >
                   <Trash2 className="h-4 w-4" />
