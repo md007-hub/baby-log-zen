@@ -45,7 +45,7 @@ export function UpgradeModal({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  reason?: string;
+  reason?: string | undefined;
 }) {
   const { user } = useFamily();
   const [plan, setPlan] = useState<Plan>("pro_yearly");
