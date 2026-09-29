@@ -17,7 +17,20 @@ type FamilyState = {
   signOut: () => Promise<void>;
 };
 
-const Ctx = createContext<FamilyState | null>(null);
+// Keep one context instance across hot reloads so providers and consumers always match.
+const g = globalThis as { __nestlingFamilyCtx?: React.Context<FamilyState | null> };
+const Ctx = (g.__nestlingFamilyCtx ??= createContext<FamilyState | null>(null));
+
+const fallback: FamilyState = {
+  ready: false,
+  user: null,
+  babies: [],
+  baby: null,
+  memberCount: 0,
+  selectBaby: () => {},
+  refresh: async () => {},
+  signOut: async () => {},
+};
 const KEY = "nestling-baby-id";
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
@@ -100,7 +113,5 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
 }
 
 export function useFamily() {
-  const v = useContext(Ctx);
-  if (!v) throw new Error("useFamily must be used inside FamilyProvider");
-  return v;
+  return useContext(Ctx) ?? fallback;
 }
