@@ -24,6 +24,7 @@ function time(ts: number) {
 }
 
 export function Timeline() {
+  const { baby } = useFamily();
   const logs = useLiveQuery(
     () => db.logs.where("timestamp").aboveOrEqual(startOfToday()).reverse().sortBy("timestamp"),
     [],
