@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { AudioLines, CloudRain, Pause, Play, Volume1, Volume2, Waves } from "lucide-react";
+import { AudioLines, CloudRain, Lock, Pause, Play, Volume1, Volume2, Waves } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePro } from "@/hooks/usePro";
 import {
   type NoiseType,
   setMinutes,
@@ -80,7 +81,14 @@ export function SoundPlayer() {
                   <Icon className={cn("h-6 w-6", on && "animate-pulse")} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-base font-bold">{label}</span>
+                  <span className="flex items-center gap-2 text-base font-bold">
+                    {label}
+                    {locked && (
+                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                        Pro
+                      </span>
+                    )}
+                  </span>
                   <span className="block text-xs text-muted-foreground">{blurb}</span>
                 </span>
                 <span
@@ -89,7 +97,13 @@ export function SoundPlayer() {
                     on ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
                   )}
                 >
-                  {on ? <Pause className="h-6 w-6" /> : <Play className="ml-0.5 h-6 w-6" />}
+                  {locked ? (
+                    <Lock className="h-5 w-5 text-muted-foreground" />
+                  ) : on ? (
+                    <Pause className="h-6 w-6" />
+                  ) : (
+                    <Play className="ml-0.5 h-6 w-6" />
+                  )}
                 </span>
               </button>
             </li>
