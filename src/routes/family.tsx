@@ -1,5 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Copy, LogOut, Users } from "lucide-react";
+import { Copy, CreditCard, FileText, Lock, LogOut, Sparkles, Users } from "lucide-react";
+import { usePro } from "@/hooks/usePro";
+import { createPortalSession } from "@/lib/payments.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
+import { exportDoctorPdf } from "@/lib/exportPdf";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +14,9 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/family")({
   head: () => ({
     meta: [
-      { title: "Family & Sync · Nestling" },
+      { title: "Settings · Nestling" },
       { name: "description", content: "Create a baby profile, invite your partner with a code, and sync logs in real time." },
-      { property: "og:title", content: "Family & Sync · Nestling" },
+      { property: "og:title", content: "Settings · Nestling" },
       { property: "og:description", content: "Share your baby's feeds, diapers and sleep with your partner." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -117,9 +121,82 @@ function FamilyPage() {
         {!baby && <p className="text-xs text-muted-foreground">Logs already on this phone will be added to the new profile.</p>}
       </section>
 
+      <ProSection babyName={baby?.name ?? null} />
+
       <Button variant="ghost" className="h-12 w-full text-muted-foreground" onClick={signOut}>
         <LogOut /> Sign out ({user.email})
       </Button>
     </div>
+  );
+}
+
+function ProSection({ babyName }: { babyName: string | null }) {
+  const { isPro, ownSub, openUpgrade } = usePro();
+  const [busy, setBusy] = useState(false);
+
+  const manage = async () => {
+    const tab = window.open("", "_blank");
+    setBusy(true);
+    try {
+      const res = await createPortalSession({
+        data: { environment: getStripeEnvironment(), returnUrl: window.location.href },
+      });
+      if ("error" in res) throw new Error(res.error);
+      if (tab) tab.location.href = res.url;
+      else window.location.href = res.url;
+    } catch (e) {
+      tab?.close();
+      toast.error(e instanceof Error ? e.message : "Couldn't open subscription settings");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const exportPdf = async () => {
+    if (!isPro) return openUpgrade("The Doctor PDF export is part of Nestling Pro.");
+    try {
+      await exportDoctorPdf(babyName);
+      toast.success("Report downloaded");
+    } catch {
+      toast.error("Couldn't create the report");
+    }
+  };
+
+  const ends = ownSub?.current_period_end ? new Date(ownSub.current_period_end).toLocaleDateString() : null;
+
+  return (
+    <section className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-soft">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-5 w-5 text-primary" />
+        <h2 className="font-display text-lg font-bold">Nestling Pro</h2>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {isPro
+          ? ownSub
+            ? ownSub.status === "trialing"
+              ? `Free trial active${ends ? ` · first charge ${ends}` : ""}`
+              : ownSub.cancel_at_period_end
+                ? `Pro until ${ends}`
+                : `Pro active${ends ? ` · renews ${ends}` : ""}`
+            : "Pro is shared with you by your partner."
+          : "Unlimited Nanny AI, all sleep sounds and doctor-ready reports."}
+      </p>
+
+      <Button variant="secondary" onClick={exportPdf} className="h-12 w-full justify-start text-base">
+        <FileText /> Doctor PDF export (last 7 days)
+        {!isPro && <Lock className="ml-auto text-muted-foreground" />}
+      </Button>
+
+      {!isPro && (
+        <Button onClick={() => openUpgrade()} className="h-12 w-full text-base">
+          Start 7-Day Free Trial
+        </Button>
+      )}
+      {ownSub && (
+        <Button variant="outline" disabled={busy} onClick={manage} className="h-12 w-full text-base">
+          <CreditCard /> Manage Subscription
+        </Button>
+      )}
+    </section>
   );
 }
