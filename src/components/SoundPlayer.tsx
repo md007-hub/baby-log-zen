@@ -35,6 +35,7 @@ function useRemaining(endsAt: number | null) {
 
 export function SoundPlayer() {
   const { active, volume, minutes, endsAt, fading } = useSoundEngine();
+  const { isPro, openUpgrade } = usePro();
   const remaining = useRemaining(endsAt);
   const status = !active
     ? "Tap a sound to start"
@@ -44,16 +45,25 @@ export function SoundPlayer() {
         ? "Playing continuously"
         : `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")} left`;
 
+  useEffect(() => {
+    if (!isPro && active && active !== "white") void toggle(active);
+  }, [isPro, active]);
+
   return (
     <div className="space-y-4">
       <ul className="space-y-3">
         {NOISES.map(({ id, label, blurb, Icon }) => {
           const on = active === id;
+          const locked = !isPro && id !== "white";
           return (
             <li key={id}>
               <button
                 type="button"
-                onClick={() => void toggle(id)}
+                onClick={() =>
+                  locked
+                    ? openUpgrade(`${label} is part of Nestling Pro. White Noise stays free.`)
+                    : void toggle(id)
+                }
                 aria-pressed={on}
                 aria-label={`${on ? "Pause" : "Play"} ${label}`}
                 className={cn(
