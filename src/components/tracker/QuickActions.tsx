@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
+import { Hourglass, Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -45,7 +45,7 @@ function DiaperIcon({ className }: { className?: string }) {
 }
 
 function SectionCard({ title, icon, tone, extra, children }: {
-  title: string; icon: React.ReactNode; tone: "feed" | "diaper" | "sleep";
+  title: string; icon: React.ReactNode; tone: "feed" | "diaper" | "sleep" | "tummy";
   extra?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
@@ -70,6 +70,8 @@ function localDateTime(date: Date) {
 export function QuickActions() {
   const nursing = useStopwatch();
   const sleep = useStopwatch();
+  const tummy = useStopwatch();
+  const [tummyMin, setTummyMin] = useState(5);
   const [feedMode, setFeedMode] = useState<"bottle" | "nursing">("bottle");
   const [side, setSide] = useState<"Left" | "Right">("Left");
   const [customMl, setCustomMl] = useState(90);
@@ -178,6 +180,31 @@ export function QuickActions() {
             </form>
           </DialogContent>
         </Dialog>
+      </SectionCard>
+
+      <SectionCard title="Tummy Time" icon={<Hourglass className="h-5 w-5" strokeWidth={2.25} />} tone="tummy">
+        <div className="flex items-center justify-between rounded-xl bg-muted/70 px-4 py-3">
+          <span className="text-sm text-muted-foreground">{tummy.active ? "Tummy time in progress" : "Not running"}</span>
+          <span className="font-display text-2xl font-bold tabular-nums">{formatDuration(tummy.elapsed)}</span>
+        </div>
+        <Button type="button" onClick={async () => {
+          if (!tummy.active) { tummy.start(); return; }
+          const ms = tummy.stop();
+          await addLog({ type: "tummy", value: "Tummy time", notes: formatDuration(ms) });
+          toast.success("Tummy time logged");
+        }} className={cn(bigButton, "mt-3 w-full", tummy.active && "bg-destructive text-destructive-foreground hover:bg-destructive/90")}>
+          {tummy.active ? <Square /> : <Play />}{tummy.active ? "Stop Tummy Time" : "Start Tummy Time"}
+        </Button>
+        <div className="mt-3 flex items-center gap-2">
+          <label htmlFor="tummy-min" className="shrink-0 text-sm font-medium">Manual</label>
+          <input id="tummy-min" type="number" min="1" max="180" inputMode="numeric" value={tummyMin} onChange={(e) => setTummyMin(Number(e.target.value))} className="h-12 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-base tabular-nums" />
+          <span className="text-sm text-muted-foreground">min</span>
+          <Button type="button" onClick={async () => {
+            if (!Number.isInteger(tummyMin) || tummyMin < 1 || tummyMin > 180) { toast.error("Enter 1–180 minutes"); return; }
+            await addLog({ type: "tummy", value: "Tummy time", notes: formatDuration(tummyMin * 60000) });
+            toast.success(`${tummyMin} min tummy time logged`);
+          }} className="h-12 px-4">Log</Button>
+        </div>
       </SectionCard>
     </div>
   );

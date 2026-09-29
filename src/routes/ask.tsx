@@ -209,6 +209,10 @@ function AskPage() {
           <Send className="h-5 w-5" />
         </button>
       </form>
+      <p className="mt-1.5 text-center text-[11px] leading-snug text-muted-foreground">
+        Nanny AI provides general guidance and is not a substitute for professional medical advice.
+      </p>
+      </div>
     </div>
   );
 }
