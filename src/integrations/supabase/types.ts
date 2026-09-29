@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage: {
+        Row: {
+          count: number
+          day: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          day: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          day?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       babies: {
         Row: {
           created_at: string
@@ -108,11 +126,63 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          price_id: string
+          product_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id: string
+          product_id: string
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      consume_ai_question: {
+        Args: { _day: string; check_env: string }
+        Returns: Json
+      }
       create_baby: {
         Args: { _name: string }
         Returns: {
@@ -129,6 +199,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      has_family_pro: { Args: { check_env: string }; Returns: boolean }
       is_baby_member: { Args: { _baby: string }; Returns: boolean }
       join_baby: {
         Args: { _code: string }

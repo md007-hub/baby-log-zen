@@ -7,6 +7,36 @@ import { askBabyAi } from "@/lib/ai.functions";
 import { buildBabyContext } from "@/lib/babyContext";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useFamily } from "@/hooks/useFamily";
+import { usePro } from "@/hooks/usePro";
+import { tryStripeEnvironment } from "@/lib/stripe";
+
+const FREE_DAILY = 3;
+const todayKey = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+const LIMIT_MSG = "You've used your 3 free Nanny AI questions today. Go Pro for unlimited answers, day and night.";
+
+/** Returns true if this question may be sent (and counts it). */
+async function consumeQuestion(signedIn: boolean, isPro: boolean): Promise<boolean> {
+  if (isPro) return true;
+  const day = todayKey();
+  if (signedIn) {
+    const { data, error } = await supabase.rpc("consume_ai_question", {
+      check_env: tryStripeEnvironment() ?? "sandbox",
+      _day: day,
+    });
+    if (error) return true;
+    return !!(data as { allowed?: boolean } | null)?.allowed;
+  }
+  const key = `nestling-ai-${day}`;
+  const used = Number(localStorage.getItem(key) ?? 0);
+  if (used >= FREE_DAILY) return false;
+  localStorage.setItem(key, String(used + 1));
+  return true;
+}
 
 export const Route = createFileRoute("/ask")({
   head: () => ({
@@ -62,6 +92,8 @@ function AskPage() {
   const offline = hydrated && !online;
 
   const ask = useServerFn(askBabyAi);
+  const { user } = useFamily();
+  const { isPro, openUpgrade } = usePro();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -74,6 +106,10 @@ function AskPage() {
   const send = async (text: string) => {
     const question = text.trim();
     if (!question || loading || offline) return;
+    if (!(await consumeQuestion(!!user, isPro))) {
+      openUpgrade(LIMIT_MSG);
+      return;
+    }
     const next: Msg[] = [...messages, { role: "user", content: question }];
     setMessages(next);
     setInput("");

@@ -13,3 +13,5 @@
 - [x] Show a diaper breakdown whose parts add up to the total, including a Both count.
 - [x] Use the safety pin as the Diaper icon in the card badge and timeline rows.
 - [x] Email sign-in, baby profiles with 6-character invite codes, cloud sync with live partner updates, header baby name + partner indicator.
+
+- [x] Nestling Pro: pricing, family-shared Pro, freemium locks, upgrade modal, manage subscription

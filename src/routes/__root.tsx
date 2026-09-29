@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { AppShell } from "../components/AppShell";
 import { FamilyProvider } from "../hooks/useFamily";
+import { ProProvider } from "../hooks/usePro";
+import { PaymentTestModeBanner } from "../components/PaymentTestModeBanner";
 import { Toaster } from "../components/ui/sonner";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -142,10 +144,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <FamilyProvider>
+      <ProProvider>
+      <PaymentTestModeBanner />
       <AppShell>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
       </AppShell>
+      </ProProvider>
       </FamilyProvider>
       <Toaster position="top-center" />
     </QueryClientProvider>
