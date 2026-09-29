@@ -9,7 +9,7 @@ export interface LogEntry {
   baby_id?: string | null;
   type: LogType;
   value: string;
-  notes?: string;
+  notes?: string | undefined;
   timestamp: number;
   sync_status: SyncStatus;
 }
