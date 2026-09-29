@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { Milk, Moon, Trash2 } from "lucide-react";
+import { Baby, Milk, Moon, Trash2 } from "lucide-react";
 import { db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
 import { useFamily } from "@/hooks/useFamily";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ const meta = {
   feed: { icon: Milk, className: "bg-feed text-feed-foreground" },
   diaper: { icon: DiaperIcon, className: "bg-diaper text-diaper-foreground" },
   sleep: { icon: Moon, className: "bg-sleep text-sleep-foreground" },
+  tummy: { icon: Baby, className: "bg-feed text-feed-foreground" },
 } as const;
 
 function time(ts: number) {
