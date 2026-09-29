@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AskRouteImport } from './routes/ask'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as FamilyRouteImport } from './routes/family'
 import { Route as SoundsRouteImport } from './routes/sounds'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +25,16 @@ const AskRoute = AskRouteImport.update({
   path: '/ask',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyRoute = FamilyRouteImport.update({
+  id: '/family',
+  path: '/family',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SoundsRoute = SoundsRouteImport.update({
   id: '/sounds',
   path: '/sounds',
@@ -32,30 +44,38 @@ const SoundsRoute = SoundsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/auth': typeof AuthRoute
+  '/family': typeof FamilyRoute
   '/sounds': typeof SoundsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/auth': typeof AuthRoute
+  '/family': typeof FamilyRoute
   '/sounds': typeof SoundsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/auth': typeof AuthRoute
+  '/family': typeof FamilyRoute
   '/sounds': typeof SoundsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ask' | '/sounds'
+  fullPaths: '/' | '/ask' | '/auth' | '/family' | '/sounds'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ask' | '/sounds'
-  id: '__root__' | '/' | '/ask' | '/sounds'
+  to: '/' | '/ask' | '/auth' | '/family' | '/sounds'
+  id: '__root__' | '/' | '/ask' | '/auth' | '/family' | '/sounds'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AskRoute: typeof AskRoute
+  AuthRoute: typeof AuthRoute
+  FamilyRoute: typeof FamilyRoute
   SoundsRoute: typeof SoundsRoute
 }
 
@@ -75,6 +95,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AskRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family': {
+      id: '/family'
+      path: '/family'
+      fullPath: '/family'
+      preLoaderRoute: typeof FamilyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sounds': {
       id: '/sounds'
       path: '/sounds'
@@ -88,6 +122,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AskRoute: AskRoute,
+  AuthRoute: AuthRoute,
+  FamilyRoute: FamilyRoute,
   SoundsRoute: SoundsRoute,
 }
 export const routeTree = rootRouteImport
