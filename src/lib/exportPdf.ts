@@ -66,7 +66,7 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
   const sleepSec = logs.filter((l) => l.type === "sleep").reduce((s, l) => s + (parseDurationSec(l.notes) ?? 0), 0);
   const diapers = logs.filter((l) => l.type === "diaper");
   const count = (k: string) => diapers.filter((d) => d.value.toLowerCase().startsWith(k)).length;
-  const cells = [
+  const cells: [string, string, string][] = [
     ["Feeds & volume", `${feeds.length} feeds`, ml ? `${ml} ml (${(ml / 29.5735).toFixed(1)} oz)` : "No bottle volume"],
     ["Total sleep", fmtDur(sleepSec), `${logs.filter((l) => l.type === "sleep").length} sleeps`],
     ["Diapers", `${diapers.length} total`, `Wet ${count("wet")} / Dirty ${count("dirty")} / Both ${count("both")}`],
@@ -131,8 +131,8 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
         "Parent",
       ];
       row.forEach((txt, ci) => {
-        const fitted = doc.splitTextToSize(txt, cols[ci].w)[0] as string;
-        doc.text(fitted, cols[ci].x, y + 13.5);
+        const fitted = doc.splitTextToSize(txt, cols[ci]!.w)[0] as string;
+        doc.text(fitted, cols[ci]!.x, y + 13.5);
       });
       y += rowH;
     });
