@@ -49,7 +49,7 @@ export function IntroductionCarousel() {
     >
       <div className="flex items-center justify-between gap-3">
         <span className="font-display text-sm font-bold text-muted-foreground">NESTLING / 0{step + 1}</span>
-        {!user && <Link to="/auth" search={{ mode: "in" }} className="text-xs font-medium text-muted-foreground underline underline-offset-4">Already have an account? Log In</Link>}
+        {!user && <Link to="/auth" className="text-xs font-medium text-muted-foreground underline underline-offset-4">Already have an account? Log In</Link>}
         {user && baby && <Link to="/" className="text-xs font-medium text-muted-foreground underline underline-offset-4">Back to Tracker</Link>}
       </div>
 
