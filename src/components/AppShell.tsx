@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Baby, Feather, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
+import { Baby, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
@@ -37,10 +37,11 @@ function HeaderTitle() {
 
 function NestlingLogo() {
   return (
-    <Feather
-      className="h-7 w-7 shrink-0 text-muted-foreground"
-      strokeWidth={1.75}
-      aria-hidden="true"
+    <img
+      src="/icon-192.png"
+      alt=""
+      className="h-7 w-7 shrink-0 rounded-lg"
+      draggable={false}
     />
   );
 }
