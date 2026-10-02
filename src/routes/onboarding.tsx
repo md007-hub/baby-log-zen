@@ -8,6 +8,7 @@ import { useFamily } from "@/hooks/useFamily";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/onboarding")({
+  validateSearch: (s: Record<string, unknown>): { add?: boolean } => (s["add"] === true || s["add"] === "true" ? { add: true } : {}),
   head: () => ({ meta: [
     { title: "Set up your baby · Nestling" }, { name: "description", content: "Meet Nestling and set up your baby's shared care profile." },
     { property: "og:title", content: "Set up your baby · Nestling" }, { property: "og:description", content: "Start sharing your baby's care with your family." },
@@ -16,7 +17,9 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 function Onboarding() {
-  const { ready, babiesLoaded, user, baby, refresh, selectBaby } = useFamily();
+  const { ready, babiesLoaded, user, baby: activeBaby, refresh, selectBaby } = useFamily();
+  const { add } = Route.useSearch();
+  const baby = add ? null : activeBaby;
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
@@ -25,7 +28,7 @@ function Onboarding() {
   const [weight, setWeight] = useState("");
   const [unit, setUnit] = useState<"kg" | "lb">("kg");
   const [busy, setBusy] = useState(false);
-  useEffect(() => { if (ready && babiesLoaded && user && baby) navigate({ to: "/", replace: true }); }, [ready, babiesLoaded, user, baby, navigate]);
+  useEffect(() => { if (ready && babiesLoaded && user && baby && !busy) navigate({ to: "/", replace: true }); }, [ready, babiesLoaded, user, baby, busy, navigate]);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
