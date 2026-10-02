@@ -57,62 +57,62 @@ export function SoundPlayer() {
   }, [isPro, active]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <ul className="space-y-3">
         {NOISES.map(({ id, label, blurb, Icon }) => {
           const on = active === id;
-           const locked = !isPro && id !== "white" && id !== "lullaby";
+          const locked = !isPro && id !== "white" && id !== "lullaby";
           return (
             <li key={id}>
-               <Button
+              <button
                 type="button"
-                 variant="ghost"
                 onClick={() =>
                   locked
-                     ? openUpgrade(`${label} is part of Nestling Pro. White Noise and Gentle Lullaby stay free.`)
+                    ? openUpgrade(`${label} is part of Nestling Pro. White Noise and Gentle Lullaby stay free.`)
                     : void toggle(id)
                 }
                 aria-pressed={on}
                 aria-label={`${on ? "Pause" : "Play"} ${label}`}
                 className={cn(
-                  "tap-card flex w-full items-center gap-4 border p-4 text-left",
-                  on ? "border-primary bg-primary/10" : "border-border/60 bg-card shadow-soft",
+                  "tap-card flex w-full items-center gap-4 rounded-2xl p-4 text-left",
+                  on ? "bg-primary/10 ring-1 ring-inset ring-primary/40" : "bg-card ring-1 ring-inset ring-border/60 shadow-soft",
                 )}
               >
                 <span
                   className={cn(
-                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
                     on ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground",
                   )}
                 >
                   <Icon className={cn("h-6 w-6", on && "animate-pulse")} />
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 text-base font-bold">
-                    {label}
-                    {locked && (
-                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
-                        Pro
-                      </span>
+                <span className="min-w-0 flex-1 leading-snug">
+                  <span className="block truncate text-base font-bold leading-tight">{label}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">{blurb}</span>
+                </span>
+                <span className="relative shrink-0">
+                  <span
+                    className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-full",
+                      on ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                    )}
+                  >
+                    {on ? (
+                      <Pause className="h-5 w-5" />
+                    ) : (
+                      <Play className="ml-0.5 h-5 w-5" />
                     )}
                   </span>
-                  <span className="block text-xs text-muted-foreground">{blurb}</span>
-                </span>
-                <span
-                  className={cn(
-                    "flex h-14 w-14 shrink-0 items-center justify-center rounded-full",
-                    on ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-                  )}
-                >
-                  {locked ? (
-                    <Lock className="h-5 w-5 text-muted-foreground" />
-                  ) : on ? (
-                    <Pause className="h-6 w-6" />
-                  ) : (
-                    <Play className="ml-0.5 h-6 w-6" />
+                  {locked && (
+                    <span
+                      aria-label="Pro"
+                      className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm"
+                    >
+                      <Lock className="h-3.5 w-3.5" />
+                    </span>
                   )}
                 </span>
-               </Button>
+              </button>
             </li>
           );
         })}
