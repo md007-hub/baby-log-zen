@@ -56,7 +56,7 @@ function AuthPage() {
 
   return <div className="mx-auto max-w-sm py-5">
     <div className="mb-8 text-center">
-      <Feather className="mx-auto mb-4 h-9 w-9 text-muted-foreground" strokeWidth={1.5} />
+      <img src="/icon-192.png" alt="Nestling logo" className="mx-auto mb-4 h-14 w-14 rounded-2xl" draggable={false} />
       <p className="font-display text-2xl font-bold">Nestling</p>
       <p className="mt-2 text-sm text-muted-foreground">A calmer way to care, together.</p>
     </div>
