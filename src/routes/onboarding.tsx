@@ -43,11 +43,6 @@ function Onboarding() {
     if (dateKind === "birth" && date > new Date().toISOString().slice(0, 10)) { toast.error("A birth date can't be in the future"); return; }
     setBusy(true);
     try {
-      const displayName = typeof user.user_metadata?.['display_name'] === "string" ? user.user_metadata['display_name'].trim() : "";
-      if (displayName) {
-        const { error } = await supabase.from("profiles").upsert({ id: user.id, display_name: displayName });
-        if (error) throw error;
-      }
       const { data, error } = await supabase.rpc("create_baby", { _name: name.trim() });
       if (error) throw error;
       const { error: updateError } = await supabase.from("babies").update({
