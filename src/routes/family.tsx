@@ -4,7 +4,7 @@ import { usePro } from "@/hooks/usePro";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { exportDoctorPdf } from "@/lib/exportPdf";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/hooks/useFamily";
@@ -31,14 +31,14 @@ function FamilyPage() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [displayName, setDisplayName] = useState("");
-  const [profileLoaded, setProfileLoaded] = useState(false);
-
-  if (user && !profileLoaded) {
-    setProfileLoaded(true);
+  useEffect(() => {
+    if (!user) return;
+    let mounted = true;
     void supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle().then(({ data }) => {
-      setDisplayName(data?.display_name ?? (typeof user.user_metadata?.['display_name'] === "string" ? user.user_metadata['display_name'] : ""));
+      if (mounted) setDisplayName(data?.display_name ?? (typeof user.user_metadata?.['display_name'] === "string" ? user.user_metadata['display_name'] : ""));
     });
-  }
+    return () => { mounted = false; };
+  }, [user?.id]);
 
   if (!ready) return null;
   if (!user) {
