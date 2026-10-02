@@ -71,12 +71,17 @@ export function IntroductionCarousel() {
           </div>
 
           <div key={featureStep} className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
-            <div className={`mb-9 flex aspect-[5/4] w-full flex-col items-center justify-center gap-6 rounded-md ${slide!.tint}`}>
-              <slide!.icon aria-hidden="true" strokeWidth={1.1} className="h-24 w-24 opacity-90" />
-              {featureStep === 2 && (
-                <FileText aria-hidden="true" strokeWidth={1.3} className="h-12 w-12 opacity-90" />
-              )}
-            </div>
+            {(() => {
+              const SlideIcon = slide!.icon;
+              return (
+                <div className={`mb-9 flex aspect-[5/4] w-full flex-col items-center justify-center gap-6 rounded-md ${slide!.tint}`}>
+                  <SlideIcon aria-hidden="true" strokeWidth={1.1} className="h-24 w-24 opacity-90" />
+                  {featureStep === 2 && (
+                    <FileText aria-hidden="true" strokeWidth={1.3} className="h-12 w-12 opacity-90" />
+                  )}
+                </div>
+              );
+            })()}
             <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">{slide!.label}</p>
             <h1 className="max-w-sm font-display text-3xl font-bold leading-tight">{slide!.title}</h1>
             <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">{slide!.description}</p>
