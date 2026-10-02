@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AskRouteImport } from './routes/ask'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FamilyRouteImport } from './routes/family'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SoundsRouteImport } from './routes/sounds'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -37,6 +38,11 @@ const FamilyRoute = FamilyRouteImport.update({
   path: '/family',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SoundsRoute = SoundsRouteImport.update({
   id: '/sounds',
   path: '/sounds',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/auth'
     | '/family'
+    | '/reset-password'
     | '/sounds'
     | '/checkout/return'
     | '/api/public/payments/webhook'
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/auth'
     | '/family'
+    | '/reset-password'
     | '/sounds'
     | '/checkout/return'
     | '/api/public/payments/webhook'
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/auth'
     | '/family'
+    | '/reset-password'
     | '/sounds'
     | '/checkout/return'
     | '/api/public/payments/webhook'
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   AskRoute: typeof AskRoute
   AuthRoute: typeof AuthRoute
   FamilyRoute: typeof FamilyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SoundsRoute: typeof SoundsRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FamilyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sounds': {
       id: '/sounds'
       path: '/sounds'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AskRoute: AskRoute,
   AuthRoute: AuthRoute,
   FamilyRoute: FamilyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SoundsRoute: SoundsRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
