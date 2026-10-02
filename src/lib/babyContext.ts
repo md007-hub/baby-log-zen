@@ -36,9 +36,9 @@ export async function buildBabyContext(baby?: Baby | null): Promise<string> {
     if (baby.birth_date) {
       const date = new Date(`${baby.birth_date}T12:00:00`);
       const days = Math.floor((now - date.getTime()) / 86400000);
-      if (Number.isFinite(days)) lines.push(baby.date_kind === "due" && days < 0
-        ? `Due date: ${baby.birth_date}, in ${Math.abs(days)} days. Baby has not been born yet; do not infer postnatal age.`
-        : `Age: ${Math.max(0, days)} days (${Math.floor(Math.max(0, days) / 7)} weeks, approximately ${Math.floor(Math.max(0, days) / 30.44)} months); date ${baby.date_kind === "due" ? "is a due date, not a confirmed birth date" : "of birth"}. Tailor routine guidance to this age without claiming medical certainty.`);
+      if (Number.isFinite(days)) lines.push(baby.date_kind === "due"
+        ? `Due date: ${baby.birth_date}${days < 0 ? `, in ${Math.abs(days)} days` : `, ${days} days ago`}. Birth date is unconfirmed; do not infer postnatal age from a due date.`
+        : `Age: ${Math.max(0, days)} days (${Math.floor(Math.max(0, days) / 7)} weeks, approximately ${Math.floor(Math.max(0, days) / 30.44)} months) from date of birth. Tailor routine guidance to this age without claiming medical certainty.`);
     }
   }
   lines.push(feed ? `Most recent feed: ${describeFeed(feed)} at ${time(feed.timestamp)} (${ago(feed.timestamp)})` : "Most recent feed: none logged");
