@@ -77,7 +77,7 @@ export function IntroductionCarousel() {
           {step < slides.length - 1 ? (
             <Button type="button" onClick={() => setStep(step + 1)} className="h-12 flex-1 text-base">Next <ArrowRight /></Button>
           ) : (
-            <Button asChild className="h-12 flex-1 text-base"><Link to={destination} search={destination === "/auth" ? { mode: "up" } : undefined}>Get Started <ArrowRight /></Link></Button>
+            <Button asChild className="h-12 flex-1 text-base">{destination === "/auth" ? <Link to="/auth" search={{ mode: "up" }}>Get Started <ArrowRight /></Link> : <Link to={destination}>Get Started <ArrowRight /></Link>}</Button>
           )}
         </div>
       </div>
