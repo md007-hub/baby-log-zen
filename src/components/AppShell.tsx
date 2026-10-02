@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Baby, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
@@ -104,7 +104,20 @@ const tabs = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { ready, user } = useFamily();
-  const isIntroduction = pathname === "/tour" || (pathname === "/" && (!ready || !user));
+  const navigate = useNavigate();
+  const guarded = pathname.startsWith("/sounds") || pathname.startsWith("/ask");
+  useEffect(() => {
+    if (ready && !user && guarded) navigate({ to: "/", replace: true });
+  }, [ready, user, guarded, navigate]);
+  const isIntroduction =
+    pathname === "/tour" ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/reset-password") ||
+    (pathname === "/" && (!ready || !user));
+  if (guarded && (!ready || !user)) {
+    return <div className="mx-auto min-h-[100dvh] w-full max-w-md bg-background" />;
+  }
   return (
     <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col bg-background">
       {!isIntroduction && <header className="sticky top-0 z-40 isolate flex items-center justify-between gap-3 border-b border-border/70 bg-background/95 px-4 py-3 shadow-soft backdrop-blur-md supports-[backdrop-filter]:bg-background/85">

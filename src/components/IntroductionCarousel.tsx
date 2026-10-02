@@ -58,7 +58,7 @@ export function IntroductionCarousel() {
           <img
             src="/icon-512.png"
             alt="Nestling logo"
-            className="h-28 w-28 rounded-3xl shadow-sm"
+            className="h-28 w-28 rounded-3xl border border-border/60 bg-card shadow-sm"
             draggable={false}
           />
           <h1 className="mt-6 font-display text-4xl font-bold tracking-tight">Nestling</h1>
@@ -68,12 +68,13 @@ export function IntroductionCarousel() {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-end gap-3">
-            {!user && <Link to="/auth" className="text-xs font-medium text-muted-foreground underline underline-offset-4">Already have an account? Log In</Link>}
-            {user && baby && <Link to="/" className="text-xs font-medium text-muted-foreground underline underline-offset-4">Back to Tracker</Link>}
-          </div>
+          {user && baby && (
+            <div className="flex items-center justify-end">
+              <Link to="/" className="text-xs font-medium text-muted-foreground underline underline-offset-4">Back to Tracker</Link>
+            </div>
+          )}
 
-          <div key={featureStep} className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+          <div key={featureStep} className="pt-8 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300">
             {(() => {
               const SlideIcon = slide!.icon;
               return (
