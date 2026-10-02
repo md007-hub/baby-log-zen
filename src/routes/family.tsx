@@ -4,7 +4,7 @@ import { usePro } from "@/hooks/usePro";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { exportDoctorPdf } from "@/lib/exportPdf";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/hooks/useFamily";
@@ -30,15 +30,6 @@ function FamilyPage() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const [displayName, setDisplayName] = useState("");
-  useEffect(() => {
-    if (!user) return;
-    let mounted = true;
-    void supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle().then(({ data }) => {
-      if (mounted) setDisplayName(data?.display_name ?? (typeof user.user_metadata?.['display_name'] === "string" ? user.user_metadata['display_name'] : ""));
-    });
-    return () => { mounted = false; };
-  }, [user?.id]);
 
   if (!ready) return null;
   if (!user) {
@@ -116,17 +107,6 @@ function FamilyPage() {
           )}
         </section>
       )}
-
-      <section className="space-y-3 border-b border-border pb-5">
-        <h2 className="font-display text-lg font-bold">Your profile</h2>
-        <label className="block text-sm font-medium">Display name<Input className="mt-1 h-12 text-base" maxLength={80} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name" /></label>
-        <Button variant="outline" disabled={busy || !displayName.trim()} onClick={async () => {
-          setBusy(true);
-          const { error } = await supabase.from("profiles").upsert({ id: user.id, display_name: displayName.trim() });
-          setBusy(false);
-          if (error) toast.error(error.message); else toast.success("Profile saved");
-        }} className="h-11">Save name</Button>
-      </section>
 
       <section className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-soft">
         <h2 className="font-display text-lg font-bold">Join with an invite code</h2>

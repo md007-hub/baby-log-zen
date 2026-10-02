@@ -20,7 +20,6 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"in" | "up" | "reset">("in");
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
@@ -29,7 +28,6 @@ function AuthPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === "up" && !name.trim()) { toast.error("Enter your name"); return; }
     if (mode !== "reset" && password.length < 8) { toast.error("Use at least 8 characters for your password"); return; }
     setBusy(true);
     try {
@@ -39,7 +37,7 @@ function AuthPage() {
         setSent(true);
       } else if (mode === "up") {
         const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: {
-          emailRedirectTo: `${window.location.origin}/onboarding`, data: { display_name: name.trim() },
+          emailRedirectTo: `${window.location.origin}/onboarding`,
         } });
         if (error) throw error;
         if (!data.session) setSent(true);
@@ -71,7 +69,6 @@ function AuthPage() {
       <h1 className="mb-1 font-display text-2xl font-bold">{mode === "reset" ? "Reset your password" : mode === "up" ? "Welcome to the family" : "Welcome back"}</h1>
       <p className="mb-6 text-sm text-muted-foreground">{mode === "reset" ? "We'll email you a secure link." : mode === "up" ? "Start sharing the little moments." : "Pick up where you left off."}</p>
       <form onSubmit={submit} className="space-y-4">
-        {mode === "up" && <label className="block text-sm font-medium">Your name<Input aria-label="Your name" autoComplete="name" required maxLength={80} value={name} onChange={e => setName(e.target.value)} placeholder="How should we call you?" className="mt-1.5 h-12 text-base" /></label>}
         <label className="block text-sm font-medium">Email address<Input aria-label="Email address" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="mt-1.5 h-12 text-base" /></label>
         {mode !== "reset" && <label className="block text-sm font-medium">Password
           <span className="relative mt-1.5 block"><Input aria-label="Password" type={visible ? "text" : "password"} required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" className="h-12 pr-12 text-base" />

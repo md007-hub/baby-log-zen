@@ -63,15 +63,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      refresh();
-      void supabase.from("profiles").select("id").eq("id", user.id).maybeSingle().then(({ data, error }) => {
-        if (!error && !data) {
-          const displayName = typeof user.user_metadata?.['display_name'] === "string" ? user.user_metadata['display_name'].trim() : null;
-          void supabase.from("profiles").insert({ id: user.id, display_name: displayName });
-        }
-      });
-    }
+    if (user) refresh();
     else {
       setBabies([]);
       setBabyId(null);
