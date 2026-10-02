@@ -8,6 +8,7 @@ export type Baby = { id: string; name: string; invite_code: string; birth_date: 
 
 type FamilyState = {
   ready: boolean;
+  babiesLoaded: boolean;
   user: User | null;
   babies: Baby[];
   baby: Baby | null;
@@ -23,6 +24,7 @@ const Ctx = (g.__nestlingFamilyCtx ??= createContext<FamilyState | null>(null));
 
 const fallback: FamilyState = {
   ready: false,
+  babiesLoaded: false,
   user: null,
   babies: [],
   baby: null,
@@ -35,12 +37,14 @@ const KEY = "nestling-baby-id";
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
+  const [babiesLoaded, setBabiesLoaded] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [babies, setBabies] = useState<Baby[]>([]);
   const [babyId, setBabyId] = useState<string | null>(null);
   const [memberCount, setMemberCount] = useState(0);
 
   const refresh = useCallback(async () => {
+    setBabiesLoaded(false);
     const { data } = await supabase.from("babies").select("id, name, invite_code, birth_date, date_kind, gender, birth_weight_kg").order("created_at");
     const list = data ?? [];
     setBabies(list);
@@ -48,6 +52,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     const pick = list.find((b) => b.id === stored) ?? list[0] ?? null;
     setBabyId(pick?.id ?? null);
     if (pick) localStorage.setItem(KEY, pick.id);
+    setBabiesLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -67,6 +72,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
     else {
       setBabies([]);
       setBabyId(null);
+      setBabiesLoaded(false);
     }
   }, [user, refresh]);
 
@@ -106,7 +112,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   const baby = babies.find((b) => b.id === babyId) ?? null;
 
   return (
-    <Ctx.Provider value={{ ready, user, babies, baby, memberCount, selectBaby, refresh, signOut }}>
+    <Ctx.Provider value={{ ready, babiesLoaded, user, babies, baby, memberCount, selectBaby, refresh, signOut }}>
       {children}
     </Ctx.Provider>
   );

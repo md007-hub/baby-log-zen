@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Copy, CreditCard, FileText, Lock, LogOut, Sparkles, Users } from "lucide-react";
+import { BookOpen, Copy, CreditCard, FileText, Lock, LogOut, Sparkles, Users } from "lucide-react";
 import { usePro } from "@/hooks/usePro";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
@@ -122,6 +122,8 @@ function FamilyPage() {
       </section>
 
       <ProSection babyName={baby?.name ?? null} />
+
+      <Button asChild variant="outline" className="h-12 w-full justify-start text-base"><Link to="/tour"><BookOpen /> App Tour / How Nestling Works</Link></Button>
 
       <Button variant="ghost" className="h-12 w-full text-muted-foreground" onClick={signOut}>
         <LogOut /> Sign out ({user.email})

@@ -7,10 +7,11 @@ import { ExportPdfButton } from "@/components/tracker/ExportPdfButton";
 import { useHydrated } from "@/hooks/useOnline";
 import { Link } from "@tanstack/react-router";
 import { useFamily } from "@/hooks/useFamily";
+import { IntroductionCarousel } from "@/components/IntroductionCarousel";
 
 function SyncBanner() {
   const { ready, user, baby } = useFamily();
-  if (!ready || (user && baby)) return null;
+  if (!ready || !user || baby) return null;
   return (
     <Link to={user ? "/onboarding" : "/auth"} className="mb-4 block rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-soft">
       <span className="font-semibold">{user ? "Create or join a baby profile" : "Sign in to sync"}</span>
@@ -42,23 +43,23 @@ export const Route = createFileRoute("/")({
 
 function TrackerPage() {
   const hydrated = useHydrated();
-  const { ready, user, baby } = useFamily();
+  const { ready, user, baby, babiesLoaded } = useFamily();
   const navigate = useNavigate();
   useEffect(() => {
-    if (hydrated && ready && user && !baby) navigate({ to: "/onboarding", replace: true });
-  }, [hydrated, ready, user, baby, navigate]);
+    if (hydrated && ready && user && babiesLoaded && !baby) navigate({ to: "/onboarding", replace: true });
+  }, [hydrated, ready, user, baby, babiesLoaded, navigate]);
+
+  if (!hydrated || !ready || (user && !babiesLoaded)) return <div className="h-80 animate-pulse rounded-md bg-muted/60" />;
+  if (!user) return <IntroductionCarousel />;
+  if (!baby) return null;
 
   return (
     <div>
-      {hydrated && <SyncBanner />}
-      {hydrated && <DailySummary />}
-      {hydrated && <ExportPdfButton />}
+      <SyncBanner />
+      <DailySummary />
+      <ExportPdfButton />
       <QuickActions />
-      {hydrated ? (
-        <Timeline />
-      ) : (
-        <div className="mt-6 h-24 animate-pulse rounded-2xl bg-muted/60" />
-      )}
+      <Timeline />
     </div>
   );
 }

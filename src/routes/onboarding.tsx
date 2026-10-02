@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Baby, FileText, HeartPulse, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,16 +15,9 @@ export const Route = createFileRoute("/onboarding")({
   ] }), component: Onboarding,
 });
 
-const slides = [
-  { icon: Users, title: "Together, in real time", text: "You and your partner see the same care notes as they happen, even across phones." },
-  { icon: Baby, title: "The little things, in one tap", text: "Keep feeds, sleep, diapers, tummy time and pumping together, even offline." },
-  { icon: HeartPulse, title: "A little more reassurance", text: "Ask Nanny AI about daily care and bring a clear report to your pediatrician.", secondary: FileText },
-];
-
 function Onboarding() {
-  const { ready, user, baby, refresh, selectBaby } = useFamily();
+  const { ready, babiesLoaded, user, baby, refresh, selectBaby } = useFamily();
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [dateKind, setDateKind] = useState<"birth" | "due">("birth");
@@ -32,8 +25,7 @@ function Onboarding() {
   const [weight, setWeight] = useState("");
   const [unit, setUnit] = useState<"kg" | "lb">("kg");
   const [busy, setBusy] = useState(false);
-  const touchStart = useRef<number | null>(null);
-  useEffect(() => { if (ready && user && baby) navigate({ to: "/", replace: true }); }, [ready, user, baby, navigate]);
+  useEffect(() => { if (ready && babiesLoaded && user && baby) navigate({ to: "/", replace: true }); }, [ready, babiesLoaded, user, baby, navigate]);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,33 +49,9 @@ function Onboarding() {
     finally { setBusy(false); }
   };
 
-  if (!ready) return <div className="h-80 animate-pulse bg-muted" />;
+  if (!ready || (user && !babiesLoaded)) return <div className="h-80 animate-pulse bg-muted" />;
   if (!user) return <div className="py-12 text-center"><h1 className="font-display text-2xl font-bold">Let's get started</h1><Button asChild className="mt-5 h-12"><Link to="/auth">Log in or create an account</Link></Button></div>;
   if (baby) return null;
-
-  if (step < slides.length) {
-    const slide = slides[step] ?? slides[0];
-    if (!slide) return null;
-    const Icon = slide.icon;
-    return <div className="flex min-h-[min(72dvh,610px)] flex-col justify-between py-6" onTouchStart={e => { touchStart.current = e.touches[0]?.clientX ?? null; }} onTouchEnd={e => {
-      if (touchStart.current === null) return;
-      const delta = (e.changedTouches[0]?.clientX ?? touchStart.current) - touchStart.current;
-      if (Math.abs(delta) > 60) setStep(Math.max(0, Math.min(3, step + (delta < 0 ? 1 : -1))));
-      touchStart.current = null;
-    }}>
-      <div className="flex justify-between text-xs font-semibold uppercase text-muted-foreground"><span>Nestling</span><span>0{step + 1} / 03</span></div>
-      <div className="py-10">
-        <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-accent text-accent-foreground"><Icon className="h-11 w-11" strokeWidth={1.5} /></div>
-        <h1 className="max-w-xs font-display text-3xl font-bold leading-tight">{slide.title}</h1>
-        <p className="mt-4 max-w-xs text-base leading-relaxed text-muted-foreground">{slide.text}</p>
-      </div>
-      <div className="space-y-5">
-        <div className="flex gap-2" aria-label="Introduction progress">{slides.map((_, i) => <span key={i} className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-primary" : "bg-muted"}`} />)}</div>
-        <div className="flex gap-3"><Button type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)} className="h-12 w-12 px-0" aria-label="Previous"><ArrowLeft /></Button><Button type="button" className="h-12 flex-1" onClick={() => setStep(step + 1)}>{step === 2 ? "Set up baby" : "Next"}<ArrowRight /></Button></div>
-        <Button type="button" variant="ghost" className="h-10 w-full text-muted-foreground" onClick={() => setStep(3)}>Skip introduction</Button>
-      </div>
-    </div>;
-  }
 
   return <div className="space-y-5 py-5">
     <div><p className="text-xs font-semibold uppercase text-muted-foreground">Your family</p><h1 className="mt-2 font-display text-3xl font-bold">Meet your little one</h1><p className="mt-2 text-sm text-muted-foreground">Create a shared space for their care. You can invite your partner afterward.</p></div>
@@ -95,7 +63,6 @@ function Onboarding() {
       <div><label className="block text-sm font-semibold" htmlFor="weight">Birth weight <span className="font-normal text-muted-foreground">(optional)</span></label><div className="mt-1.5 flex gap-2"><Input id="weight" type="number" inputMode="decimal" min="0.1" max={unit === "kg" ? "30" : "66"} step="0.01" value={weight} onChange={e => setWeight(e.target.value)} placeholder="Weight" className="h-12 flex-1 text-base" /><Button type="button" variant="outline" onClick={() => { setWeight(""); setUnit(unit === "kg" ? "lb" : "kg"); }} className="h-12 w-16">{unit}</Button></div></div>
       <Button type="submit" disabled={busy} className="h-12 w-full text-base">{busy ? "Saving…" : "Create baby profile"}<ArrowRight /></Button>
     </form>
-    <Button variant="ghost" onClick={() => setStep(2)} className="w-full text-muted-foreground"><ArrowLeft />Back</Button>
     <p className="text-center text-sm text-muted-foreground">Already have an invite? <Link to="/family" className="font-semibold text-primary underline">Join your partner</Link></p>
   </div>;
 }
