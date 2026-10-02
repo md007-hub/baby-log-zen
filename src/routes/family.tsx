@@ -27,7 +27,6 @@ export const Route = createFileRoute("/family")({
 
 function FamilyPage() {
   const { ready, user, babies, baby, memberCount, selectBaby, refresh, signOut } = useFamily();
-  const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -57,13 +56,6 @@ function FamilyPage() {
     }
   };
 
-  const create = () =>
-    run(async () => {
-      const { data, error } = await supabase.rpc("create_baby", { _name: name });
-      if (error) throw new Error(error.message);
-      setName("");
-      return data as { id: string };
-    }, "Baby profile created");
 
   const join = () =>
     run(async () => {
@@ -116,9 +108,8 @@ function FamilyPage() {
 
       <section className="space-y-3 rounded-3xl border border-border bg-card p-5 shadow-soft">
         <h2 className="font-display text-lg font-bold">{baby ? "Add another baby" : "Create a baby profile"}</h2>
-        <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Baby's name" className="h-12 text-base" />
-        <Button disabled={busy || !name.trim()} onClick={create} className="h-12 w-full text-base">Create profile</Button>
-        {!baby && <p className="text-xs text-muted-foreground">Logs already on this phone will be added to the new profile.</p>}
+        <p className="text-sm text-muted-foreground">Name, date of birth or due date, gender and birth weight.</p>
+        <Button asChild className="h-12 w-full text-base"><Link to="/onboarding" search={{ add: true }}>Add child</Link></Button>
       </section>
 
       <ProSection babyName={baby?.name ?? null} />
