@@ -11,7 +11,7 @@ function SyncBanner() {
   const { ready, user, baby } = useFamily();
   if (!ready || (user && baby)) return null;
   return (
-    <Link to={user ? "/family" : "/auth"} className="mb-4 block rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-soft">
+    <Link to={user ? "/onboarding" : "/auth"} className="mb-4 block rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-soft">
       <span className="font-semibold">{user ? "Create or join a baby profile" : "Sign in to sync"}</span>
       <span className="block text-muted-foreground">{user ? "Share logs with your partner in real time." : "Back up your logs and share them across phones."}</span>
     </Link>

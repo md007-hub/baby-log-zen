@@ -12,12 +12,12 @@ import { useFamily } from "@/hooks/useFamily";
 import { usePro } from "@/hooks/usePro";
 import { tryStripeEnvironment } from "@/lib/stripe";
 
-const FREE_DAILY = 3;
+const FREE_DAILY = 5;
 const todayKey = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
-const LIMIT_MSG = "You've used your 3 free Nanny AI questions today. Go Pro for unlimited answers, day and night.";
+const LIMIT_MSG = "You've used your 5 free Nanny AI questions today. Go Pro for unlimited answers, day and night.";
 
 /** Returns true if this question may be sent (and counts it). */
 async function consumeQuestion(signedIn: boolean, isPro: boolean): Promise<boolean> {
@@ -92,7 +92,7 @@ function AskPage() {
   const offline = hydrated && !online;
 
   const ask = useServerFn(askBabyAi);
-  const { user } = useFamily();
+  const { user, baby } = useFamily();
   const { isPro, openUpgrade } = usePro();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -115,7 +115,7 @@ function AskPage() {
     setInput("");
     setLoading(true);
     try {
-      const context = await buildBabyContext().catch(() => undefined);
+       const context = await buildBabyContext(baby).catch(() => undefined);
       const res = await ask({ data: { messages: next, context } });
       setMessages([...next, { role: "assistant", content: res.reply }]);
     } catch {

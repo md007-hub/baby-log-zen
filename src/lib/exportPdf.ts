@@ -25,14 +25,14 @@ const mlOf = (v: string) => {
   return oz ? Number(oz[1]) * 29.5735 : 0;
 };
 
-const CATEGORY: Record<string, string> = { feed: "Feed", diaper: "Diaper", sleep: "Sleep", tummy: "Tummy time" };
+const CATEGORY: Record<string, string> = { feed: "Feed", diaper: "Diaper", sleep: "Sleep", tummy: "Tummy time", pumping: "Pumping" };
 
 function details(e: LogEntry) {
   if (e.type === "sleep" || e.type === "tummy") {
     const sec = parseDurationSec(e.notes);
     return `${e.value} · ${sec === null ? "Ongoing" : fmtDur(sec)}`;
   }
-  if (e.type === "feed" && e.notes) {
+  if ((e.type === "feed" || e.type === "pumping") && e.notes) {
     const sec = parseDurationSec(e.notes);
     return sec === null ? e.value : `${e.value} · ${fmtDur(sec)}`;
   }
