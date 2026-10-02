@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Baby, Feather, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
@@ -101,9 +101,12 @@ const tabs = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  const { ready, user } = useFamily();
+  const isIntroduction = pathname === "/tour" || (pathname === "/" && (!ready || !user));
   return (
     <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col bg-background">
-      <header className="sticky top-0 z-40 isolate flex items-center justify-between gap-3 border-b border-border/70 bg-background/95 px-4 py-3 shadow-soft backdrop-blur-md supports-[backdrop-filter]:bg-background/85">
+      {!isIntroduction && <header className="sticky top-0 z-40 isolate flex items-center justify-between gap-3 border-b border-border/70 bg-background/95 px-4 py-3 shadow-soft backdrop-blur-md supports-[backdrop-filter]:bg-background/85">
         <div className="flex min-w-0 items-center gap-3">
           <NestlingLogo />
           <div className="flex min-w-0 flex-col items-start justify-center gap-1">
@@ -115,11 +118,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           <FamilyChip />
           <ThemeToggle />
         </div>
-      </header>
+      </header>}
 
-      <main className="relative z-0 flex-1 px-4 pb-28 pt-4">{children}</main>
+      <main className={`relative z-0 flex-1 px-4 pt-4 ${isIntroduction ? "pb-4" : "pb-28"}`}>{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-border/60 bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+      {!isIntroduction && <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-border/60 bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
         <div className="grid grid-cols-3">
           {tabs.map(({ to, label, icon: Icon }) => (
             <Link
@@ -134,7 +137,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </div>
-      </nav>
+      </nav>}
     </div>
   );
 }

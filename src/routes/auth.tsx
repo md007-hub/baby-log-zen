@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({ mode: search.mode === "up" ? "up" as const : "in" as const }),
   head: () => ({ meta: [
     { title: "Log in or create an account · Nestling" },
     { name: "description", content: "Create a Nestling account to share your baby's care with your partner." },
@@ -19,7 +20,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"in" | "up" | "reset">("in");
+  const { mode: initialMode } = Route.useSearch();
+  const [mode, setMode] = useState<"in" | "up" | "reset">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
@@ -79,6 +81,6 @@ function AuthPage() {
       </form>
       {mode === "reset" && <Button variant="ghost" onClick={() => setMode("in")} className="mt-4 w-full">Back to log in</Button>}
     </>}
-    <p className="mt-8 text-center text-xs text-muted-foreground">Your care notes are yours. <Link to="/" className="underline underline-offset-2">Continue without an account</Link></p>
+    <p className="mt-8 text-center text-xs text-muted-foreground">Your care notes are yours. <Link to="/" className="underline underline-offset-2">Back to introduction</Link></p>
   </div>;
 }

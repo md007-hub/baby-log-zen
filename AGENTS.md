@@ -16,3 +16,4 @@
 - The Nestling header mark is the muted Lucide `<Feather />` icon beside the app name — no badge, no custom SVG. Do not reintroduce bird/nest illustrations in the header.
 - Dexie stays the source of truth for the UI; src/lib/sync.ts pushes pending logs to `baby_logs` (keyed by client uuid) and applies realtime changes back into Dexie — keeps the app instant and offline-first.
 - Pro access is checked via the `has_family_pro(env)` DB function (own or any co-parent's subscription) and Nanny AI's free limit via `consume_ai_question` — keeps family sharing and limits enforced in one place.
+- Keep the introduction carousel shared between the signed-out home screen and the replayable tour, while onboarding is only for baby setup — prevents the two journeys from drifting apart.
