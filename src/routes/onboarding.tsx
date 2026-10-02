@@ -39,11 +39,11 @@ function Onboarding() {
     e.preventDefault();
     if (!user || !name.trim() || !date || !gender) return;
     const kg = weight ? Number(weight) * (unit === "lb" ? 0.45359237 : 1) : null;
-    if (kg !== null && (!Number.isFinite(kg) || kg <= 0 || kg > 30)) return toast.error("Enter a valid birth weight");
-    if (dateKind === "birth" && date > new Date().toISOString().slice(0, 10)) return toast.error("A birth date can't be in the future");
+    if (kg !== null && (!Number.isFinite(kg) || kg <= 0 || kg > 30)) { toast.error("Enter a valid birth weight"); return; }
+    if (dateKind === "birth" && date > new Date().toISOString().slice(0, 10)) { toast.error("A birth date can't be in the future"); return; }
     setBusy(true);
     try {
-      const displayName = typeof user.user_metadata?.display_name === "string" ? user.user_metadata.display_name.trim() : "";
+      const displayName = typeof user.user_metadata?.['display_name'] === "string" ? user.user_metadata['display_name'].trim() : "";
       if (displayName) {
         const { error } = await supabase.from("profiles").upsert({ id: user.id, display_name: displayName });
         if (error) throw error;
@@ -67,7 +67,8 @@ function Onboarding() {
   if (baby) return null;
 
   if (step < slides.length) {
-    const slide = slides[step];
+    const slide = slides[step] ?? slides[0];
+    if (!slide) return null;
     const Icon = slide.icon;
     return <div className="flex min-h-[min(72dvh,610px)] flex-col justify-between py-6" onTouchStart={e => { touchStart.current = e.touches[0]?.clientX ?? null; }} onTouchEnd={e => {
       if (touchStart.current === null) return;

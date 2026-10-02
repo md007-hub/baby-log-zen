@@ -29,8 +29,8 @@ function AuthPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === "up" && !name.trim()) return toast.error("Enter your name");
-    if (mode !== "reset" && password.length < 8) return toast.error("Use at least 8 characters for your password");
+    if (mode === "up" && !name.trim()) { toast.error("Enter your name"); return; }
+    if (mode !== "reset" && password.length < 8) { toast.error("Use at least 8 characters for your password"); return; }
     setBusy(true);
     try {
       if (mode === "reset") {

@@ -3,6 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { Droplets, Hourglass, Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { addLog, db, startOfToday } from "@/lib/db";
 import { cn } from "@/lib/utils";
@@ -99,8 +100,8 @@ export function QuickActions() {
   const savePump = async () => {
     const ml = Math.round(pumpVolume * (pumpUnit === "oz" ? 29.5735 : 1));
     const ms = pumpMode === "manual" ? pumpMin * 60000 : pumping.elapsed;
-    if (!Number.isFinite(ml) || ml < 1 || ml > 2000) return toast.error("Enter a volume between 1 and 2000ml");
-    if (!Number.isFinite(ms) || ms < 60000 || ms > 12 * 3600000) return toast.error("Enter a duration between 1 minute and 12 hours");
+    if (!Number.isFinite(ml) || ml < 1 || ml > 2000) { toast.error("Enter a volume between 1 and 2000ml"); return; }
+    if (!Number.isFinite(ms) || ms < 60000 || ms > 12 * 3600000) { toast.error("Enter a duration between 1 minute and 12 hours"); return; }
     await addLog({ type: "pumping", value: `Pumping · ${pumpSide} · ${ml}ml`, notes: formatDuration(ms) });
     pumping.stop();
     toast.success("Pumping session logged");

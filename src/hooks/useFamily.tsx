@@ -65,7 +65,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user) {
       refresh();
-      const displayName = typeof user.user_metadata?.display_name === "string" ? user.user_metadata.display_name.trim() : "";
+      const displayName = typeof user.user_metadata?.['display_name'] === "string" ? user.user_metadata['display_name'].trim() : "";
       if (displayName) void supabase.from("profiles").upsert({ id: user.id, display_name: displayName });
     }
     else {
