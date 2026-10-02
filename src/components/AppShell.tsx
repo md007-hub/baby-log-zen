@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Baby, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Baby, LogOut, User, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
@@ -7,17 +8,91 @@ import { Button } from "@/components/ui/button";
 import { useFamily } from "@/hooks/useFamily";
 import { usePro } from "@/hooks/usePro";
 
+function SignInChip() {
+  return (
+    <Link to="/auth" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-secondary px-3 text-xs font-semibold text-secondary-foreground">
+      <UserPlus className="h-4 w-4" />
+      Sign in
+    </Link>
+  );
+}
+
+function AccountMenu() {
+  const { baby, memberCount, signOut } = useFamily();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    setOpen(false);
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await signOut();
+    navigate({ to: "/", replace: true });
+  };
+
+  return (
+    <div className="relative">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Account menu"
+        aria-expanded={open}
+        className="h-10 w-10 rounded-full p-0 active:bg-muted"
+      >
+        <User className="h-5 w-5" />
+      </Button>
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Close account menu"
+            className="fixed inset-0 z-40 cursor-default"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-border/70 bg-card p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <p className="font-display text-sm font-bold">Account</p>
+              <Button type="button" variant="ghost" onClick={() => setOpen(false)} aria-label="Close" className="h-7 w-7 rounded-full p-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Baby className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{baby ? baby.name : "No baby set up"}</span>
+              <span>·</span>
+              <span className="shrink-0">{memberCount > 1 ? `${memberCount} members` : "Solo parent"}</span>
+            </p>
+            <Link
+              to="/family"
+              onClick={() => setOpen(false)}
+              className="mt-3 flex h-10 w-full items-center gap-2 rounded-xl bg-secondary px-3 text-sm font-semibold text-secondary-foreground"
+            >
+              <Users className="h-4 w-4" />
+              Family & settings
+            </Link>
+            <Button
+              type="button"
+              onClick={handleSignOut}
+              variant="ghost"
+              className="mt-2 h-11 w-full gap-2 rounded-xl text-sm font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function FamilyChip() {
   const { ready, user, baby, memberCount } = useFamily();
   if (!ready) return null;
-  const label = !user ? "Sign in" : !baby ? "Set up baby" : memberCount > 1 ? "Synced with Partner" : "Invite Partner";
-  const Icon = baby && memberCount > 1 ? Users : UserPlus;
-  return (
-    <Link to={user ? "/family" : "/auth"} className="inline-flex h-10 items-center gap-1.5 rounded-full bg-secondary px-3 text-xs font-semibold text-secondary-foreground">
-      <Icon className="h-4 w-4" />
-      {label}
-    </Link>
-  );
+  if (!user) return <SignInChip />;
+  return <AccountMenu />;
 }
 
 function HeaderTitle() {
