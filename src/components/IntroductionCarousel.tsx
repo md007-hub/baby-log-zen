@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Baby, Feather, FileText, HeartPulse, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Baby, FileText, HeartPulse, Users } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "@/hooks/useFamily";
@@ -55,10 +55,13 @@ export function IntroductionCarousel() {
     >
       {onSplash ? (
         <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300 flex flex-1 flex-col items-center justify-center text-center">
-          <div className="flex items-center justify-center gap-3">
-            <Feather aria-hidden="true" strokeWidth={1.5} className="h-9 w-9 text-primary" />
-            <h1 className="font-display text-4xl font-bold tracking-tight">Nestling</h1>
-          </div>
+          <img
+            src="/icon-512.png"
+            alt="Nestling logo"
+            className="h-28 w-28 rounded-3xl shadow-sm"
+            draggable={false}
+          />
+          <h1 className="mt-6 font-display text-4xl font-bold tracking-tight">Nestling</h1>
           <p className="mt-4 max-w-xs text-base leading-relaxed text-muted-foreground">
             The calm, shared baby tracker for modern parents.
           </p>
