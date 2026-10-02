@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { setLocalChangeListener } from "@/lib/db";
 import { subscribeBaby, syncNow } from "@/lib/sync";
 
-export type Baby = { id: string; name: string; invite_code: string };
+export type Baby = { id: string; name: string; invite_code: string; birth_date: string | null; date_kind: string; gender: string | null; birth_weight_kg: number | null };
 
 type FamilyState = {
   ready: boolean;
@@ -41,7 +41,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   const [memberCount, setMemberCount] = useState(0);
 
   const refresh = useCallback(async () => {
-    const { data } = await supabase.from("babies").select("id, name, invite_code").order("created_at");
+    const { data } = await supabase.from("babies").select("id, name, invite_code, birth_date, date_kind, gender, birth_weight_kg").order("created_at");
     const list = data ?? [];
     setBabies(list);
     const stored = localStorage.getItem(KEY);

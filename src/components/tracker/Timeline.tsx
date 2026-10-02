@@ -1,5 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { Baby, Milk, Moon, Trash2 } from "lucide-react";
+import { Baby, Droplets, Milk, Moon, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
 import { useFamily } from "@/hooks/useFamily";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const meta = {
   diaper: { icon: DiaperIcon, className: "bg-diaper text-diaper-foreground" },
   sleep: { icon: Moon, className: "bg-sleep text-sleep-foreground" },
   tummy: { icon: Baby, className: "bg-feed text-feed-foreground" },
+  pumping: { icon: Droplets, className: "bg-diaper text-diaper-foreground" },
 } as const;
 
 function time(ts: number) {
@@ -59,14 +61,15 @@ export function Timeline() {
                     {baby && log.sync_status === "pending" ? " · not synced yet" : ""}
                   </p>
                 </div>
-                <button
+                <Button
                   type="button"
+                   variant="ghost"
                   aria-label="Delete entry"
                   onClick={() => deleteLog(log)}
                   className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground active:bg-muted"
                 >
                   <Trash2 className="h-4 w-4" />
-                </button>
+                </Button>
               </li>
             );
           })}

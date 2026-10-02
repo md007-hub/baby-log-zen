@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Hourglass, Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
+import { Droplets, Hourglass, Milk, Moon, Pause, Play, Plus, Square } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { addLog, db, startOfToday } from "@/lib/db";
 import { cn } from "@/lib/utils";
@@ -45,7 +46,7 @@ function DiaperIcon({ className }: { className?: string }) {
 }
 
 function SectionCard({ title, icon, tone, extra, children }: {
-  title: string; icon: React.ReactNode; tone: "feed" | "diaper" | "sleep" | "tummy";
+  title: string; icon: React.ReactNode; tone: "feed" | "diaper" | "sleep" | "tummy" | "pumping";
   extra?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
@@ -71,6 +72,12 @@ export function QuickActions() {
   const nursing = useStopwatch();
   const sleep = useStopwatch();
   const tummy = useStopwatch();
+  const pumping = useStopwatch();
+  const [pumpSide, setPumpSide] = useState<"Left" | "Right" | "Both">("Both");
+  const [pumpMode, setPumpMode] = useState<"timer" | "manual">("timer");
+  const [pumpMin, setPumpMin] = useState(15);
+  const [pumpVolume, setPumpVolume] = useState(90);
+  const [pumpUnit, setPumpUnit] = useState<"ml" | "oz">("ml");
   const [tummyMin, setTummyMin] = useState(5);
   const [feedMode, setFeedMode] = useState<"bottle" | "nursing">("bottle");
   const [side, setSide] = useState<"Left" | "Right">("Left");
@@ -89,6 +96,15 @@ export function QuickActions() {
   const logDiaper = async (kind: "Wet" | "Dirty" | "Both") => {
     await addLog({ type: "diaper", value: kind });
     toast.success(`Logged ${kind} diaper`, { duration: 1800 });
+  };
+  const savePump = async () => {
+    const ml = Math.round(pumpVolume * (pumpUnit === "oz" ? 29.5735 : 1));
+    const ms = pumpMode === "manual" ? pumpMin * 60000 : pumping.elapsed;
+    if (!Number.isFinite(ml) || ml < 1 || ml > 2000) { toast.error("Enter a volume between 1 and 2000ml"); return; }
+    if (!Number.isFinite(ms) || ms < 60000 || ms > 12 * 3600000) { toast.error("Enter a duration between 1 minute and 12 hours"); return; }
+    await addLog({ type: "pumping", value: `Pumping · ${pumpSide} · ${ml}ml`, notes: formatDuration(ms) });
+    pumping.stop();
+    toast.success("Pumping session logged");
   };
   const savePastNap = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -140,6 +156,20 @@ export function QuickActions() {
             )}
           </div>
         )}
+      </SectionCard>
+
+      <SectionCard title="Pumping" icon={<Droplets className="h-5 w-5" />} tone="pumping">
+        <div className="mb-3 grid grid-cols-3 gap-2" role="group" aria-label="Pumping side">
+          {(["Left", "Right", "Both"] as const).map(s => <Button key={s} type="button" variant={pumpSide === s ? "default" : "outline"} aria-pressed={pumpSide === s} onClick={() => setPumpSide(s)} className="h-11">{s}</Button>)}
+        </div>
+        <div className="mb-3 grid grid-cols-2 gap-2" role="group" aria-label="Duration entry">
+          <Button type="button" variant={pumpMode === "timer" ? "secondary" : "ghost"} aria-pressed={pumpMode === "timer"} onClick={() => setPumpMode("timer")} className="h-11">Timer</Button>
+          <Button type="button" variant={pumpMode === "manual" ? "secondary" : "ghost"} aria-pressed={pumpMode === "manual"} onClick={() => setPumpMode("manual")} className="h-11">Manual</Button>
+        </div>
+        {pumpMode === "timer" ? <div className="mb-3 flex items-center justify-between rounded-xl bg-muted px-3 py-2"><span className="text-sm text-muted-foreground">Duration</span><span className="font-display text-xl font-bold tabular-nums">{formatDuration(pumping.elapsed)}</span><Button type="button" variant={pumping.active ? "outline" : "default"} onClick={pumping.active ? pumping.pause : pumping.elapsed ? pumping.resume : pumping.start} className="h-10">{pumping.active ? <Pause /> : <Play />}{pumping.active ? "Pause" : pumping.elapsed ? "Resume" : "Start"}</Button></div> :
+          <label className="mb-3 flex items-center gap-2 text-sm font-medium">Duration<Input type="number" aria-label="Pumping minutes" min={1} max={720} value={pumpMin} onChange={e => setPumpMin(Number(e.target.value))} className="ml-auto h-12 w-28 text-base" />min</label>}
+        <div className="flex items-center gap-2"><label htmlFor="pump-volume" className="text-sm font-medium">Expressed</label><input id="pump-volume" type="number" min="0.1" max={pumpUnit === "ml" ? 2000 : 68} step="0.1" inputMode="decimal" value={pumpVolume} onChange={e => setPumpVolume(Number(e.target.value))} className="h-12 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-base" /><Button type="button" variant="outline" onClick={() => { setPumpVolume(0); setPumpUnit(pumpUnit === "ml" ? "oz" : "ml"); }} className="h-12 w-16">{pumpUnit}</Button></div>
+        <Button type="button" onClick={() => void savePump()} className="mt-3 h-12 w-full">Log pumping</Button>
       </SectionCard>
 
       <SectionCard title="Diaper" icon={<DiaperIcon className="h-5 w-5" />} tone="diaper" extra={<span className="ml-auto rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>

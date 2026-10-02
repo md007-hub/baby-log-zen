@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { AudioLines, CloudRain, Lock, Pause, Play, Volume1, Volume2, Waves } from "lucide-react";
+import { AudioLines, CloudRain, Lock, Pause, Play, Volume1, Volume2, Waves, Music2, Wind, Fan } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePro } from "@/hooks/usePro";
 import {
@@ -12,8 +13,13 @@ import {
 
 const NOISES: { id: NoiseType; label: string; blurb: string; Icon: typeof Waves }[] = [
   { id: "white", label: "White Noise", blurb: "Bright, even hiss — like a fan", Icon: AudioLines },
+  { id: "lullaby", label: "Gentle Lullaby", blurb: "A soft, repeating melody", Icon: Music2 },
   { id: "pink", label: "Pink Noise", blurb: "Softer, balanced — like steady rain", Icon: CloudRain },
   { id: "brown", label: "Brown Noise", blurb: "Deep rumble — like distant surf", Icon: Waves },
+  { id: "vacuum", label: "Vacuum Cleaner", blurb: "Steady low motor hum", Icon: Fan },
+  { id: "dryer", label: "Hair Dryer", blurb: "Warm, even rushing air", Icon: Wind },
+  { id: "ocean", label: "Ocean Waves", blurb: "Slow swells of surf", Icon: Waves },
+  { id: "rain", label: "Soft Rain", blurb: "Gentle patter on the window", Icon: CloudRain },
 ];
 
 const DURATIONS = [
@@ -47,7 +53,7 @@ export function SoundPlayer() {
         : `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")} left`;
 
   useEffect(() => {
-    if (!isPro && active && active !== "white") void toggle(active);
+    if (!isPro && active && active !== "white" && active !== "lullaby") void toggle(active);
   }, [isPro, active]);
 
   return (
@@ -55,14 +61,15 @@ export function SoundPlayer() {
       <ul className="space-y-3">
         {NOISES.map(({ id, label, blurb, Icon }) => {
           const on = active === id;
-          const locked = !isPro && id !== "white";
+           const locked = !isPro && id !== "white" && id !== "lullaby";
           return (
             <li key={id}>
-              <button
+               <Button
                 type="button"
+                 variant="ghost"
                 onClick={() =>
                   locked
-                    ? openUpgrade(`${label} is part of Nestling Pro. White Noise stays free.`)
+                     ? openUpgrade(`${label} is part of Nestling Pro. White Noise and Gentle Lullaby stay free.`)
                     : void toggle(id)
                 }
                 aria-pressed={on}
@@ -105,7 +112,7 @@ export function SoundPlayer() {
                     <Play className="ml-0.5 h-6 w-6" />
                   )}
                 </span>
-              </button>
+               </Button>
             </li>
           );
         })}
@@ -134,9 +141,10 @@ export function SoundPlayer() {
         <p className="mb-2 mt-5 text-sm font-semibold text-muted-foreground">Sleep timer</p>
         <div className="grid grid-cols-4 gap-2">
           {DURATIONS.map((d) => (
-            <button
+             <Button
               key={d.label}
               type="button"
+               variant="ghost"
               onClick={() => setMinutes(d.minutes)}
               aria-pressed={minutes === d.minutes}
               className={cn(
@@ -148,7 +156,7 @@ export function SoundPlayer() {
               )}
             >
               {d.label}
-            </button>
+             </Button>
           ))}
         </div>
         <p className="mt-4 text-center text-sm text-muted-foreground tabular-nums" aria-live="polite">

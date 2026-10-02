@@ -34,22 +34,34 @@ export type Database = {
       }
       babies: {
         Row: {
+          birth_date: string | null
+          birth_weight_kg: number | null
           created_at: string
           created_by: string
+          date_kind: string
+          gender: string | null
           id: string
           invite_code: string
           name: string
         }
         Insert: {
+          birth_date?: string | null
+          birth_weight_kg?: number | null
           created_at?: string
           created_by: string
+          date_kind?: string
+          gender?: string | null
           id?: string
           invite_code: string
           name: string
         }
         Update: {
+          birth_date?: string | null
+          birth_weight_kg?: number | null
           created_at?: string
           created_by?: string
+          date_kind?: string
+          gender?: string | null
           id?: string
           invite_code?: string
           name?: string
@@ -126,6 +138,24 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -186,8 +216,12 @@ export type Database = {
       create_baby: {
         Args: { _name: string }
         Returns: {
+          birth_date: string | null
+          birth_weight_kg: number | null
           created_at: string
           created_by: string
+          date_kind: string
+          gender: string | null
           id: string
           invite_code: string
           name: string
@@ -204,8 +238,12 @@ export type Database = {
       join_baby: {
         Args: { _code: string }
         Returns: {
+          birth_date: string | null
+          birth_weight_kg: number | null
           created_at: string
           created_by: string
+          date_kind: string
+          gender: string | null
           id: string
           invite_code: string
           name: string

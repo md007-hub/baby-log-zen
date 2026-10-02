@@ -1,7 +1,7 @@
 // Module-level Web Audio engine: lives outside React so playback survives tab/route changes.
 import { useSyncExternalStore } from "react";
 
-export type NoiseType = "white" | "pink" | "brown";
+export type NoiseType = "white" | "lullaby" | "pink" | "brown" | "vacuum" | "dryer" | "ocean" | "rain";
 
 type State = {
   active: NoiseType | null;
@@ -32,10 +32,23 @@ function buildBuffer(c: AudioContext, type: NoiseType) {
   const buffer = c.createBuffer(2, length, c.sampleRate);
   for (let ch = 0; ch < 2; ch++) {
     const d = buffer.getChannelData(ch);
-    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, last = 0;
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, last = 0, smooth = 0;
+    const notes = [261.63, 329.63, 392, 329.63, 293.66, 261.63, 220, 261.63];
     for (let i = 0; i < length; i++) {
       const w = Math.random() * 2 - 1;
+      const t = i / c.sampleRate;
+      smooth = smooth * 0.985 + w * 0.015;
       if (type === "white") d[i] = w * 0.35;
+      else if (type === "lullaby") {
+        const beat = Math.floor(t * 2);
+        const note = notes[Math.floor(beat / 2) % notes.length] ?? 261.63;
+        const envelope = Math.pow(1 - (t * 2) % 1, 1.5);
+        d[i] = envelope * (Math.sin(2 * Math.PI * note * t) * 0.22 + Math.sin(2 * Math.PI * note * 2 * t) * 0.05);
+      }
+      else if (type === "vacuum") d[i] = smooth * 3 + Math.sin(2 * Math.PI * 95 * t) * 0.11 + w * 0.04;
+      else if (type === "dryer") d[i] = smooth * 2 + w * 0.16 + Math.sin(2 * Math.PI * 60 * t) * 0.055;
+      else if (type === "ocean") d[i] = (smooth * 5 + w * 0.07) * (0.45 + 0.4 * Math.sin(2 * Math.PI * t / 4));
+      else if (type === "rain") d[i] = w * 0.13 + smooth * 1.5 + (Math.random() < 0.0004 ? (Math.random() - 0.5) * 0.35 : 0);
       else if (type === "pink") {
         // Paul Kellet's 1/f filter
         b0 = 0.99886 * b0 + w * 0.0555179;
