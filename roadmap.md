@@ -1,17 +1,6 @@
 # Current work
-- [x] Update Nestling header with bird/hands badge and restore baby Tracker tab; preserve status and other tabs.
-- [x] Update Nanny AI greeting and disclaimer wording without changing its icon or behavior.
-- [x] Add live daily tracker summary from local logs.
-- [x] Add Bottle/Nursing modes with custom bottle quantity and pausable nursing timer.
-- [x] Make diaper selections one-tap saves and show today's count.
-- [x] Add retroactive nap logging with start/end times.
-- [x] Verify phone layout, dark mode, and working controls.
-- [x] Refine sticky header layering, alignment, and premium filled logo badge.
-- [x] Clarify the live feed count and summed bottle volume in the daily glance bar.
-- [x] Confirm fast one-tap diaper feedback and verify the updated phone layout.
-- [x] Show a clear bottle/nursing breakdown under today's feed count in the glance bar.
-- [x] Show a diaper breakdown whose parts add up to the total, including a Both count.
-- [x] Use the safety pin as the Diaper icon in the card badge and timeline rows.
-- [x] Email sign-in, baby profiles with 6-character invite codes, cloud sync with live partner updates, header baby name + partner indicator.
-
-- [x] Nestling Pro: pricing, family-shared Pro, freemium locks, upgrade modal, manage subscription
+- [ ] Refresh authentication and password recovery; collect parent display name.
+- [ ] Add introductory carousel and baby profile setup with family sharing.
+- [ ] Make Nanny AI age-aware and raise the daily free limit to five.
+- [ ] Add offline-first pumping entries and summary.
+- [ ] Expand free and Pro sound choices.
