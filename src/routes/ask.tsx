@@ -28,7 +28,7 @@ async function consumeQuestion(signedIn: boolean, isPro: boolean): Promise<boole
       check_env: tryStripeEnvironment() ?? "sandbox",
       _day: day,
     });
-    if (error) return true;
+    if (error) return false;
     return !!(data as { allowed?: boolean } | null)?.allowed;
   }
   const key = `nestling-ai-${day}`;

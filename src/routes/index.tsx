@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { QuickActions } from "@/components/tracker/QuickActions";
 import { DailySummary } from "@/components/tracker/DailySummary";
 import { Timeline } from "@/components/tracker/Timeline";
@@ -41,6 +42,11 @@ export const Route = createFileRoute("/")({
 
 function TrackerPage() {
   const hydrated = useHydrated();
+  const { ready, user, baby } = useFamily();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (hydrated && ready && user && !baby) navigate({ to: "/onboarding", replace: true });
+  }, [hydrated, ready, user, baby, navigate]);
 
   return (
     <div>
