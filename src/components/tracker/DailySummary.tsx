@@ -11,6 +11,8 @@ function durationSeconds(value?: string) {
 export function DailySummary() {
   const logs = useLiveQuery(() => db.logs.where("timestamp").aboveOrEqual(startOfToday()).toArray(), [], []);
   const feeds = logs.filter((log) => log.type === "feed");
+  const pumps = logs.filter((log) => log.type === "pumping");
+  const pumpMl = pumps.reduce((sum, log) => sum + (Number(log.value.match(/(\d+)ml/)?.[1]) || 0), 0);
   const diapers = logs.filter((log) => log.type === "diaper");
   const sleep = logs.filter((log) => log.type === "sleep");
   const nights = sleep.filter((log) => log.value === "Night Sleep").length;
@@ -40,10 +42,11 @@ export function DailySummary() {
 
   return (
     <section aria-label="Today's summary" className="mb-4 grid grid-cols-[minmax(0,1.4fr)_minmax(0,1.6fr)_minmax(0,1fr)] divide-x divide-border rounded-xl border border-border/60 bg-card py-3.5 shadow-soft">
-      <div className="min-w-0 px-1 text-center">
+       <div className="min-w-0 px-1 text-center">
         <p className="text-xs font-semibold text-muted-foreground">Feeds</p>
         <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{feeds.length} {feeds.length === 1 ? "feed" : "feeds"}</p>
-        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{feedDetail}</p>
+         <p className="min-h-4 text-xs leading-4 text-muted-foreground">{feedDetail}</p>
+         {pumps.length > 0 && <p className="mt-1 text-xs leading-4 text-muted-foreground">Pumped: {pumps.length} · {pumpMl}ml</p>}
       </div>
       <div className="min-w-0 px-1 text-center">
         <p className="text-xs font-semibold text-muted-foreground">Diapers</p>

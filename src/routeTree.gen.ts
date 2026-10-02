@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AskRouteImport } from './routes/ask'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FamilyRouteImport } from './routes/family'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SoundsRouteImport } from './routes/sounds'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout/return'
@@ -36,6 +37,11 @@ const AuthRoute = AuthRouteImport.update({
 const FamilyRoute = FamilyRouteImport.update({
   id: '/family',
   path: '/family',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
+  '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
+  '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
+  '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/auth'
     | '/family'
+    | '/onboarding'
     | '/reset-password'
     | '/sounds'
     | '/checkout/return'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/auth'
     | '/family'
+    | '/onboarding'
     | '/reset-password'
     | '/sounds'
     | '/checkout/return'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/ask'
     | '/auth'
     | '/family'
+    | '/onboarding'
     | '/reset-password'
     | '/sounds'
     | '/checkout/return'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   AskRoute: typeof AskRoute
   AuthRoute: typeof AuthRoute
   FamilyRoute: typeof FamilyRoute
+  OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SoundsRoute: typeof SoundsRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
@@ -163,6 +176,13 @@ declare module '@tanstack/react-router' {
       path: '/family'
       fullPath: '/family'
       preLoaderRoute: typeof FamilyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   AskRoute: AskRoute,
   AuthRoute: AuthRoute,
   FamilyRoute: FamilyRoute,
+  OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SoundsRoute: SoundsRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
