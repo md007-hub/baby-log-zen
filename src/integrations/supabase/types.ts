@@ -43,6 +43,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          photo_url: string | null
           solids_enabled: boolean
         }
         Insert: {
@@ -55,6 +56,7 @@ export type Database = {
           id?: string
           invite_code: string
           name: string
+          photo_url?: string | null
           solids_enabled?: boolean
         }
         Update: {
@@ -67,6 +69,7 @@ export type Database = {
           id?: string
           invite_code?: string
           name?: string
+          photo_url?: string | null
           solids_enabled?: boolean
         }
         Relationships: []
@@ -269,6 +272,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          photo_url: string | null
           solids_enabled: boolean
         }
         SetofOptions: {
@@ -292,6 +296,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          photo_url: string | null
           solids_enabled: boolean
         }
         SetofOptions: {
