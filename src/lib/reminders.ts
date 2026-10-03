@@ -66,7 +66,7 @@ export async function checkReminders(baby: Baby | null) {
   const name = baby.name;
   if (s.vitaminD) {
     const [h, m] = s.vitaminDTime.split(":").map(Number);
-    const due = new Date(now); due.setHours(h, m, 0, 0);
+    const due = new Date(now); due.setHours(h ?? 9, m ?? 0, 0, 0);
     if (now >= due && !sentOnce(`vd-${now.toDateString()}`)) await notify("Vitamin D time", `Time for ${name}'s Vitamin D drops.`);
   }
   const recent = await db.logs.where("timestamp").aboveOrEqual(Date.now() - 2 * 86400000).sortBy("timestamp");
