@@ -27,6 +27,10 @@ const mlOf = (v: string) => {
   return oz ? Number(oz[1]) * 29.5735 : 0;
 };
 
+/** Removes emoji and non-Latin-1 symbols the built-in PDF font cannot render. */
+const clean = (t: string) =>
+  t.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{1F1E6}-\u{1F1FF}]/gu, "").replace(/[^\x20-\x7E\u00A0-\u00FF\u2013\u2014\u00B7]/g, "").replace(/\s{2,}/g, " ").trim();
+
 const CATEGORY: Record<string, string> = { feed: "Feed", diaper: "Diaper", sleep: "Sleep", tummy: "Tummy time", pumping: "Pumping", solids: "Solids" };
 
 function details(e: LogEntry) {
@@ -55,7 +59,7 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
 
   // Header
   doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(30);
-  doc.text(`Care report${babyName ? ` — ${babyName}` : ""}`, M, y);
+  doc.text(`Care report${babyName ? ` - ${clean(babyName)}` : ""}`, M, y);
   y += 18;
   doc.setFont("helvetica", "normal").setFontSize(10).setTextColor(110);
   doc.text(`Period: ${new Date(since).toLocaleDateString()} – ${new Date().toLocaleDateString()}`, M, y);
@@ -68,50 +72,49 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
   const sleepSec = logs.filter((l) => l.type === "sleep").reduce((s, l) => s + (parseDurationSec(l.notes) ?? 0), 0);
   const diapers = logs.filter((l) => l.type === "diaper");
   const count = (k: string) => diapers.filter((d) => d.value.toLowerCase().startsWith(k)).length;
-  const cells: [string, string, string][] = [
-    ["Feeds & volume", `${feeds.length} feeds`, ml ? `${ml} ml (${(ml / 29.5735).toFixed(1)} oz)` : "No bottle volume"],
-    ["Total sleep", fmtDur(sleepSec), `${logs.filter((l) => l.type === "sleep").length} sleeps`],
-    ["Diapers", `${diapers.length} total`, `Wet ${count("wet")} / Poop ${count("dirty") + count("poop")} / Mixed ${count("both") + count("mixed")}`],
-  ];
-  const cardH = 62;
-  doc.setFillColor(245, 243, 238).setDrawColor(225).roundedRect(M, y, W - 2 * M, cardH, 6, 6, "FD");
-  const cw = (W - 2 * M) / 3;
-  cells.forEach(([label, main, sub], i) => {
-    const x = M + i * cw + 14;
-    doc.setFont("helvetica", "normal").setFontSize(8).setTextColor(120).text(label.toUpperCase(), x, y + 17);
-    doc.setFont("helvetica", "bold").setFontSize(13).setTextColor(30).text(main, x, y + 35);
-    doc.setFont("helvetica", "normal").setFontSize(8.5).setTextColor(90).text(sub, x, y + 50);
-    if (i) doc.setDrawColor(220).line(M + i * cw, y + 10, M + i * cw, y + cardH - 10);
-  });
-  y += cardH + 18;
-
-  // Latest growth (WHO percentiles)
+  let growthMain = "Not recorded";
+  let growthSub = "Add measurements in Growth";
   try {
     const babyId = localStorage.getItem("nestling-baby-id");
     if (babyId) {
       const [{ data: b }, { data: g }] = await Promise.all([
-        supabase.from("babies").select("gender, birth_date, date_kind").eq("id", babyId).maybeSingle(),
+        supabase.from("babies").select("gender, birth_date").eq("id", babyId).maybeSingle(),
         supabase.from("baby_growth").select("*").eq("baby_id", babyId),
       ]);
       const latest = latestPercentiles((g ?? []) as GrowthRow[], sexOf(b?.gender), b?.birth_date ?? null);
-      if (latest.length) {
+      const w = latest.find((l) => l.metric === "weight") ?? latest[0];
+      if (w) {
         const unit = { weight: "kg", length: "cm", head: "cm" } as const;
-        const text = latest.map((l) => `${l.metric === "head" ? "Head circ." : l.metric[0]!.toUpperCase() + l.metric.slice(1)}: ${l.value} ${unit[l.metric]}${l.pct != null ? ` (${ordinal(l.pct)} %ile)` : ""} on ${l.date}`).join("   ·   ");
-        doc.setFont("helvetica", "bold").setFontSize(10).setTextColor(30).text("Latest growth (WHO standards)", M, y);
-        doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(60);
-        const lines = doc.splitTextToSize(text, W - 2 * M) as string[];
-        doc.text(lines, M, y + 14);
-        y += 14 + lines.length * 12;
+        growthMain = `${w.value} ${unit[w.metric]}${w.pct != null ? ` (${ordinal(w.pct)})` : ""}`;
+        growthSub = latest.filter((l) => l !== w).map((l) => `${l.metric === "head" ? "Head" : "Length"} ${l.value}${unit[l.metric]}${l.pct != null ? ` ${ordinal(l.pct)}` : ""}`).join(" / ") || `${w.metric} on ${w.date}`;
       }
     }
   } catch { /* growth is optional */ }
-  y += 10;
+
+  const cells: [string, string, string][] = [
+    ["Feeds", `${feeds.length} feeds`, ml ? `${ml} ml (${(ml / 29.5735).toFixed(1)} oz)` : "No bottle volume"],
+    ["Sleep", fmtDur(sleepSec), `${logs.filter((l) => l.type === "sleep").length} sleeps`],
+    ["Diapers", `${diapers.length} total`, `Wet ${count("wet")} / Poop ${count("dirty") + count("poop")} / Mixed ${count("both") + count("mixed")}`],
+    ["Growth & percentile", growthMain, growthSub],
+  ];
+  const gap = 10;
+  const cw = (W - 2 * M - gap) / 2;
+  const cardH = 58;
+  cells.forEach(([label, main, sub], i) => {
+    const x = M + (i % 2) * (cw + gap);
+    const cy = y + Math.floor(i / 2) * (cardH + gap);
+    doc.setFillColor(245, 243, 238).setDrawColor(225).roundedRect(x, cy, cw, cardH, 6, 6, "FD");
+    doc.setFont("helvetica", "normal").setFontSize(8).setTextColor(120).text(label.toUpperCase(), x + 12, cy + 16);
+    doc.setFont("helvetica", "bold").setFontSize(13).setTextColor(30).text(doc.splitTextToSize(clean(main), cw - 24)[0] as string, x + 12, cy + 34);
+    doc.setFont("helvetica", "normal").setFontSize(8.5).setTextColor(90).text(doc.splitTextToSize(clean(sub), cw - 24)[0] as string, x + 12, cy + 48);
+  });
+  y += cardH * 2 + gap + 24;
 
   // Table
   const cols = [
-    { label: "Time", x: M + 8, w: 62 },
-    { label: "Category", x: M + 78, w: 72 },
-    { label: "Details", x: M + 158, w: W - 2 * M - 158 - 78 },
+    { label: "Time", x: M + 8, w: 60 },
+    { label: "Category", x: M + 78, w: 70 },
+    { label: "Details", x: M + 158, w: W - 2 * M - 158 - 90 },
     { label: "Logged by", x: W - M - 70, w: 62 },
   ];
   const rowH = 20;
@@ -145,20 +148,19 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
     y += 18;
     tableHeader();
     entries.forEach((e, i) => {
-      ensure(rowH, true);
-      if (i % 2 === 0) doc.setFillColor(248, 247, 244).rect(M, y, W - 2 * M, rowH, "F");
       doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(40);
       const row = [
         new Date(e.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
         CATEGORY[e.type] ?? e.type,
         details(e),
         "Parent",
-      ];
-      row.forEach((txt, ci) => {
-        const fitted = doc.splitTextToSize(txt, cols[ci]!.w)[0] as string;
-        doc.text(fitted, cols[ci]!.x, y + 13.5);
-      });
-      y += rowH;
+      ].map((t, ci) => doc.splitTextToSize(clean(t), cols[ci]!.w) as string[]);
+      const h = Math.max(rowH, 8 + Math.max(...row.map((r) => r.length)) * 11);
+      ensure(h, true);
+      if (i % 2 === 0) doc.setFillColor(248, 247, 244).rect(M, y, W - 2 * M, h, "F");
+      doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(40);
+      row.forEach((lines, ci) => doc.text(lines, cols[ci]!.x, y + 13.5, { lineHeightFactor: 1.2 }));
+      y += h;
     });
     doc.setDrawColor(220).line(M, y, W - M, y);
     y += 20;
