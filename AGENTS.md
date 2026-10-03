@@ -17,3 +17,4 @@
 - Dexie stays the source of truth for the UI; src/lib/sync.ts pushes pending logs to `baby_logs` (keyed by client uuid) and applies realtime changes back into Dexie — keeps the app instant and offline-first.
 - Pro access is checked via the `has_family_pro(env)` DB function (own or any co-parent's subscription) and Nanny AI's free limit via `consume_ai_question` — keeps family sharing and limits enforced in one place.
 - Keep the introduction carousel shared between the signed-out home screen and the replayable tour, while onboarding is only for baby setup — prevents the two journeys from drifting apart.
+- Growth percentiles use bundled WHO LMS tables (src/lib/whoLms.ts, 0–24 months) computed client-side; measurements live in `baby_growth` (not Dexie) since they're infrequent and shared.
