@@ -74,7 +74,7 @@ export function SoundPlayer() {
                 aria-pressed={on}
                 aria-label={`${on ? "Pause" : "Play"} ${label}`}
                 className={cn(
-                  "tap-card flex w-full items-center gap-4 rounded-2xl p-4 text-left",
+                  "tap-card flex w-full items-center gap-4 rounded-3xl p-4 shadow-soft active:scale-[0.98] transition-transform text-left",
                   on ? "bg-primary/10 ring-1 ring-inset ring-primary/40" : "bg-card ring-1 ring-inset ring-border/60 shadow-soft",
                 )}
               >
@@ -118,7 +118,7 @@ export function SoundPlayer() {
         })}
       </ul>
 
-      <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
+      <div className="rounded-3xl bg-card p-4 shadow-soft">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-muted-foreground">Volume</p>
           <p className="text-sm font-semibold tabular-nums">{Math.round(volume * 100)}%</p>
