@@ -116,7 +116,7 @@ function NestlingLogo() {
     <img
       src="/icon-192.png"
       alt=""
-      className="h-7 w-7 shrink-0 rounded-lg"
+      className="h-7 w-7 shrink-0 rounded-lg dark:opacity-80 dark:mix-blend-luminosity dark:brightness-90"
       draggable={false}
     />
   );
