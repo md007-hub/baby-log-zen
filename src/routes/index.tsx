@@ -7,6 +7,7 @@ import { ExportPdfButton } from "@/components/tracker/ExportPdfButton";
 import { useHydrated } from "@/hooks/useOnline";
 import { Link } from "@tanstack/react-router";
 import { useFamily } from "@/hooks/useFamily";
+import { Ruler } from "lucide-react";
 import { IntroductionCarousel } from "@/components/IntroductionCarousel";
 
 function SyncBanner() {
@@ -57,6 +58,9 @@ function TrackerPage() {
     <div>
       <SyncBanner />
       <DailySummary />
+      <Link to="/growth" className="mb-4 flex items-center justify-between rounded-3xl bg-tummy-tint px-4 py-3 text-sm font-semibold shadow-soft tap-card">
+        <span className="flex items-center gap-2"><Ruler className="h-4 w-4" />Growth &amp; WHO percentiles</span><span aria-hidden>›</span>
+      </Link>
       <ExportPdfButton />
       <QuickActions />
       <Timeline />
