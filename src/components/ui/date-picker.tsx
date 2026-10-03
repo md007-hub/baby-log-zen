@@ -17,7 +17,7 @@ export function DatePicker({ value, onChange, label, maxDate }: { value: string;
       </PopoverTrigger>
       <PopoverContent align="start" className="pointer-events-auto w-auto max-w-[calc(100vw-2rem)] p-0">
         <Calendar mode="single" selected={selected} onSelect={(day) => { if (day) { onChange(format(day, "yyyy-MM-dd")); setOpen(false); } }}
-          defaultMonth={selected ?? maxDate ?? new Date()} captionLayout="dropdown" startMonth={new Date(2020, 0)} endMonth={maxDate ?? new Date(new Date().getFullYear() + 1, 11)}
+          defaultMonth={selected ?? maxDate ?? new Date()} captionLayout="dropdown" startMonth={new Date(2000, 0)} endMonth={maxDate ?? new Date(new Date().getFullYear() + 1, 11)}
           disabled={maxDate ? { after: maxDate } : undefined} className="pointer-events-auto p-3" />
       </PopoverContent>
     </Popover>

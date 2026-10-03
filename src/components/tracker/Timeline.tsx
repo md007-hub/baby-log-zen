@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { Apple, Baby, CloudSun, Droplets, Milk, MoonStar, Trash2 } from "lucide-react";
+import { Baby, CloudSun, Droplets, Milk, MoonStar, Trash2, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
 import { useFamily } from "@/hooks/useFamily";
@@ -20,7 +20,7 @@ const meta = {
   sleep: { icon: MoonStar, className: "bg-sleep text-sleep-foreground" },
   tummy: { icon: Baby, className: "bg-tummy text-tummy-foreground" },
   pumping: { icon: Droplets, className: "bg-feed text-feed-foreground" },
-  solids: { icon: Apple, className: "bg-tummy text-tummy-foreground" },
+  solids: { icon: UtensilsCrossed, className: "bg-tummy text-tummy-foreground" },
 } as const;
 
 function secs(v?: string) {

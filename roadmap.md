@@ -1,4 +1,7 @@
 # Current work
+- [x] Edit active baby's name, gender and birth date in Family settings; refresh growth and wake windows.
+- [x] Explain the selected growth metric's latest percentile above its chart.
+- [x] Use a baby-appropriate Solids icon in feed selection and Today timeline.
 - [x] Show the introduction to signed-out visitors and take Get Started to account creation.
 - [x] Take new accounts straight to baby setup, then the Tracker.
 - [x] Add a replayable app tour in Settings.

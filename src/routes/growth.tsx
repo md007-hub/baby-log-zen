@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ArrowLeft, Ruler, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ function GrowthPage() {
   const sex = sexOf(baby?.gender);
   const birth = baby?.date_kind === "birth" ? baby.birth_date : null;
   const badges = latestPercentiles(rows, sex, birth);
+  const currentMeasurement = badges.find((badge) => badge.metric === metric);
 
   const chart = useMemo(() => {
     if (!sex) return null;
@@ -125,13 +126,25 @@ function GrowthPage() {
             {(["weight", "length", "head"] as Metric[]).map((m) => <Button key={m} type="button" variant="ghost" aria-pressed={metric === m} onClick={() => setMetric(m)} className={cn("h-10 rounded-full text-foreground", metric === m && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground")}>{METRIC_LABEL[m]}</Button>)}
           </div>
           <p className="mb-2 text-xs text-muted-foreground">WHO {sex === "boy" ? "boys" : "girls"} · 3rd, 15th, 50th, 85th, 97th percentiles ({unitFor(metric)} by month)</p>
+           {currentMeasurement && (
+             <div className="mb-4 rounded-2xl bg-tummy-tint p-4" aria-live="polite">
+               {currentMeasurement.pct != null ? (
+                 <>
+                   <p className="font-display text-lg font-bold">{baby.name} is in the {ordinal(currentMeasurement.pct)} percentile for {METRIC_LABEL[metric].toLowerCase()}.</p>
+                   <p className="mt-1 text-sm text-muted-foreground">{METRIC_LABEL[metric]} is higher than about {Math.round(currentMeasurement.pct)}% of {sex === "boy" ? "boys" : "girls"} the same age, based on WHO growth standards.</p>
+                 </>
+               ) : (
+                 <><p className="font-display text-lg font-bold">{baby.name}'s latest {METRIC_LABEL[metric].toLowerCase()}: {currentMeasurement.value} {unitFor(metric)}</p><p className="mt-1 text-sm text-muted-foreground">Add a date of birth to see how this compares with babies the same age.</p></>
+               )}
+               <p className="mt-2 text-xs text-muted-foreground">Measured {currentMeasurement.date} · A single percentile does not determine healthy growth; ask your clinician about any concerns.</p>
+             </div>
+           )}
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                 <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                 <XAxis dataKey="m" type="number" domain={[0, 24]} ticks={[0, 3, 6, 9, 12, 15, 18, 21, 24]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12 }} labelFormatter={(m) => `${Number(m).toFixed(1)} months`} />
                 {PERCENTILES.map((p) => <Line key={p} data={chart.curves} dataKey={`p${p}`} name={`${ordinal(p)}`} dot={false} strokeWidth={p === 50 ? 2 : 1} stroke={p === 50 ? "var(--primary)" : "var(--muted-foreground)"} strokeOpacity={p === 50 ? 0.9 : 0.45} isAnimationActive={false} />)}
                 <Line data={chart.points} dataKey="baby" name={baby.name} stroke="var(--tummy-foreground)" strokeWidth={2.5} dot={{ r: 4, fill: "var(--tummy-foreground)" }} isAnimationActive={false} />
               </LineChart>
