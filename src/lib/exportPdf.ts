@@ -71,7 +71,7 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
   const cells: [string, string, string][] = [
     ["Feeds & volume", `${feeds.length} feeds`, ml ? `${ml} ml (${(ml / 29.5735).toFixed(1)} oz)` : "No bottle volume"],
     ["Total sleep", fmtDur(sleepSec), `${logs.filter((l) => l.type === "sleep").length} sleeps`],
-    ["Diapers", `${diapers.length} total`, `Wet ${count("wet")} / Dirty ${count("dirty")} / Both ${count("both")}`],
+    ["Diapers", `${diapers.length} total`, `Wet ${count("wet")} / Poop ${count("dirty") + count("poop")} / Mixed ${count("both") + count("mixed")}`],
   ];
   const cardH = 62;
   doc.setFillColor(245, 243, 238).setDrawColor(225).roundedRect(M, y, W - 2 * M, cardH, 6, 6, "FD");

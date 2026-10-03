@@ -59,7 +59,7 @@ export async function buildBabyContext(baby?: Baby | null): Promise<string> {
   const c = (v: string) => diapers.filter((l) => l.value === v).length;
   const sleeps = today.filter((l) => l.type === "sleep");
   lines.push(
-    `Today's totals: ${feeds.length} feeds (${ml}ml bottle, ${dur(nurse)} nursing); ${diapers.length} diapers (${c("Wet")} wet, ${c("Dirty")} dirty, ${c("Both")} both); ${dur(sleeps.reduce((s, l) => s + secs(l.notes), 0))} sleep across ${sleeps.length} sessions`,
+    `Today's totals: ${feeds.length} feeds (${ml}ml bottle, ${dur(nurse)} nursing); ${diapers.length} diapers (${c("Wet")} wet, ${c("Dirty") + c("Poop")} poop, ${c("Both") + c("Mixed")} mixed); ${dur(sleeps.reduce((s, l) => s + secs(l.notes), 0))} sleep across ${sleeps.length} sessions`,
   );
   lines.push(`Pumping today: ${pumps.length} sessions, ${pumps.reduce((s, l) => s + (Number(l.value.match(/(\d+)ml/)?.[1]) || 0), 0)}ml expressed (not counted as baby's intake).`);
   const range = wakeRangeFor(baby?.birth_date, baby?.date_kind);
