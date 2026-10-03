@@ -74,16 +74,16 @@ function GrowthPage() {
     const w = weight ? Number(weight) * (wUnit === "lb" ? 0.453592 : 1) : null;
     const l = length ? Number(length) * (lUnit === "in" ? 2.54 : 1) : null;
     const h = head ? Number(head) * (lUnit === "in" ? 2.54 : 1) : null;
-    if (w == null && l == null && h == null) return toast.error("Enter at least one measurement");
-    if ((w != null && !(w > 0 && w < 40)) || (l != null && !(l > 20 && l < 130)) || (h != null && !(h > 20 && h < 70))) return toast.error("One of the values looks out of range");
-    if (!date || date > today()) return toast.error("Pick a date that isn't in the future");
+    if (w == null && l == null && h == null) { toast.error("Enter at least one measurement"); return; }
+    if ((w != null && !(w > 0 && w < 40)) || (l != null && !(l > 20 && l < 130)) || (h != null && !(h > 20 && h < 70))) { toast.error("One of the values looks out of range"); return; }
+    if (!date || date > today()) { toast.error("Pick a date that isn't in the future"); return; }
     setBusy(true);
     const { error } = await supabase.from("baby_growth").insert({
       baby_id: baby.id, measured_on: date,
       weight_kg: w == null ? null : Number(w.toFixed(3)), length_cm: l == null ? null : Number(l.toFixed(1)), head_cm: h == null ? null : Number(h.toFixed(1)),
     });
     setBusy(false);
-    if (error) return toast.error("Couldn't save measurement");
+    if (error) { toast.error("Couldn't save measurement"); return; }
     setWeight(""); setLength(""); setHead("");
     toast.success("Measurement saved");
     void load();
