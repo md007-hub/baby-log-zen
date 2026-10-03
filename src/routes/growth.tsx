@@ -52,7 +52,7 @@ function GrowthPage() {
   useEffect(() => { void load(); }, [load]);
 
   const sex = sexOf(baby?.gender);
-  const birth = baby?.date_kind === "birth" ? baby.birth_date : null;
+  const birth = baby?.birth_date ?? null;
   const badges = latestPercentiles(rows, sex, birth);
   const currentMeasurement = badges.find((badge) => badge.metric === metric);
 
@@ -134,7 +134,7 @@ function GrowthPage() {
                    <p className="mt-1 text-sm text-muted-foreground">{METRIC_LABEL[metric]} is higher than about {Math.round(currentMeasurement.pct)}% of {sex === "boy" ? "boys" : "girls"} the same age, based on WHO growth standards.</p>
                  </>
                ) : (
-                 <><p className="font-display text-lg font-bold">{baby.name}'s latest {METRIC_LABEL[metric].toLowerCase()}: {currentMeasurement.value} {unitFor(metric)}</p><p className="mt-1 text-sm text-muted-foreground">Add a date of birth to see how this compares with babies the same age.</p></>
+                 <><p className="font-display text-lg font-bold">{baby.name}'s latest {METRIC_LABEL[metric].toLowerCase()}: {currentMeasurement.value} {unitFor(metric)}</p><p className="mt-1 text-sm text-muted-foreground">{!birth ? "Add a date of birth in Family settings to see how this compares with babies the same age." : !sex ? "Choose Boy or Girl in Family settings to compare against WHO standards." : ageInMonths(birth, currentMeasurement.date) > 24 ? "WHO percentiles here cover 0–24 months, so this measurement is past the chart range." : "This measurement was taken before the date of birth, so no percentile can be shown."}</p></>
                )}
                <p className="mt-2 text-xs text-muted-foreground">Measured {currentMeasurement.date} · A single percentile does not determine healthy growth; ask your clinician about any concerns.</p>
              </div>

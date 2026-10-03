@@ -93,7 +93,7 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
         supabase.from("babies").select("gender, birth_date, date_kind").eq("id", babyId).maybeSingle(),
         supabase.from("baby_growth").select("*").eq("baby_id", babyId),
       ]);
-      const latest = latestPercentiles((g ?? []) as GrowthRow[], sexOf(b?.gender), b?.date_kind === "birth" ? b?.birth_date ?? null : null);
+      const latest = latestPercentiles((g ?? []) as GrowthRow[], sexOf(b?.gender), b?.birth_date ?? null);
       if (latest.length) {
         const unit = { weight: "kg", length: "cm", head: "cm" } as const;
         const text = latest.map((l) => `${l.metric === "head" ? "Head circ." : l.metric[0]!.toUpperCase() + l.metric.slice(1)}: ${l.value} ${unit[l.metric]}${l.pct != null ? ` (${ordinal(l.pct)} %ile)` : ""} on ${l.date}`).join("   ·   ");
