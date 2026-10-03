@@ -123,6 +123,12 @@ export function QuickActions() {
   const nursing = useStopwatch();
   const sleep = useStopwatch();
   const tummy = useStopwatch();
+  useEffect(() => {
+    if (sleep.active) localStorage.setItem("nestling-sleep-start", String(Date.now() - sleep.elapsed));
+    else localStorage.removeItem("nestling-sleep-start");
+    window.dispatchEvent(new Event("nestling-sleep"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sleep.active]);
   const pumping = useStopwatch();
   const [pumpSide, setPumpSide] = useState<"Left" | "Right" | "Both">("Both");
   const [pumpMode, setPumpMode] = useState<"timer" | "manual">("timer");
