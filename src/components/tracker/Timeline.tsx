@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { Baby, Droplets, Milk, Moon, Trash2 } from "lucide-react";
+import { Baby, CloudSun, Droplets, Milk, MoonStar, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
 import { useFamily } from "@/hooks/useFamily";
@@ -17,10 +17,22 @@ function DiaperIcon({ className }: { className?: string }) {
 const meta = {
   feed: { icon: Milk, className: "bg-feed text-feed-foreground" },
   diaper: { icon: DiaperIcon, className: "bg-diaper text-diaper-foreground" },
-  sleep: { icon: Moon, className: "bg-sleep text-sleep-foreground" },
-  tummy: { icon: Baby, className: "bg-feed text-feed-foreground" },
-  pumping: { icon: Droplets, className: "bg-diaper text-diaper-foreground" },
+  sleep: { icon: MoonStar, className: "bg-sleep text-sleep-foreground" },
+  tummy: { icon: Baby, className: "bg-tummy text-tummy-foreground" },
+  pumping: { icon: Droplets, className: "bg-feed text-feed-foreground" },
 } as const;
+
+function secs(v?: string) {
+  if (!v) return 0;
+  const p = v.split(":").map(Number);
+  return p.some((n) => !Number.isFinite(n)) ? 0 : p.reduce((t, n) => t * 60 + n, 0);
+}
+// Activity start time: duration-based entries are stored at their end time.
+function startTs(log: LogEntry) {
+  return log.type === "sleep" || log.type === "tummy" || log.type === "pumping" || log.value.startsWith("Breastfeed")
+    ? log.timestamp - secs(log.notes) * 1000
+    : log.timestamp;
+}
 
 function time(ts: number) {
   return new Date(ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -29,7 +41,7 @@ function time(ts: number) {
 export function Timeline() {
   const { baby } = useFamily();
   const logs = useLiveQuery(
-    () => db.logs.where("timestamp").aboveOrEqual(startOfToday()).reverse().sortBy("timestamp"),
+    () => db.logs.where("timestamp").aboveOrEqual(startOfToday()).toArray().then((l) => l.sort((a, b) => startTs(b) - startTs(a))),
     [],
     [] as LogEntry[],
   );
@@ -44,11 +56,12 @@ export function Timeline() {
       ) : (
         <ul className="space-y-2">
           {logs.map((log) => {
-            const { icon: Icon, className } = meta[log.type];
+            const { className } = meta[log.type];
+            const Icon = log.type === "sleep" && log.value === "Nap" ? CloudSun : meta[log.type].icon;
             return (
               <li
                 key={log.id}
-                className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3 shadow-soft"
+                className="flex items-center gap-3 rounded-3xl bg-card p-3 shadow-soft"
               >
                 <span className={cn("flex h-10 w-10 items-center justify-center rounded-full", className)}>
                   <Icon className="h-5 w-5" />
@@ -56,7 +69,7 @@ export function Timeline() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{log.value}</p>
                   <p className="text-xs text-muted-foreground">
-                    {time(log.timestamp)}
+                    {startTs(log) !== log.timestamp ? `${time(startTs(log))}–${time(log.timestamp)}` : time(log.timestamp)}
                     {log.notes ? ` · ${log.notes}` : ""}
                     {baby && log.sync_status === "pending" ? " · not synced yet" : ""}
                   </p>
