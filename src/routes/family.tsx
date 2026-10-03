@@ -107,7 +107,7 @@ function FamilyPage() {
               checked={baby.solids_enabled}
               onCheckedChange={async (on) => {
                 const { error } = await supabase.from("babies").update({ solids_enabled: on }).eq("id", baby.id);
-                if (error) return toast.error("Couldn't update setting");
+                if (error) { toast.error("Couldn't update setting"); return; }
                 await refresh();
                 toast.success(on ? "Solids tracking on" : "Solids tracking off");
               }}
