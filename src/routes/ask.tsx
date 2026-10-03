@@ -131,7 +131,7 @@ function AskPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-11rem)] flex-col">
+    <div className="flex min-h-[calc(100dvh-11rem)] flex-col pt-1">
       <h1 className="mb-4 text-2xl font-bold">Nanny AI</h1>
 
       {messages.length === 0 && <Greeting />}
@@ -143,8 +143,8 @@ function AskPage() {
             className={cn(
               "max-w-[85%] text-sm leading-relaxed",
               m.role === "user"
-                ? "ml-auto rounded-2xl bg-primary px-4 py-2.5 text-primary-foreground"
-                : "mr-auto text-foreground",
+                ? "ml-auto rounded-3xl rounded-br-lg bg-sleep px-4 py-2.5 text-sleep-foreground shadow-soft"
+                : "mr-auto rounded-3xl rounded-bl-lg bg-card px-4 py-3 text-card-foreground shadow-soft",
             )}
           >
             {m.role === "assistant" ? (
