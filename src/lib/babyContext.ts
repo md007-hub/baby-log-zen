@@ -1,6 +1,7 @@
 // Builds a plain-text summary of the last 48h of Dexie logs for Nanny AI's system context.
 import { db, startOfToday, type LogEntry } from "@/lib/db";
 import type { Baby } from "@/hooks/useFamily";
+import { wakeRangeFor } from "@/lib/wakeWindow";
 
 function secs(value?: string) {
   if (!value) return 0;
@@ -61,6 +62,18 @@ export async function buildBabyContext(baby?: Baby | null): Promise<string> {
     `Today's totals: ${feeds.length} feeds (${ml}ml bottle, ${dur(nurse)} nursing); ${diapers.length} diapers (${c("Wet")} wet, ${c("Dirty")} dirty, ${c("Both")} both); ${dur(sleeps.reduce((s, l) => s + secs(l.notes), 0))} sleep across ${sleeps.length} sessions`,
   );
   lines.push(`Pumping today: ${pumps.length} sessions, ${pumps.reduce((s, l) => s + (Number(l.value.match(/(\d+)ml/)?.[1]) || 0), 0)}ml expressed (not counted as baby's intake).`);
+  const range = wakeRangeFor(baby?.birth_date, baby?.date_kind);
+  if (range) lines.push(`Typical wake window for this age (${range.label}): ${range.min}-${range.max} minutes.`);
+  const sleep3 = await db.logs.where("timestamp").aboveOrEqual(now - 72 * 3600_000).sortBy("timestamp");
+  const s3 = sleep3.filter((l) => l.type === "sleep");
+  lines.push(`Sleep log, last 3 days (${s3.length} sessions; use for sleep coaching, naps vs night, and wake-window patterns):`);
+  let prevEnd: number | null = null;
+  for (const l of s3) {
+    const d = secs(l.notes) * 1000;
+    const start = l.timestamp - d;
+    lines.push(`- ${l.value}: ${time(start)} to ${time(l.timestamp)} (${dur(d / 1000)})${prevEnd ? `, awake ${dur((start - prevEnd) / 1000)} before` : ""}`);
+    prevEnd = l.timestamp;
+  }
   lines.push("Full 48h log (oldest first):");
   for (const l of logs.slice(-60)) lines.push(`- ${time(l.timestamp)} ${l.type}: ${l.type === "feed" ? describeFeed(l) : l.value}${l.type === "sleep" && l.notes ? ` (${dur(secs(l.notes))})` : ""}`);
   return lines.join("\n");
