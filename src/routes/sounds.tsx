@@ -32,7 +32,7 @@ function SoundsPage() {
       <p className="mb-4 text-sm text-muted-foreground">
         Generated on your phone — no downloads, works offline.
       </p>
-      {hydrated ? <SoundPlayer /> : <div className="h-64 animate-pulse rounded-2xl bg-muted/60" />}
+      {hydrated ? <SoundPlayer /> : <div className="h-64 animate-pulse rounded-3xl bg-muted/60" />}
     </div>
   );
 }

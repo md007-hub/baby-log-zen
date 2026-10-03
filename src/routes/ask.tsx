@@ -72,7 +72,7 @@ const CHIPS = [
 
 function Greeting() {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft">
+    <div className="rounded-3xl bg-card p-4 shadow-soft">
       <div className="flex items-center gap-2.5">
         <Sparkles className="h-5 w-5 text-primary" />
         <h2 className="font-display text-lg font-bold leading-tight">Nanny AI</h2>
@@ -180,7 +180,7 @@ function AskPage() {
             type="button"
             disabled={offline || loading}
             onClick={() => void send(c.prompt)}
-            className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition-colors hover:bg-muted disabled:opacity-50"
+            className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition hover:bg-muted active:scale-[0.98] disabled:opacity-50"
           >
             {c.label}
           </button>
@@ -192,7 +192,7 @@ function AskPage() {
           e.preventDefault();
           void send(input);
         }}
-        className="flex items-end gap-2 rounded-2xl border border-border/60 bg-card p-2 shadow-lift"
+        className="flex items-end gap-2 rounded-3xl bg-card p-2 shadow-soft"
       >
         <textarea
           value={input}
@@ -206,7 +206,7 @@ function AskPage() {
           type="submit"
           disabled={offline || loading || input.trim().length === 0}
           aria-label="Send"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-40"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition active:scale-[0.98] disabled:opacity-40"
         >
           <Send className="h-5 w-5" />
         </button>

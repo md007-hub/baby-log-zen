@@ -43,8 +43,9 @@ function useStopwatch() {
 function DiaperIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect x="14" y="2" width="7" height="6" rx="2" />
-      <path d="M15 8v9a5 5 0 0 1-10 0V6a2 2 0 0 1 4 0v11" />
+      <path d="M3 6h18v3a9 9 0 0 1-18 0V6Z" />
+      <path d="M3 9c2.5 0 4 1.5 4.5 4M21 9c-2.5 0-4 1.5-4.5 4" />
+      <path d="M9 6v2M15 6v2" />
     </svg>
   );
 }
@@ -122,6 +123,12 @@ export function QuickActions() {
   const nursing = useStopwatch();
   const sleep = useStopwatch();
   const tummy = useStopwatch();
+  useEffect(() => {
+    if (sleep.active) localStorage.setItem("nestling-sleep-start", String(Date.now() - sleep.elapsed));
+    else localStorage.removeItem("nestling-sleep-start");
+    window.dispatchEvent(new Event("nestling-sleep"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sleep.active]);
   const pumping = useStopwatch();
   const [pumpSide, setPumpSide] = useState<"Left" | "Right" | "Both">("Both");
   const [pumpMode, setPumpMode] = useState<"timer" | "manual">("timer");
@@ -133,7 +140,7 @@ export function QuickActions() {
   useEffect(() => { if (!solidsOn && feedMode === "solids") setFeedMode("bottle"); }, [solidsOn, feedMode]);
   const [side, setSide] = useState<"Left" | "Right">("Left");
   const [bottleMl, setBottleMl] = useState("");
-  const [diaperKind, setDiaperKind] = useState<"Wet" | "Dirty" | "Both" | null>(null);
+  const [diaperKind, setDiaperKind] = useState<"Wet" | "Poop" | "Mixed" | null>(null);
   const [napOpen, setNapOpen] = useState(false);
   const [sleepKind, setSleepKind] = useState<"Nap" | "Night Sleep">(() => defaultSleepKind());
   const [napStart, setNapStart] = useState("");
@@ -155,7 +162,7 @@ export function QuickActions() {
     setFood(""); setPortion(null); setReaction(null); setSolidNotes("");
   };
   const logDiaper = async () => {
-    if (!diaperKind) { toast.error("Choose Wet, Dirty or Both first"); return; }
+    if (!diaperKind) { toast.error("Choose Wet, Poop or Mixed first"); return; }
     await logWithUndo({ type: "diaper", value: diaperKind }, `${diaperKind} diaper logged`);
     setDiaperKind(null);
   };
@@ -264,7 +271,7 @@ export function QuickActions() {
 
       <SectionCard title="Diaper" icon={<DiaperIcon className="h-5 w-5" />} tone="diaper" extra={<span className="ml-auto rounded-full bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground">Today: {diaperCount}</span>}>
         <div className="flex gap-2" role="group" aria-label="Diaper type">
-          {(["Wet", "Dirty", "Both"] as const).map((kind) => <Button key={kind} type="button" aria-pressed={diaperKind === kind} onClick={() => setDiaperKind(kind)} className={cn(pillBase, diaperKind === kind && pill.diaper)}>{kind}</Button>)}
+          {(["Wet", "Poop", "Mixed"] as const).map((kind) => <Button key={kind} type="button" aria-pressed={diaperKind === kind} onClick={() => setDiaperKind(kind)} className={cn(pillBase, diaperKind === kind && pill.diaper)}>{kind}</Button>)}
         </div>
         <Button type="button" onClick={() => void logDiaper()} className={cn(bigButton, "mt-3 w-full")}>Log Diaper</Button>
       </SectionCard>

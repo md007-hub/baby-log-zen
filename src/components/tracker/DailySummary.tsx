@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, startOfToday } from "@/lib/db";
 import { useFamily } from "@/hooks/useFamily";
+import { supabase } from "@/integrations/supabase/client";
+import { Moon } from "lucide-react";
 import { wakeRangeFor, wakeStatus } from "@/lib/wakeWindow";
 
 function durationSeconds(value?: string) {
@@ -35,10 +37,24 @@ export function DailySummary() {
   const lastFeed = sorted.find((l) => l.type === "feed");
   const lastSleep = sorted.find((l) => l.type === "sleep");
   const name = baby?.name ?? "Baby";
-  const status = [
-    lastSleep ? `${name} is awake · ${ago(now - lastSleep.timestamp)}` : `${name} is doing great`,
-    lastFeed ? `Last fed ${ago(now - lastFeed.timestamp)} ago` : "No feeds yet",
-  ];
+  const [sleepStart, setSleepStart] = useState<number | null>(null);
+  useEffect(() => {
+    const read = () => { const v = Number(localStorage.getItem("nestling-sleep-start")); setSleepStart(v > 0 ? v : null); };
+    read(); window.addEventListener("nestling-sleep", read); window.addEventListener("storage", read);
+    return () => { window.removeEventListener("nestling-sleep", read); window.removeEventListener("storage", read); };
+  }, []);
+  const fedText = lastFeed ? ` · Last fed ${ago(now - lastFeed.timestamp)} ago` : "";
+  const asleep = sleepStart != null;
+  const status = asleep
+    ? [`Asleep for ${ago(now - sleepStart)}`, `${name} is resting${fedText}`]
+    : today.length === 0 && !lastSleep
+      ? ["Ready for the day", "Awaiting first log"]
+      : [lastSleep ? `Awake for ${ago(now - lastSleep.timestamp)}${fedText}` : `${name} is awake${fedText}`, `${name}'s day so far`];
+  const [photo, setPhoto] = useState<string | null>(null);
+  useEffect(() => {
+    if (!baby?.photo_url) { setPhoto(null); return; }
+    void supabase.storage.from("baby-photos").createSignedUrl(baby.photo_url, 3600).then(({ data }) => setPhoto(data?.signedUrl ?? null));
+  }, [baby?.photo_url]);
 
   const range = wakeRangeFor(baby?.birth_date, baby?.date_kind);
   const awakeMin = lastSleep ? Math.round((now - lastSleep.timestamp) / 60000) : null;
@@ -60,11 +76,11 @@ export function DailySummary() {
   return (
     <section aria-label="Today's summary" className="mb-4 rounded-3xl bg-card p-4 shadow-soft">
       <div className="flex items-center gap-3">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent font-display text-2xl font-bold text-accent-foreground" aria-hidden>
-          {name.charAt(0).toUpperCase()}
+        <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-display text-2xl font-bold text-accent-foreground" aria-hidden>
+          {photo ? <img src={photo} alt="" className="h-full w-full object-cover" /> : name.charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="truncate font-display text-lg font-bold">{status[0]}</p>
+          <p className="flex items-center gap-2 truncate font-display text-lg font-bold">{status[0]}{asleep && <span className="inline-flex items-center gap-1 rounded-full bg-sleep-tint px-2 py-0.5 text-xs font-semibold text-sleep-foreground"><Moon className="h-3 w-3" />Sleeping</span>}</p>
           <p className="text-sm text-muted-foreground">{status[1]}</p>
         </div>
       </div>

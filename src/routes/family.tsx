@@ -38,6 +38,22 @@ function FamilyPage() {
   const [editingBabyId, setEditingBabyId] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
+  const uploadPhoto = async (file: File | undefined, remove = false) => {
+    if (!baby) return;
+    if (!remove && (!file || !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) { toast.error("Choose an image under 5MB"); return; }
+    setSavingProfile(true);
+    let path: string | null = null;
+    if (!remove && file) {
+      path = `${baby.id}/${Date.now()}.${file.name.split(".").pop()?.toLowerCase() || "jpg"}`;
+      const { error } = await supabase.storage.from("baby-photos").upload(path, file, { upsert: true, contentType: file.type });
+      if (error) { setSavingProfile(false); toast.error("Photo upload failed"); return; }
+    }
+    const { error } = await supabase.from("babies").update({ photo_url: path }).eq("id", baby.id);
+    if (!error && baby.photo_url) await supabase.storage.from("baby-photos").remove([baby.photo_url]);
+    setSavingProfile(false);
+    if (error) toast.error("Could not save photo"); else { toast.success(remove ? "Photo removed" : "Photo updated"); await refresh(); }
+  };
+
   const editBaby = () => {
     if (!baby) return;
     setProfileName(baby.name);
@@ -117,6 +133,13 @@ function FamilyPage() {
           {editingBabyId === baby.id ? (
             <form onSubmit={(event) => void saveProfile(event)} className="mt-5 space-y-4 border-t border-border pt-4">
               <h2 className="font-display text-lg font-bold">Edit baby profile</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="inline-flex min-h-11 cursor-pointer items-center rounded-xl border border-border bg-card px-4 text-sm font-semibold shadow-soft active:scale-[0.98]">
+                  {baby.photo_url ? "Change photo" : "Add photo (optional)"}
+                  <input type="file" accept="image/*" className="sr-only" disabled={savingProfile} onChange={(event) => void uploadPhoto(event.target.files?.[0])} />
+                </label>
+                {baby.photo_url && <Button type="button" variant="ghost" disabled={savingProfile} onClick={() => void uploadPhoto(undefined, true)}>Remove photo</Button>}
+              </div>
               <label className="block text-sm font-semibold">Baby name
                 <Input required maxLength={60} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-12 text-base" />
               </label>
