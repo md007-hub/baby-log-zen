@@ -41,6 +41,12 @@
   --color-diaper-foreground: var(--diaper-foreground);
   --color-sleep: var(--sleep);
   --color-sleep-foreground: var(--sleep-foreground);
+  --color-feed-tint: var(--feed-tint);
+  --color-diaper-tint: var(--diaper-tint);
+  --color-sleep-tint: var(--sleep-tint);
+  --color-tummy: var(--tummy);
+  --color-tummy-foreground: var(--tummy-foreground);
+  --color-tummy-tint: var(--tummy-tint);
   --color-online: var(--online);
   --color-offline: var(--offline);
   --color-logo: var(--logo);
@@ -51,15 +57,15 @@
   --color-logo-ink: var(--logo-ink);
   --font-display: "Quicksand", ui-rounded, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --shadow-soft: 0 1px 2px oklch(0.4 0.03 250 / 0.06), 0 8px 24px oklch(0.4 0.03 250 / 0.08);
+  --shadow-soft: 0 4px 20px -2px rgb(90 70 50 / 0.05), 0 1px 2px rgb(90 70 50 / 0.04);
   --shadow-lift: 0 2px 6px oklch(0.4 0.03 250 / 0.1), 0 16px 40px oklch(0.4 0.03 250 / 0.12);
 }
 
 :root {
   --radius: 1.125rem;
-  --background: oklch(0.977 0.011 85);
+  --background: #FAF7F2;
   --foreground: oklch(0.29 0.025 255);
-  --card: oklch(0.995 0.005 85);
+  --card: #FFFFFF;
   --card-foreground: oklch(0.29 0.025 255);
   --popover: oklch(0.995 0.005 85);
   --popover-foreground: oklch(0.29 0.025 255);
@@ -82,6 +88,12 @@
   --diaper-foreground: oklch(0.31 0.05 165);
   --sleep: oklch(0.86 0.055 275);
   --sleep-foreground: oklch(0.33 0.06 280);
+  --feed-tint: #FBF4EB;
+  --sleep-tint: #F3F2F8;
+  --diaper-tint: #EFF5F1;
+  --tummy-tint: #FAF0EC;
+  --tummy: oklch(0.85 0.07 40);
+  --tummy-foreground: oklch(0.38 0.08 35);
   --online: oklch(0.6 0.13 160);
   --offline: oklch(0.72 0.13 80);
   --logo: oklch(0.96 0.012 85);
@@ -118,6 +130,12 @@
   --diaper-foreground: oklch(0.95 0.03 165);
   --sleep: oklch(0.4 0.06 278);
   --sleep-foreground: oklch(0.95 0.03 280);
+  --feed-tint: oklch(0.25 0.025 70);
+  --sleep-tint: oklch(0.24 0.025 278);
+  --diaper-tint: oklch(0.24 0.022 165);
+  --tummy-tint: oklch(0.25 0.025 40);
+  --tummy: oklch(0.42 0.07 40);
+  --tummy-foreground: oklch(0.95 0.03 40);
   --online: oklch(0.75 0.15 160);
   --offline: oklch(0.82 0.14 85);
   --logo: oklch(0.91 0.018 85);
@@ -159,6 +177,6 @@
     box-shadow 140ms ease;
 
   &:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 }

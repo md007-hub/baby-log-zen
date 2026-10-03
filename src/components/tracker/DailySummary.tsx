@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, startOfToday } from "@/lib/db";
+import { useFamily } from "@/hooks/useFamily";
 
 function durationSeconds(value?: string) {
   if (!value) return 0;
@@ -7,57 +9,58 @@ function durationSeconds(value?: string) {
   if (parts.some((part) => !Number.isFinite(part))) return 0;
   return parts.reduce((total, part) => total * 60 + part, 0);
 }
+function ago(ms: number) {
+  const m = Math.max(0, Math.round(ms / 60000));
+  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+}
 
 export function DailySummary() {
-  const logs = useLiveQuery(() => db.logs.where("timestamp").aboveOrEqual(startOfToday()).toArray(), [], []);
-  const feeds = logs.filter((log) => log.type === "feed");
-  const pumps = logs.filter((log) => log.type === "pumping");
-  const pumpMl = pumps.reduce((sum, log) => sum + (Number(log.value.match(/(\d+)ml/)?.[1]) || 0), 0);
-  const diapers = logs.filter((log) => log.type === "diaper");
-  const sleep = logs.filter((log) => log.type === "sleep");
-  const nights = sleep.filter((log) => log.value === "Night Sleep").length;
-  const naps = sleep.length - nights;
-  const bottleMl = feeds.reduce((sum, log) => sum + (Number(log.value.match(/Bottle · (\d+)ml/)?.[1]) || 0), 0);
-  const nursingSeconds = feeds.reduce((sum, log) => sum + (log.value.startsWith("Breastfeed") ? durationSeconds(log.notes) : 0), 0);
-  const sleepSeconds = sleep.reduce((sum, log) => sum + durationSeconds(log.notes), 0);
-  const wetOnly = diapers.filter((log) => log.value === "Wet").length;
-  const dirtyOnly = diapers.filter((log) => log.value === "Dirty").length;
-  const both = diapers.filter((log) => log.value === "Both").length;
-  const sleepMinutes = Math.floor(sleepSeconds / 60);
-  const nursingMinutes = Math.floor(nursingSeconds / 60);
-  const hasBottle = bottleMl > 0;
-  const hasNursing = nursingSeconds > 0;
-  const feedDetail = feeds.length === 0
-    ? "No feeds yet"
-    : hasBottle && hasNursing
-      ? `${bottleMl}ml · ${nursingMinutes}m nursed`
-      : hasNursing
-        ? `${nursingMinutes}m nursed`
-        : `${bottleMl}ml total`;
-  const diaperDetail = diapers.length === 0
-    ? "No diapers yet"
-    : both > 0
-      ? `${wetOnly} Wet · ${dirtyOnly} Dirty · ${both} Both`
-      : `${wetOnly} Wet · ${dirtyOnly} Dirty`;
+  const { baby } = useFamily();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t); }, []);
+  const logs = useLiveQuery(() => db.logs.where("timestamp").aboveOrEqual(startOfToday() - 86400000).toArray(), [], []);
+  const today = logs.filter((l) => l.timestamp >= startOfToday());
+  const feeds = today.filter((l) => l.type === "feed");
+  const pumps = today.filter((l) => l.type === "pumping");
+  const pumpMl = pumps.reduce((s, l) => s + (Number(l.value.match(/(\d+)ml/)?.[1]) || 0), 0);
+  const diapers = today.filter((l) => l.type === "diaper");
+  const sleep = today.filter((l) => l.type === "sleep");
+  const tummy = today.filter((l) => l.type === "tummy");
+  const bottleMl = feeds.reduce((s, l) => s + (Number(l.value.match(/Bottle · (\d+)ml/)?.[1]) || 0), 0);
+  const sleepMin = Math.floor(sleep.reduce((s, l) => s + durationSeconds(l.notes), 0) / 60);
+  const tummyMin = Math.floor(tummy.reduce((s, l) => s + durationSeconds(l.notes), 0) / 60);
+
+  const sorted = [...logs].sort((a, b) => b.timestamp - a.timestamp);
+  const lastFeed = sorted.find((l) => l.type === "feed");
+  const lastSleep = sorted.find((l) => l.type === "sleep");
+  const name = baby?.name ?? "Baby";
+  const status = [
+    lastSleep ? `${name} is awake · ${ago(now - lastSleep.timestamp)}` : `${name} is doing great`,
+    lastFeed ? `Last fed ${ago(now - lastFeed.timestamp)} ago` : "No feeds yet",
+  ];
+
+  const pills = [
+    { label: `${feeds.length} ${feeds.length === 1 ? "feed" : "feeds"}${bottleMl ? ` · ${bottleMl}ml` : ""}`, cls: "bg-feed-tint text-feed-foreground" },
+    { label: `${diapers.length} ${diapers.length === 1 ? "diaper" : "diapers"}`, cls: "bg-diaper-tint text-diaper-foreground" },
+    { label: `${Math.floor(sleepMin / 60)}h ${sleepMin % 60}m sleep`, cls: "bg-sleep-tint text-sleep-foreground" },
+    ...(tummyMin ? [{ label: `${tummyMin}m tummy`, cls: "bg-tummy-tint text-tummy-foreground" }] : []),
+    ...(pumps.length ? [{ label: `Pumped ${pumpMl}ml`, cls: "bg-feed-tint text-feed-foreground" }] : []),
+  ];
 
   return (
-    <section aria-label="Today's summary" className="mb-4 grid grid-cols-[minmax(0,1.4fr)_minmax(0,1.6fr)_minmax(0,1fr)] divide-x divide-border rounded-xl border border-border/60 bg-card py-3.5 shadow-soft">
-       <div className="min-w-0 px-1 text-center">
-        <p className="text-xs font-semibold text-muted-foreground">Feeds</p>
-        <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{feeds.length} {feeds.length === 1 ? "feed" : "feeds"}</p>
-         <p className="min-h-4 text-xs leading-4 text-muted-foreground">{feedDetail}</p>
-         {pumps.length > 0 && <p className="mt-1 text-xs leading-4 text-muted-foreground">Pumped: {pumps.length} · {pumpMl}ml</p>}
+    <section aria-label="Today's summary" className="mb-4 rounded-3xl bg-card p-4 shadow-soft">
+      <div className="flex items-center gap-3">
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent font-display text-2xl font-bold text-accent-foreground" aria-hidden>
+          {name.charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate font-display text-lg font-bold">{status[0]}</p>
+          <p className="text-sm text-muted-foreground">{status[1]}</p>
+        </div>
       </div>
-      <div className="min-w-0 px-1 text-center">
-        <p className="text-xs font-semibold text-muted-foreground">Diapers</p>
-        <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{diapers.length} {diapers.length === 1 ? "diaper" : "diapers"}</p>
-        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{diaperDetail}</p>
-      </div>
-      <div className="min-w-0 px-1 text-center">
-        <p className="text-xs font-semibold text-muted-foreground">Sleep</p>
-        <p className="mt-1 whitespace-nowrap font-display text-xs font-bold leading-5 tabular-nums">{Math.floor(sleepMinutes / 60)}h {sleepMinutes % 60}m</p>
-        <p className="min-h-4 text-xs leading-4 text-muted-foreground">{naps} {naps === 1 ? "nap" : "naps"}{nights > 0 ? ` · ${nights} night` : ""}</p>
-      </div>
+      <ul className="mt-3 flex flex-wrap gap-2">
+        {pills.map((p) => <li key={p.label} className={`rounded-full px-3 py-1.5 text-xs font-semibold tabular-nums ${p.cls}`}>{p.label}</li>)}
+      </ul>
     </section>
   );
 }
