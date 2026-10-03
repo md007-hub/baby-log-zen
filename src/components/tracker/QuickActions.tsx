@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { addLog, db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { useFamily } from "@/hooks/useFamily";
+
+const FOODS = ["Avocado", "Banana", "Sweet Potato", "Oatmeal", "Egg", "Yogurt"];
+const PORTIONS = ["Few tastes", "Small (1-2 tbsp)", "Medium (~1/2 cup)", "Full meal"];
+const REACTIONS = ["😋 Loved it", "😐 Neutral", "😣 Disliked", "⚠️ Allergic reaction / Rash"];
 
 function formatDuration(ms: number) {
   const total = Math.floor(ms / 1000);
@@ -108,6 +113,12 @@ async function logWithUndo(entry: Parameters<typeof addLog>[0], message: string)
 }
 
 export function QuickActions() {
+  const { baby } = useFamily();
+  const solidsOn = !!baby?.solids_enabled;
+  const [food, setFood] = useState("");
+  const [portion, setPortion] = useState<string | null>(null);
+  const [reaction, setReaction] = useState<string | null>(null);
+  const [solidNotes, setSolidNotes] = useState("");
   const nursing = useStopwatch();
   const sleep = useStopwatch();
   const tummy = useStopwatch();
@@ -118,7 +129,8 @@ export function QuickActions() {
   const [pumpVolume, setPumpVolume] = useState("");
   const [pumpUnit, setPumpUnit] = useState<"ml" | "oz">("ml");
   const [tummyMin, setTummyMin] = useState("");
-  const [feedMode, setFeedMode] = useState<"bottle" | "nursing">("bottle");
+  const [feedMode, setFeedMode] = useState<"bottle" | "nursing" | "solids">("bottle");
+  useEffect(() => { if (!solidsOn && feedMode === "solids") setFeedMode("bottle"); }, [solidsOn, feedMode]);
   const [side, setSide] = useState<"Left" | "Right">("Left");
   const [bottleMl, setBottleMl] = useState("");
   const [diaperKind, setDiaperKind] = useState<"Wet" | "Dirty" | "Both" | null>(null);
@@ -133,6 +145,14 @@ export function QuickActions() {
     if (!Number.isInteger(ml) || ml < 1 || ml > 2000) { toast.error("Pick or enter an amount between 1 and 2000ml"); return; }
     await logWithUndo({ type: "feed", value: `Bottle · ${ml}ml` }, `Bottle ${ml}ml logged`);
     setBottleMl("");
+  };
+  const logSolids = async () => {
+    const name = food.trim();
+    if (!name || name.length > 60) { toast.error("Enter what your baby ate"); return; }
+    if (!portion) { toast.error("Choose a portion size"); return; }
+    const value = ["Solids", name, portion, reaction].filter(Boolean).join(" · ");
+    await logWithUndo({ type: "solids", value, notes: solidNotes.trim().slice(0, 300) || undefined }, `${name} logged`);
+    setFood(""); setPortion(null); setReaction(null); setSolidNotes("");
   };
   const logDiaper = async () => {
     if (!diaperKind) { toast.error("Choose Wet, Dirty or Both first"); return; }
@@ -164,8 +184,8 @@ export function QuickActions() {
   return (
     <div className="space-y-4">
       <SectionCard title="Feed" icon={<Milk className="h-5 w-5" strokeWidth={2.25} />} tone="feed">
-        <div className="mb-3 grid grid-cols-2 rounded-full bg-card/70 p-1" role="group" aria-label="Feed type">
-          {(["bottle", "nursing"] as const).map((mode) => (
+        <div className={cn("mb-3 grid rounded-full bg-card/70 p-1", solidsOn ? "grid-cols-3" : "grid-cols-2")} role="group" aria-label="Feed type">
+          {(solidsOn ? (["bottle", "nursing", "solids"] as const) : (["bottle", "nursing"] as const)).map((mode) => (
             <Button key={mode} type="button" variant="ghost" aria-pressed={feedMode === mode} onClick={() => setFeedMode(mode)} className={cn("h-11 rounded-full capitalize text-foreground", feedMode === mode && "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground")}>{mode}</Button>
           ))}
         </div>
@@ -183,6 +203,17 @@ export function QuickActions() {
             </div>
             <Button type="button" onClick={() => void logBottle()} className={cn(bigButton, "mt-3 w-full")}>Log Feed</Button>
           </>
+        ) : feedMode === "solids" ? (
+          <div className="space-y-3">
+            <input aria-label="Food name" placeholder="What did they eat?" maxLength={60} value={food} onChange={(e) => setFood(e.target.value)} className={cn(numInput, "w-full")} />
+            <div className="flex flex-wrap gap-2">{FOODS.map((f) => <button key={f} type="button" onClick={() => setFood(f)} className={cn("rounded-full bg-card px-3 py-2 text-sm font-medium shadow-soft tap-card", food === f && pill.tummy)}>{f}</button>)}</div>
+            <p className="text-sm font-semibold">Portion</p>
+            <div className="grid grid-cols-2 gap-2">{PORTIONS.map((p) => <button key={p} type="button" aria-pressed={portion === p} onClick={() => setPortion(p)} className={cn("min-h-11 rounded-full bg-card px-3 text-sm font-medium shadow-soft tap-card", portion === p && pill.feed)}>{p}</button>)}</div>
+            <p className="text-sm font-semibold">Reaction</p>
+            <div className="grid grid-cols-2 gap-2">{REACTIONS.map((r) => <button key={r} type="button" aria-pressed={reaction === r} onClick={() => setReaction(reaction === r ? null : r)} className={cn("min-h-11 rounded-full bg-card px-3 text-sm font-medium shadow-soft tap-card", reaction === r && (r.startsWith("⚠️") ? "bg-destructive text-destructive-foreground" : pill.feed))}>{r}</button>)}</div>
+            {(reaction?.startsWith("⚠️") || solidNotes) && <textarea aria-label="Reaction notes" placeholder="Describe the reaction (rash, where, how long)…" maxLength={300} value={solidNotes} onChange={(e) => setSolidNotes(e.target.value)} className="min-h-20 w-full rounded-xl border border-input bg-card p-3 text-base" />}
+            <Button type="button" onClick={() => void logSolids()} className={cn(bigButton, "w-full")}>Log Solids</Button>
+          </div>
         ) : (
           <div className="rounded-2xl bg-card/70 p-3">
             <div className="flex items-center justify-between gap-2">

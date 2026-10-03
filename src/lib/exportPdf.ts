@@ -1,4 +1,6 @@
 import { db, type LogEntry } from "@/lib/db";
+import { supabase } from "@/integrations/supabase/client";
+import { latestPercentiles, ordinal, sexOf, type GrowthRow } from "@/lib/growth";
 
 /** Parses stored durations: "HH:MM:SS", "MM:SS", or plain seconds. Returns seconds or null. */
 export function parseDurationSec(raw?: string): number | null {
@@ -25,7 +27,7 @@ const mlOf = (v: string) => {
   return oz ? Number(oz[1]) * 29.5735 : 0;
 };
 
-const CATEGORY: Record<string, string> = { feed: "Feed", diaper: "Diaper", sleep: "Sleep", tummy: "Tummy time", pumping: "Pumping" };
+const CATEGORY: Record<string, string> = { feed: "Feed", diaper: "Diaper", sleep: "Sleep", tummy: "Tummy time", pumping: "Pumping", solids: "Solids" };
 
 function details(e: LogEntry) {
   if (e.type === "sleep" || e.type === "tummy") {
@@ -81,7 +83,29 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
     doc.setFont("helvetica", "normal").setFontSize(8.5).setTextColor(90).text(sub, x, y + 50);
     if (i) doc.setDrawColor(220).line(M + i * cw, y + 10, M + i * cw, y + cardH - 10);
   });
-  y += cardH + 26;
+  y += cardH + 18;
+
+  // Latest growth (WHO percentiles)
+  try {
+    const babyId = localStorage.getItem("nestling-baby-id");
+    if (babyId) {
+      const [{ data: b }, { data: g }] = await Promise.all([
+        supabase.from("babies").select("gender, birth_date, date_kind").eq("id", babyId).maybeSingle(),
+        supabase.from("baby_growth").select("*").eq("baby_id", babyId),
+      ]);
+      const latest = latestPercentiles((g ?? []) as GrowthRow[], sexOf(b?.gender), b?.date_kind === "birth" ? b?.birth_date ?? null : null);
+      if (latest.length) {
+        const unit = { weight: "kg", length: "cm", head: "cm" } as const;
+        const text = latest.map((l) => `${l.metric === "head" ? "Head circ." : l.metric[0]!.toUpperCase() + l.metric.slice(1)}: ${l.value} ${unit[l.metric]}${l.pct != null ? ` (${ordinal(l.pct)} %ile)` : ""} on ${l.date}`).join("   ·   ");
+        doc.setFont("helvetica", "bold").setFontSize(10).setTextColor(30).text("Latest growth (WHO standards)", M, y);
+        doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(60);
+        const lines = doc.splitTextToSize(text, W - 2 * M) as string[];
+        doc.text(lines, M, y + 14);
+        y += 14 + lines.length * 12;
+      }
+    }
+  } catch { /* growth is optional */ }
+  y += 10;
 
   // Table
   const cols = [

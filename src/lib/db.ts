@@ -1,6 +1,6 @@
 import Dexie, { type Table } from "dexie";
 
-export type LogType = "feed" | "diaper" | "sleep" | "tummy" | "pumping";
+export type LogType = "feed" | "diaper" | "sleep" | "tummy" | "pumping" | "solids";
 export type SyncStatus = "synced" | "pending";
 
 export interface LogEntry {

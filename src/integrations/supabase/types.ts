@@ -43,6 +43,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          solids_enabled: boolean
         }
         Insert: {
           birth_date?: string | null
@@ -54,6 +55,7 @@ export type Database = {
           id?: string
           invite_code: string
           name: string
+          solids_enabled?: boolean
         }
         Update: {
           birth_date?: string | null
@@ -65,8 +67,50 @@ export type Database = {
           id?: string
           invite_code?: string
           name?: string
+          solids_enabled?: boolean
         }
         Relationships: []
+      }
+      baby_growth: {
+        Row: {
+          baby_id: string
+          created_at: string
+          created_by: string
+          head_cm: number | null
+          id: string
+          length_cm: number | null
+          measured_on: string
+          weight_kg: number | null
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          created_by?: string
+          head_cm?: number | null
+          id?: string
+          length_cm?: number | null
+          measured_on: string
+          weight_kg?: number | null
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          created_by?: string
+          head_cm?: number | null
+          id?: string
+          length_cm?: number | null
+          measured_on?: string
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baby_growth_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       baby_logs: {
         Row: {
@@ -225,6 +269,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          solids_enabled: boolean
         }
         SetofOptions: {
           from: "*"
@@ -247,6 +292,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          solids_enabled: boolean
         }
         SetofOptions: {
           from: "*"

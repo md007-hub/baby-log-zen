@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/hooks/useFamily";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/family")({
   head: () => ({
@@ -97,6 +98,21 @@ function FamilyPage() {
               ))}
             </div>
           )}
+          <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-3">
+            <span>
+              <span className="block text-sm font-semibold">Enable Solids Tracking</span>
+              <span className="block text-xs text-muted-foreground">Adds a Solids tab to the Feed card. Usually from around 6 months.</span>
+            </span>
+            <Switch
+              checked={baby.solids_enabled}
+              onCheckedChange={async (on) => {
+                const { error } = await supabase.from("babies").update({ solids_enabled: on }).eq("id", baby.id);
+                if (error) { toast.error("Couldn't update setting"); return; }
+                await refresh();
+                toast.success(on ? "Solids tracking on" : "Solids tracking off");
+              }}
+            />
+          </label>
         </section>
       )}
 
