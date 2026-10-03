@@ -75,7 +75,7 @@ export function SoundPlayer() {
                 aria-label={`${on ? "Pause" : "Play"} ${label}`}
                 className={cn(
                   "tap-card flex w-full items-center gap-4 rounded-3xl p-4 shadow-soft active:scale-[0.98] transition-transform text-left",
-                  on ? "bg-primary/10 ring-1 ring-inset ring-primary/40" : "bg-card ring-1 ring-inset ring-border/60 shadow-soft",
+                  on ? "bg-primary/10 ring-1 ring-inset ring-primary/40" : "bg-card",
                 )}
               >
                 <span
