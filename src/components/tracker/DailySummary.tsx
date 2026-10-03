@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, startOfToday } from "@/lib/db";
 import { useFamily } from "@/hooks/useFamily";
+import { wakeRangeFor, wakeStatus } from "@/lib/wakeWindow";
 
 function durationSeconds(value?: string) {
   if (!value) return 0;
@@ -39,6 +40,15 @@ export function DailySummary() {
     lastFeed ? `Last fed ${ago(now - lastFeed.timestamp)} ago` : "No feeds yet",
   ];
 
+  const range = wakeRangeFor(baby?.birth_date, baby?.date_kind);
+  const awakeMin = lastSleep ? Math.round((now - lastSleep.timestamp) / 60000) : null;
+  const coach = range && awakeMin != null ? (() => {
+    const st = wakeStatus(awakeMin, range);
+    const fmt = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ""}` : `${m}m`);
+    const msg = st === "early" ? `Next sleep in about ${fmt(range.min - awakeMin)}` : st === "soon" ? "Start winding down soon" : st === "now" ? "Sleep window is open — watch for yawns" : `Past typical window by ${fmt(awakeMin - range.max)} — overtired cues likely`;
+    return { msg, pct: Math.min(100, (awakeMin / range.max) * 100), range: `${fmt(range.min)}–${fmt(range.max)}`, st };
+  })() : null;
+
   const pills = [
     { label: `${feeds.length} ${feeds.length === 1 ? "feed" : "feeds"}${bottleMl ? ` · ${bottleMl}ml` : ""}`, cls: "bg-feed-tint text-feed-foreground" },
     { label: `${diapers.length} ${diapers.length === 1 ? "diaper" : "diapers"}`, cls: "bg-diaper-tint text-diaper-foreground" },
@@ -58,6 +68,18 @@ export function DailySummary() {
           <p className="text-sm text-muted-foreground">{status[1]}</p>
         </div>
       </div>
+      {coach && (
+        <div className="mt-3 rounded-2xl bg-sleep-tint p-3 text-sleep-foreground">
+          <div className="flex items-baseline justify-between gap-2 text-xs font-semibold">
+            <span>Wake-window coach</span>
+            <span className="tabular-nums opacity-80">Typical {coach.range}</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-background/60">
+            <div className="h-full rounded-full bg-current transition-all" style={{ width: `${coach.pct}%` }} />
+          </div>
+          <p className="mt-2 text-sm font-medium">{coach.msg}</p>
+        </div>
+      )}
       <ul className="mt-3 flex flex-wrap gap-2">
         {pills.map((p) => <li key={p.label} className={`rounded-full px-3 py-1.5 text-xs font-semibold tabular-nums ${p.cls}`}>{p.label}</li>)}
       </ul>

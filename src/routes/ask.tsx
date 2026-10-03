@@ -65,6 +65,8 @@ const CHIPS = [
   { label: "🍼 Last feed time & amount", prompt: "When did baby last eat, and how much?" },
   { label: "⏱️ Current wake window", prompt: "How long has baby been awake in the current wake window?" },
   { label: "📊 Today's daily summary", prompt: "Give me a summary of today's feeds, diapers and sleep." },
+  { label: "😴 Nap schedule for today", prompt: "Based on the last 3 days of sleep and baby's age, suggest a nap schedule for the rest of today." },
+  { label: "🌙 Night sleep review", prompt: "Review the last 3 nights of sleep. Any patterns, and what could help longer stretches?" },
   { label: "💡 Fussy baby soothing tips", prompt: "Baby is fussy. What soothing tips could help right now, given today's log?" },
 ];
 
