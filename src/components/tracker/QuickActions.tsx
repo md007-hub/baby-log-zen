@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { CloudSun, Droplets, Hourglass, Milk, MoonStar, Pause, Play, Plus, Square } from "lucide-react";
+import { CloudSun, Droplets, Hourglass, Milk, MoonStar, Pause, Play, Plus, Square, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -186,7 +186,7 @@ export function QuickActions() {
       <SectionCard title="Feed" icon={<Milk className="h-5 w-5" strokeWidth={2.25} />} tone="feed">
         <div className={cn("mb-3 grid rounded-full bg-card/70 p-1", solidsOn ? "grid-cols-3" : "grid-cols-2")} role="group" aria-label="Feed type">
           {(solidsOn ? (["bottle", "nursing", "solids"] as const) : (["bottle", "nursing"] as const)).map((mode) => (
-            <Button key={mode} type="button" variant="ghost" aria-pressed={feedMode === mode} onClick={() => setFeedMode(mode)} className={cn("h-11 rounded-full capitalize text-foreground", feedMode === mode && "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground")}>{mode}</Button>
+            <Button key={mode} type="button" variant="ghost" aria-pressed={feedMode === mode} onClick={() => setFeedMode(mode)} className={cn("h-11 rounded-full capitalize text-foreground", feedMode === mode && "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground")}>{mode === "solids" && <UtensilsCrossed className="h-4 w-4" />}{mode}</Button>
           ))}
         </div>
         {feedMode === "bottle" ? (

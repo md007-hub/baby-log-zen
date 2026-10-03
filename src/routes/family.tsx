@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { RemindersCard } from "@/components/RemindersCard";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export const Route = createFileRoute("/family")({
   head: () => ({
@@ -31,6 +32,43 @@ function FamilyPage() {
   const { ready, user, babies, baby, memberCount, selectBaby, refresh, signOut } = useFamily();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [profileGender, setProfileGender] = useState<"boy" | "girl" | "">("");
+  const [profileDate, setProfileDate] = useState("");
+  const [editingBabyId, setEditingBabyId] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const editBaby = () => {
+    if (!baby) return;
+    setProfileName(baby.name);
+    setProfileGender(baby.gender === "boy" || baby.gender === "girl" ? baby.gender : "");
+    setProfileDate(baby.date_kind === "birth" ? baby.birth_date ?? "" : "");
+    setEditingBabyId(baby.id);
+  };
+
+  const saveProfile = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!baby || editingBabyId !== baby.id || savingProfile) return;
+    const name = profileName.trim();
+    const today = new Date();
+    const localToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    if (!name || name.length > 60 || !profileGender || !/^\d{4}-\d{2}-\d{2}$/.test(profileDate) || profileDate > localToday) {
+      toast.error("Enter a name, gender and valid date of birth");
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const { data, error } = await supabase.from("babies").update({ name, gender: profileGender, birth_date: profileDate, date_kind: "birth" }).eq("id", baby.id).select("id").single();
+      if (error || !data) throw error ?? new Error("Profile could not be saved");
+      await refresh();
+      setEditingBabyId(null);
+      toast.success("Baby profile updated");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Couldn't save baby profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   if (!ready) return null;
   if (!user) {
@@ -76,6 +114,25 @@ function FamilyPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {memberCount > 1 ? `Synced with partner · ${memberCount} parents` : "Only you so far — share the code below"}
           </p>
+          {editingBabyId === baby.id ? (
+            <form onSubmit={(event) => void saveProfile(event)} className="mt-5 space-y-4 border-t border-border pt-4">
+              <h2 className="font-display text-lg font-bold">Edit baby profile</h2>
+              <label className="block text-sm font-semibold">Baby name
+                <Input required maxLength={60} value={profileName} onChange={(event) => setProfileName(event.target.value)} className="mt-1.5 h-12 text-base" />
+              </label>
+              <div>
+                <p className="mb-2 text-sm font-semibold">Gender</p>
+                <div className="grid grid-cols-2 gap-2" role="group" aria-label="Gender">
+                  {(["boy", "girl"] as const).map((gender) => <Button key={gender} type="button" variant={profileGender === gender ? "default" : "outline"} aria-pressed={profileGender === gender} onClick={() => setProfileGender(gender)} className="h-12">{gender === "boy" ? "Boy" : "Girl"}</Button>)}
+                </div>
+              </div>
+              <div><p className="text-sm font-semibold">Date of birth</p><DatePicker label="Date of birth" value={profileDate} onChange={setProfileDate} maxDate={new Date()} /></div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => setEditingBabyId(null)} className="h-12 flex-1">Cancel</Button>
+                <Button type="submit" disabled={savingProfile} className="h-12 flex-1">{savingProfile ? "Saving…" : "Save profile"}</Button>
+              </div>
+            </form>
+          ) : <Button type="button" variant="outline" onClick={editBaby} className="mt-4 h-11 w-full">Edit baby profile</Button>}
           <div className="mt-4 flex items-center justify-between rounded-2xl bg-muted px-4 py-3">
             <span className="font-mono text-2xl font-bold tracking-[0.3em]">{baby.invite_code}</span>
             <Button
