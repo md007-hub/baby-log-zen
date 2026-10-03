@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "@/hooks/useFamily";
 import { usePro } from "@/hooks/usePro";
+import { checkReminders, notificationsSupported } from "@/lib/reminders";
 
 function SignInChip() {
   return (
@@ -178,7 +179,14 @@ const tabs = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  const { ready, user } = useFamily();
+  const { ready, user, baby } = useFamily();
+  useEffect(() => {
+    if (!baby || !notificationsSupported()) return;
+    const run = () => void checkReminders(baby).catch(() => {});
+    run();
+    const t = setInterval(run, 60000);
+    return () => clearInterval(t);
+  }, [baby]);
   const navigate = useNavigate();
   const guarded = pathname.startsWith("/sounds") || pathname.startsWith("/ask");
   useEffect(() => {

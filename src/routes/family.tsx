@@ -11,6 +11,7 @@ import { useFamily } from "@/hooks/useFamily";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { RemindersCard } from "@/components/RemindersCard";
 
 export const Route = createFileRoute("/family")({
   head: () => ({
@@ -127,6 +128,8 @@ function FamilyPage() {
         <p className="text-sm text-muted-foreground">Name, date of birth or due date, gender and birth weight.</p>
         <Button asChild className="h-12 w-full text-base"><Link to="/onboarding" search={{ add: true }}>Add child</Link></Button>
       </section>
+
+      <RemindersCard />
 
       <ProSection babyName={baby?.name ?? null} />
 

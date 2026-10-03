@@ -8,4 +8,4 @@
 - [x] Phase 1b: oatmeal luxury look, category tints, hero status card, nap/night icons + auto default
 - [x] Phase 2: solids tracking (toggle) + WHO growth charts/percentiles in PDF
 - [x] Phase 3: wake-window coach + Nanny AI sleep prompts with 3-day sleep data
-- [ ] Phase 4: web push reminders (Vitamin D, feed interval, wake window), iPhone install hint
+- [x] Phase 4: web push reminders (Vitamin D, feed interval, wake window), iPhone install hint
