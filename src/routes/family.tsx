@@ -123,13 +123,18 @@ function FamilyPage() {
   };
 
 
-  const join = () =>
-    run(async () => {
+  const join = () => {
+    if (caregiverLimitReached) {
+      showInviteDialog();
+      return;
+    }
+    return run(async () => {
       const { data, error } = await supabase.rpc("join_baby", { _code: code });
       if (error) throw new Error(error.message);
       setCode("");
       return data as { id: string };
     }, "Joined! Logs are now shared");
+  };
 
   return (
     <div className="space-y-4">
