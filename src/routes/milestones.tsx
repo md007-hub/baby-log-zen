@@ -75,7 +75,7 @@ function MilestonesPage() {
         <h1 className="font-display text-2xl font-bold">Developmental Milestones</h1>
         <p className="text-sm text-muted-foreground">Tap to mark what {baby.name} can do. Every baby develops at their own pace.</p>
       </header>
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist">
+      <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist">
         {BRACKETS.map((b) => (
           <button key={b.id} role="tab" aria-selected={b.id === tab} onClick={() => setTab(b.id)} className={cn("shrink-0 rounded-full px-4 py-2 text-sm font-semibold shadow-soft tap-card", b.id === tab ? "bg-primary text-primary-foreground" : "bg-card")}>{b.label}</button>
         ))}
