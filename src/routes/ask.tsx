@@ -66,8 +66,9 @@ function AskPage() {
   const offline = hydrated && !online;
 
   const ask = useServerFn(askBabyAi);
-  const { user, baby } = useFamily();
-  const { isPro, openUpgrade } = usePro();
+  const { baby } = useFamily();
+  const { isPro, openUpgrade, consumeQuestion, aiQuestionsRemaining, watchRewardedAd, grantAiBonus } = usePro();
+  const outOfQuestions = !isPro && aiQuestionsRemaining === 0;
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,15 +76,12 @@ function AskPage() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, outOfQuestions]);
 
   const send = async (text: string) => {
     const question = text.trim();
-    if (!question || loading || offline) return;
-    if (!(await consumeQuestion(!!user, isPro))) {
-      openUpgrade(LIMIT_MSG);
-      return;
-    }
+    if (!question || loading || offline || outOfQuestions) return;
+    if (!(await consumeQuestion())) return;
     const next: Msg[] = [...messages, { role: "user", content: question }];
     setMessages(next);
     setInput("");
