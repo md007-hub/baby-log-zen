@@ -115,9 +115,9 @@ export function DailySummary() {
     },
     {
       label: `${diapers.length} ${diapers.length === 1 ? "diaper" : "diapers"}`,
-      cls: "bg-diaper-tint text-diaper-foreground",
+      cls: "bg-feed-tint text-feed-foreground",
     },
-    { label: `${Math.floor(sleepMin / 60)}h ${sleepMin % 60}m sleep`, cls: "bg-diaper-tint text-diaper-foreground" },
+    { label: `${Math.floor(sleepMin / 60)}h ${sleepMin % 60}m sleep`, cls: "bg-feed-tint text-feed-foreground" },
     ...(tummyMin ? [{ label: `${tummyMin}m tummy`, cls: "bg-tummy-tint text-tummy-foreground" }] : []),
     ...(pumps.length ? [{ label: `Pumped ${pumpMl}ml`, cls: "bg-feed-tint text-feed-foreground" }] : []),
   ];
