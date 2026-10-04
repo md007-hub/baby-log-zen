@@ -176,15 +176,26 @@ function FamilyPage() {
             <Button
               variant="secondary"
               className="h-11"
+              aria-label={caregiverLimitReached ? "Caregiver limit reached — upgrade to invite more" : "Copy invite code"}
               onClick={() => {
+                if (caregiverLimitReached) {
+                  showInviteDialog();
+                  return;
+                }
                 navigator.clipboard?.writeText(baby.invite_code);
                 toast.success("Invite code copied");
               }}
             >
-              <Copy /> Copy
+              {caregiverLimitReached ? <Lock /> : <Copy />} {caregiverLimitReached ? "2 of 2" : "Copy"}
             </Button>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">Your partner signs in on their phone, opens Family, and enters this code.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {caregiverLimitReached
+              ? "All 2 free caregiver spots are in use. PRO removes the limit."
+              : memberCount >= 1
+                ? "Your partner signs in on their phone, opens Family, and enters this code."
+                : "Your partner signs in on their phone, opens Family, and enters this code."}
+          </p>
           {babies.length > 1 && (
             <div className="mt-4 flex flex-wrap gap-2">
               {babies.map((b) => (
