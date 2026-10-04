@@ -192,9 +192,7 @@ function FamilyPage() {
           <p className="mt-2 text-xs text-muted-foreground">
             {caregiverLimitReached
               ? "All 2 free caregiver spots are in use. PRO removes the limit."
-              : memberCount >= 1
-                ? "Your partner signs in on their phone, opens Family, and enters this code."
-                : "Your partner signs in on their phone, opens Family, and enters this code."}
+              : "Your partner signs in on their phone, opens Family, and enters this code."}
           </p>
           {babies.length > 1 && (
             <div className="mt-4 flex flex-wrap gap-2">
