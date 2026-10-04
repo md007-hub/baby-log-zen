@@ -51,7 +51,7 @@ function DiaperIcon({ className }: { className?: string }) {
 }
 
 type Tone = "feed" | "diaper" | "sleep" | "tummy";
-const tint: Record<Tone, string> = { feed: "bg-feed-tint", diaper: "bg-diaper-tint", sleep: "bg-sleep-tint", tummy: "bg-tummy-tint" };
+const tint: Record<Tone, string> = { feed: "bg-feed-tint", diaper: "bg-diaper-tint", sleep: "border border-[#E5DCF5] bg-[#F4F0FA] dark:border-[#2E2845] dark:bg-[#1E1B2E]", tummy: "bg-tummy-tint" };
 const badge: Record<Tone, string> = {
   feed: "bg-feed text-feed-foreground",
   diaper: "bg-diaper text-diaper-foreground",

@@ -14,6 +14,7 @@ import { Route as AskRouteImport } from './routes/ask'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FamilyRouteImport } from './routes/family'
 import { Route as GrowthRouteImport } from './routes/growth'
+import { Route as MilestonesRouteImport } from './routes/milestones'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SoundsRouteImport } from './routes/sounds'
@@ -44,6 +45,11 @@ const FamilyRoute = FamilyRouteImport.update({
 const GrowthRoute = GrowthRouteImport.update({
   id: '/growth',
   path: '/growth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MilestonesRoute = MilestonesRouteImport.update({
+  id: '/milestones',
+  path: '/milestones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
   '/growth': typeof GrowthRoute
+  '/milestones': typeof MilestonesRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
   '/growth': typeof GrowthRoute
+  '/milestones': typeof MilestonesRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/family': typeof FamilyRoute
   '/growth': typeof GrowthRoute
+  '/milestones': typeof MilestonesRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sounds': typeof SoundsRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/family'
     | '/growth'
+    | '/milestones'
     | '/onboarding'
     | '/reset-password'
     | '/sounds'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/family'
     | '/growth'
+    | '/milestones'
     | '/onboarding'
     | '/reset-password'
     | '/sounds'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/family'
     | '/growth'
+    | '/milestones'
     | '/onboarding'
     | '/reset-password'
     | '/sounds'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   FamilyRoute: typeof FamilyRoute
   GrowthRoute: typeof GrowthRoute
+  MilestonesRoute: typeof MilestonesRoute
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SoundsRoute: typeof SoundsRoute
@@ -209,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/growth'
       fullPath: '/growth'
       preLoaderRoute: typeof GrowthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/milestones': {
+      id: '/milestones'
+      path: '/milestones'
+      fullPath: '/milestones'
+      preLoaderRoute: typeof MilestonesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   FamilyRoute: FamilyRoute,
   GrowthRoute: GrowthRoute,
+  MilestonesRoute: MilestonesRoute,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SoundsRoute: SoundsRoute,
