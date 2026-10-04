@@ -257,6 +257,31 @@ function FamilyPage() {
       <Button variant="ghost" className="h-12 w-full text-muted-foreground" onClick={signOut}>
         <LogOut /> Sign out ({user.email})
       </Button>
+
+      <Dialog open={inviteDialog} onOpenChange={setInviteDialog}>
+        <DialogContent className="max-w-sm rounded-3xl sm:rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <Lock className="h-5 w-5 text-primary" /> Caregiver limit reached
+            </DialogTitle>
+            <DialogDescription className="text-left">{CAREGIVER_LIMIT_COPY}</DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2">
+            <Button variant="outline" className="h-12 flex-1" onClick={() => setInviteDialog(false)}>
+              Not now
+            </Button>
+            <Button
+              className="h-12 flex-1"
+              onClick={() => {
+                setInviteDialog(false);
+                openUpgrade(CAREGIVER_LIMIT_COPY);
+              }}
+            >
+              <Sparkles /> Upgrade to PRO
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
