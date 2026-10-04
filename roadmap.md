@@ -1,7 +1,7 @@
 # Current polish
-- [ ] Restore the Sleep card lavender/twilight category tint.
-- [ ] Extend WHO weight and length/height standards and charts through 60 months with a highlighted latest point.
-- [ ] Polish feature-tour imagery and copy.
+- [x] Restore the Sleep card lavender/twilight category tint.
+- [x] Extend WHO weight and length/height standards and charts through 60 months with a highlighted latest point.
+- [x] Polish feature-tour imagery and copy.
 
 # Current work
 - [x] Edit active baby's name, gender and birth date in Family settings; refresh growth and wake windows.

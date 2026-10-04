@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { ArrowLeft, Ruler, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/hooks/useFamily";
 import { useHydrated } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
-import { ageInMonths, latestPercentiles, METRIC_KEY, METRIC_LABEL, ordinal, PERCENTILES, sexOf, valueAt, type GrowthRow, type Metric } from "@/lib/growth";
+import { ageInMonths, latestPercentiles, MAX_MONTHS, METRIC_KEY, METRIC_LABEL, ordinal, PERCENTILES, sexOf, valueAt, type GrowthRow, type Metric } from "@/lib/growth";
 
 export const Route = createFileRoute("/growth")({
   head: () => ({
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/growth")({
       { title: "Growth & WHO Percentiles — Nestling" },
       { name: "description", content: "Track weight, length and head circumference against WHO growth standards." },
       { property: "og:title", content: "Growth & WHO Percentiles — Nestling" },
-      { property: "og:description", content: "Plot your baby's growth on WHO 0–24 month percentile curves." },
+      { property: "og:description", content: "Plot your child's growth on WHO percentile curves through age five." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -55,20 +55,24 @@ function GrowthPage() {
   const birth = baby?.birth_date ?? null;
   const badges = latestPercentiles(rows, sex, birth);
   const currentMeasurement = badges.find((badge) => badge.metric === metric);
+  const chartMax = MAX_MONTHS[metric];
 
   const chart = useMemo(() => {
     if (!sex) return null;
-    const curves = Array.from({ length: 49 }, (_, i) => {
+    const curves = Array.from({ length: chartMax * 2 + 1 }, (_, i) => {
       const m = i / 2;
       const o: Record<string, number> = { m };
-      for (const p of PERCENTILES) o[`p${p}`] = Number(valueAt(metric, sex, m, p)!.toFixed(2));
+      for (const p of PERCENTILES) {
+        const value = valueAt(metric, sex, m, p);
+        if (value != null) o[`p${p}`] = Number(value.toFixed(2));
+      }
       return o;
     });
     const points = birth
-      ? rows.filter((r) => r[METRIC_KEY[metric]] != null).map((r) => ({ m: Number(ageInMonths(birth, r.measured_on).toFixed(2)), baby: Number(r[METRIC_KEY[metric]]) })).filter((p) => p.m >= 0 && p.m <= 24)
+      ? rows.filter((r) => r[METRIC_KEY[metric]] != null).map((r) => ({ m: Number(ageInMonths(birth, r.measured_on).toFixed(2)), baby: Number(r[METRIC_KEY[metric]]) })).filter((p) => p.m >= 0 && p.m <= chartMax)
       : [];
-    return { curves, points };
-  }, [sex, birth, rows, metric]);
+    return { curves, points, latest: points.at(-1) };
+  }, [sex, birth, rows, metric, chartMax]);
 
   const save = async () => {
     if (!baby) return;
@@ -94,6 +98,14 @@ function GrowthPage() {
   if (!user || !baby) return <p className="rounded-3xl bg-card p-6 text-center shadow-soft">Sign in and set up a baby to track growth. <Link to="/" className="font-semibold underline">Back</Link></p>;
 
   const unitFor = (m: Metric) => (m === "weight" ? "kg" : "cm");
+  const ageLabel = (months: number) => {
+    const rounded = Math.max(0, Math.round(months));
+    if (rounded < 12) return `${rounded} month${rounded === 1 ? "" : "s"}`;
+    const years = Math.floor(rounded / 12);
+    const remainder = rounded % 12;
+    return `${years} year${years === 1 ? "" : "s"}${remainder ? ` ${remainder} month${remainder === 1 ? "" : "s"}` : ""}`;
+  };
+  const metricWord = metric === "weight" ? "weighs more" : metric === "length" ? "measures longer" : "measures larger";
 
   return (
     <div className="space-y-4">
@@ -125,16 +137,16 @@ function GrowthPage() {
           <div className="mb-3 grid grid-cols-3 rounded-full bg-muted p-1" role="group" aria-label="Chart metric">
             {(["weight", "length", "head"] as Metric[]).map((m) => <Button key={m} type="button" variant="ghost" aria-pressed={metric === m} onClick={() => setMetric(m)} className={cn("h-10 rounded-full text-foreground", metric === m && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground")}>{METRIC_LABEL[m]}</Button>)}
           </div>
-          <p className="mb-2 text-xs text-muted-foreground">WHO {sex === "boy" ? "boys" : "girls"} · 3rd, 15th, 50th, 85th, 97th percentiles ({unitFor(metric)} by month)</p>
+          <p className="mb-2 text-xs text-muted-foreground">WHO {sex === "boy" ? "boys" : "girls"} · 3rd, 15th, 50th, 85th, 97th percentiles ({unitFor(metric)} by month, 0–{chartMax})</p>
            {currentMeasurement && (
              <div className="mb-4 rounded-2xl bg-tummy-tint p-4" aria-live="polite">
                {currentMeasurement.pct != null ? (
                  <>
-                   <p className="font-display text-lg font-bold">{baby.name} is in the {ordinal(currentMeasurement.pct)} percentile for {METRIC_LABEL[metric].toLowerCase()}.</p>
-                   <p className="mt-1 text-sm text-muted-foreground">{METRIC_LABEL[metric]} is higher than about {Math.round(currentMeasurement.pct)}% of {sex === "boy" ? "boys" : "girls"} the same age, based on WHO growth standards.</p>
+                   <p className="font-display text-lg font-bold">{baby.name} is in the ~{Math.round(currentMeasurement.pct)}th percentile ({currentMeasurement.value} {unitFor(metric)}) for {METRIC_LABEL[metric].toLowerCase()}.</p>
+                   <p className="mt-1 text-sm text-muted-foreground">{currentMeasurement.pct >= 25 && currentMeasurement.pct <= 75 ? "Right in the healthy middle of the WHO curve" : "Tracking on the WHO growth curve"} — {metricWord} than about {Math.round(currentMeasurement.pct)}% of {sex === "boy" ? "boys" : "girls"} at {ageLabel(ageInMonths(birth!, currentMeasurement.date))}.</p>
                  </>
                ) : (
-                 <><p className="font-display text-lg font-bold">{baby.name}'s latest {METRIC_LABEL[metric].toLowerCase()}: {currentMeasurement.value} {unitFor(metric)}</p><p className="mt-1 text-sm text-muted-foreground">{!birth ? "Add a date of birth in Family settings to see how this compares with babies the same age." : !sex ? "Choose Boy or Girl in Family settings to compare against WHO standards." : ageInMonths(birth, currentMeasurement.date) > 24 ? "WHO percentiles here cover 0–24 months, so this measurement is past the chart range." : "This measurement was taken before the date of birth, so no percentile can be shown."}</p></>
+                 <><p className="font-display text-lg font-bold">{baby.name}'s latest {METRIC_LABEL[metric].toLowerCase()}: {currentMeasurement.value} {unitFor(metric)}</p><p className="mt-1 text-sm text-muted-foreground">{!birth ? "Add a date of birth in Family settings to compare this measurement." : !sex ? "Choose Boy or Girl in Family settings to compare against WHO standards." : ageInMonths(birth, currentMeasurement.date) > chartMax ? `${METRIC_LABEL[metric]} standards in this chart cover up to ${chartMax} months.` : "This measurement was taken before the date of birth, so no percentile can be shown."}</p></>
                )}
                <p className="mt-2 text-xs text-muted-foreground">Measured {currentMeasurement.date} · A single percentile does not determine healthy growth; ask your clinician about any concerns.</p>
              </div>
@@ -143,10 +155,11 @@ function GrowthPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                 <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-                <XAxis dataKey="m" type="number" domain={[0, 24]} ticks={[0, 3, 6, 9, 12, 15, 18, 21, 24]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                <XAxis dataKey="m" type="number" domain={[0, chartMax]} ticks={chartMax === 60 ? [0, 12, 24, 36, 48, 60] : [0, 3, 6, 9, 12, 15, 18, 21, 24]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 {PERCENTILES.map((p) => <Line key={p} data={chart.curves} dataKey={`p${p}`} name={`${ordinal(p)}`} dot={false} strokeWidth={p === 50 ? 2 : 1} stroke={p === 50 ? "var(--primary)" : "var(--muted-foreground)"} strokeOpacity={p === 50 ? 0.9 : 0.45} isAnimationActive={false} />)}
                 <Line data={chart.points} dataKey="baby" name={baby.name} stroke="var(--tummy-foreground)" strokeWidth={2.5} dot={{ r: 4, fill: "var(--tummy-foreground)" }} isAnimationActive={false} />
+                {chart.latest && <ReferenceDot x={chart.latest.m} y={chart.latest.baby} r={7} fill="var(--tummy-foreground)" stroke="var(--card)" strokeWidth={3} className="drop-shadow-[0_0_7px_var(--tummy-foreground)]" />}
               </LineChart>
             </ResponsiveContainer>
           </div>

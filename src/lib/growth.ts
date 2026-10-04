@@ -2,6 +2,7 @@ import { WHO_LMS } from "@/lib/whoLms";
 
 export type Metric = "weight" | "length" | "head";
 export type Sex = "boy" | "girl";
+export const MAX_MONTHS: Record<Metric, number> = { weight: 60, length: 60, head: 24 };
 export const PERCENTILES = [3, 15, 50, 85, 97] as const;
 const Z: Record<number, number> = { 3: -1.88079, 15: -1.03643, 50: 0, 85: 1.03643, 97: 1.88079 };
 
@@ -14,9 +15,10 @@ export function ageInMonths(birthDate: string, on: string) {
 }
 
 function lms(metric: Metric, sex: Sex, months: number): [number, number, number] | null {
-  if (!(months >= 0 && months <= 24)) return null;
+  const maxMonths = MAX_MONTHS[metric];
+  if (!(months >= 0 && months <= maxMonths)) return null;
   const t = WHO_LMS[metric][sex];
-  const i = Math.min(23, Math.floor(months));
+  const i = Math.min(t.length - 2, Math.floor(months));
   const f = months - i;
   const a = t[i]!, b = t[i + 1]!;
   return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];

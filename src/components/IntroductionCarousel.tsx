@@ -1,26 +1,26 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Baby, FileText, HeartPulse, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, ClipboardPlus, MessageCircleHeart, Sparkles, UsersRound } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "@/hooks/useFamily";
 
 const featureSlides = [
   {
-    icon: Users,
+    icon: UsersRound,
     title: "Real-time Partner Sync",
     description: "Keep both parents on the same page with live updates, wherever you are.",
     label: "Care, together",
     tint: "bg-diaper text-diaper-foreground",
   },
   {
-    icon: Baby,
-    title: "Effortless 1-Tap Tracking",
-    description: "Feeds, sleep, diapers, tummy time & pumping with zero friction.",
+    icon: ClipboardPlus,
+    title: "Mindful, Frictionless Care",
+    description: "Feeds, sleep, diapers, solids & tummy time designed for exhausted parents.",
     label: "The little things, simply",
     tint: "bg-feed text-feed-foreground",
   },
   {
-    icon: HeartPulse,
+    icon: MessageCircleHeart,
     title: "Nanny AI & Doctor PDF",
     description: "Thoughtful pediatric guidance and one-tap clinical export reports.",
     label: "A little more reassurance",
@@ -78,10 +78,17 @@ export function IntroductionCarousel() {
             {(() => {
               const SlideIcon = slide!.icon;
               return (
-                <div className={`mb-9 flex aspect-[5/4] w-full flex-col items-center justify-center gap-6 rounded-md ${slide!.tint}`}>
-                  <SlideIcon aria-hidden="true" strokeWidth={1.1} className="h-24 w-24 opacity-90" />
-                  {featureStep === 2 && (
-                    <FileText aria-hidden="true" strokeWidth={1.3} className="h-12 w-12 opacity-90" />
+                <div className={`mb-9 flex aspect-[5/4] w-full items-center justify-center rounded-3xl ${slide!.tint}`}>
+                  {featureStep === 2 ? (
+                    <div className="relative flex h-44 w-40 items-center justify-center rounded-3xl border border-current/15 bg-card/80 shadow-soft">
+                      <ClipboardPlus aria-hidden="true" strokeWidth={1.35} className="h-24 w-24" />
+                      <span className="absolute -right-5 top-5 flex h-16 w-16 items-center justify-center rounded-full bg-sleep shadow-soft"><MessageCircleHeart aria-hidden="true" className="h-8 w-8" /></span>
+                      <span className="absolute bottom-5 left-5 flex h-9 w-9 items-center justify-center rounded-full bg-card shadow-soft"><Sparkles aria-hidden="true" className="h-5 w-5" /></span>
+                    </div>
+                  ) : featureStep === 0 ? (
+                    <div className="flex h-36 w-52 items-center justify-center rounded-full border border-current/15 bg-card/70 shadow-soft"><SlideIcon aria-hidden="true" strokeWidth={1.25} className="h-24 w-24" /></div>
+                  ) : (
+                    <SlideIcon aria-hidden="true" strokeWidth={1.1} className="h-24 w-24 opacity-90" />
                   )}
                 </div>
               );
@@ -104,7 +111,7 @@ export function IntroductionCarousel() {
           </div>
         )}
         <div className="flex gap-3">
-          {step > 0 && <Button variant="outline" type="button" aria-label="Previous slide" onClick={() => go(step - 1)} className="h-12 w-12 p-0"><ArrowLeft /></Button>}
+          {step > 1 && <Button variant="outline" type="button" aria-label="Previous slide" onClick={() => go(step - 1)} className="h-12 w-12 p-0"><ArrowLeft /></Button>}
           {onSplash ? (
             <>
               <Button type="button" onClick={() => go(1)} className="h-12 flex-1 text-base">Get Started <ArrowRight /></Button>
