@@ -31,6 +31,7 @@ export const Route = createFileRoute("/family")({
 
 function FamilyPage() {
   const { ready, user, babies, baby, memberCount, selectBaby, refresh, signOut } = useFamily();
+  const { isPro, openUpgrade } = usePro();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [profileName, setProfileName] = useState("");
@@ -38,6 +39,14 @@ function FamilyPage() {
   const [profileDate, setProfileDate] = useState("");
   const [editingBabyId, setEditingBabyId] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [inviteDialog, setInviteDialog] = useState(false);
+
+  // Free accounts include 2 caregivers (primary account + 1 invite).
+  const caregiverLimitReached = !isPro && memberCount >= 2;
+  const CAREGIVER_LIMIT_COPY =
+    "Free accounts include 2 caregivers. Upgrade to Nestling PRO to invite nannies, babysitters, and family members.";
+
+  const showInviteDialog = () => setInviteDialog(true);
 
   const uploadPhoto = async (file: File | undefined, remove = false) => {
     if (!baby) return;
