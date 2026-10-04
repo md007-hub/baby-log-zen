@@ -6,7 +6,7 @@ import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib
 type CheckoutSessionResult = { clientSecret: string } | { error: string };
 type PortalSessionResult = { url: string } | { error: string };
 
-const ALLOWED_PRICES = new Set(["pro_monthly", "pro_yearly"]);
+const ALLOWED_PRICES = new Set(["pro_monthly", "pro_yearly", "pro_lifetime"]);
 
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
@@ -59,21 +59,35 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
       const stripePrice = prices.data[0];
       if (!stripePrice) throw new Error("Price not found");
+      const isRecurring = stripePrice.type === "recurring";
 
       const customerId = await resolveOrCreateCustomer(stripe, {
         email: u.user?.email ?? undefined,
         userId,
       });
 
+      let description: string | undefined;
+      if (!isRecurring) {
+        const productId = typeof stripePrice.product === "string" ? stripePrice.product : stripePrice.product.id;
+        description = (await stripe.products.retrieve(productId)).name;
+      }
+
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: stripePrice.id, quantity: 1 }],
-        mode: "subscription",
+        mode: isRecurring ? "subscription" : "payment",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         customer: customerId,
         managed_payments: { enabled: true },
-        metadata: { userId, managed_payments: "true" },
-        subscription_data: { trial_period_days: 7, metadata: { userId } },
+        metadata: { userId, managed_payments: "true", priceId: data.priceId },
+        ...(isRecurring
+          ? {
+              subscription_data: {
+                ...(data.priceId === "pro_monthly" && { trial_period_days: 7 }),
+                metadata: { userId },
+              },
+            }
+          : { payment_intent_data: { description } }),
       } as Stripe.Checkout.SessionCreateParams);
 
       return { clientSecret: session.client_secret ?? "" };
