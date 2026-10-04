@@ -11,6 +11,7 @@ import { useFamily } from "@/hooks/useFamily";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RemindersCard } from "@/components/RemindersCard";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/family")({
 
 function FamilyPage() {
   const { ready, user, babies, baby, memberCount, selectBaby, refresh, signOut } = useFamily();
+  const { isPro, openUpgrade } = usePro();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [profileName, setProfileName] = useState("");
@@ -37,6 +39,14 @@ function FamilyPage() {
   const [profileDate, setProfileDate] = useState("");
   const [editingBabyId, setEditingBabyId] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [inviteDialog, setInviteDialog] = useState(false);
+
+  // Free accounts include 2 caregivers (primary account + 1 invite).
+  const caregiverLimitReached = !isPro && memberCount >= 2;
+  const CAREGIVER_LIMIT_COPY =
+    "Free accounts include 2 caregivers. Upgrade to Nestling PRO to invite nannies, babysitters, and family members.";
+
+  const showInviteDialog = () => setInviteDialog(true);
 
   const uploadPhoto = async (file: File | undefined, remove = false) => {
     if (!baby) return;
@@ -113,13 +123,18 @@ function FamilyPage() {
   };
 
 
-  const join = () =>
-    run(async () => {
+  const join = () => {
+    if (caregiverLimitReached) {
+      showInviteDialog();
+      return;
+    }
+    return run(async () => {
       const { data, error } = await supabase.rpc("join_baby", { _code: code });
       if (error) throw new Error(error.message);
       setCode("");
       return data as { id: string };
     }, "Joined! Logs are now shared");
+  };
 
   return (
     <div className="space-y-4">
@@ -161,15 +176,24 @@ function FamilyPage() {
             <Button
               variant="secondary"
               className="h-11"
+              aria-label={caregiverLimitReached ? "Caregiver limit reached — upgrade to invite more" : "Copy invite code"}
               onClick={() => {
+                if (caregiverLimitReached) {
+                  showInviteDialog();
+                  return;
+                }
                 navigator.clipboard?.writeText(baby.invite_code);
                 toast.success("Invite code copied");
               }}
             >
-              <Copy /> Copy
+              {caregiverLimitReached ? <Lock /> : <Copy />} {caregiverLimitReached ? "2 of 2" : "Copy"}
             </Button>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">Your partner signs in on their phone, opens Family, and enters this code.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {caregiverLimitReached
+              ? "All 2 free caregiver spots are in use. PRO removes the limit."
+              : "Your partner signs in on their phone, opens Family, and enters this code."}
+          </p>
           {babies.length > 1 && (
             <div className="mt-4 flex flex-wrap gap-2">
               {babies.map((b) => (
@@ -233,6 +257,31 @@ function FamilyPage() {
       <Button variant="ghost" className="h-12 w-full text-muted-foreground" onClick={signOut}>
         <LogOut /> Sign out ({user.email})
       </Button>
+
+      <Dialog open={inviteDialog} onOpenChange={setInviteDialog}>
+        <DialogContent className="max-w-sm rounded-3xl sm:rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <Lock className="h-5 w-5 text-primary" /> Caregiver limit reached
+            </DialogTitle>
+            <DialogDescription className="text-left">{CAREGIVER_LIMIT_COPY}</DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2">
+            <Button variant="outline" className="h-12 flex-1" onClick={() => setInviteDialog(false)}>
+              Not now
+            </Button>
+            <Button
+              className="h-12 flex-1"
+              onClick={() => {
+                setInviteDialog(false);
+                openUpgrade(CAREGIVER_LIMIT_COPY);
+              }}
+            >
+              <Sparkles /> Upgrade to PRO
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
