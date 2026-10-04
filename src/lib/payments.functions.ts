@@ -88,7 +88,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
               },
             }
           : { payment_intent_data: { description } }),
-      } as Stripe.Checkout.SessionCreateParams);
+      } as unknown as Stripe.Checkout.SessionCreateParams);
 
       return { clientSecret: session.client_secret ?? "" };
     } catch (error) {
