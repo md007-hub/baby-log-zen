@@ -1,6 +1,7 @@
 import { db, type LogEntry } from "@/lib/db";
 import { supabase } from "@/integrations/supabase/client";
 import { latestPercentiles, ordinal, sexOf, type GrowthRow } from "@/lib/growth";
+import { labelOf } from "@/lib/milestones";
 
 /** Parses stored durations: "HH:MM:SS", "MM:SS", or plain seconds. Returns seconds or null. */
 export function parseDurationSec(raw?: string): number | null {
@@ -109,6 +110,28 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
     doc.setFont("helvetica", "normal").setFontSize(8.5).setTextColor(90).text(doc.splitTextToSize(clean(sub), cw - 24)[0] as string, x + 12, cy + 48);
   });
   y += cardH * 2 + gap + 24;
+
+  // Recent milestones
+  try {
+    const babyId = localStorage.getItem("nestling-baby-id");
+    if (babyId) {
+      const { data: ms } = await supabase.from("baby_milestones").select("milestone_key, achieved_at, note").eq("baby_id", babyId).order("achieved_at", { ascending: false }).limit(8);
+      if (ms?.length) {
+        doc.setFont("helvetica", "bold").setFontSize(11).setTextColor(30).text("Recent Milestones Achieved", M, y);
+        y += 16;
+        doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(40);
+        for (const m of ms) {
+          const label = labelOf(m.milestone_key);
+          if (!label) continue;
+          const line = `${new Date(m.achieved_at).toLocaleDateString()}  -  ${label}${m.note ? ` (${m.note})` : ""}`;
+          const lines = doc.splitTextToSize(clean(line), W - 2 * M) as string[];
+          doc.text(lines, M, y);
+          y += lines.length * 12;
+        }
+        y += 16;
+      }
+    }
+  } catch { /* milestones are optional */ }
 
   // Table
   const cols = [
