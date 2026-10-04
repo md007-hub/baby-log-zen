@@ -98,7 +98,7 @@ type Tone = "feed" | "diaper" | "sleep" | "tummy";
 const tint: Record<Tone, string> = {
   feed: "bg-feed-tint",
   diaper: "bg-diaper-tint",
-  sleep: "bg-feed-tint",
+  sleep: "bg-diaper-tint",
   tummy: "bg-tummy-tint",
 };
 const badge: Record<Tone, string> = {
