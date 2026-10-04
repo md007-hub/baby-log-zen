@@ -51,7 +51,7 @@ function DiaperIcon({ className }: { className?: string }) {
 }
 
 type Tone = "feed" | "diaper" | "sleep" | "tummy";
-const tint: Record<Tone, string> = { feed: "bg-feed-tint", diaper: "bg-diaper-tint", sleep: "border border-[#E5DCF5] bg-[#F4F0FA] dark:border-[#2E2845] dark:bg-[#1E1B2E]", tummy: "bg-tummy-tint" };
+const tint: Record<Tone, string> = { feed: "bg-feed-tint", diaper: "bg-diaper-tint", sleep: "border border-border/50 bg-card shadow-sm dark:border-[#2A2622] dark:bg-[#1C1A18]", tummy: "bg-tummy-tint" };
 const badge: Record<Tone, string> = {
   feed: "bg-feed text-feed-foreground",
   diaper: "bg-diaper text-diaper-foreground",
@@ -277,14 +277,14 @@ export function QuickActions() {
       </SectionCard>
 
       <SectionCard title="Sleep" icon={sleepKind === "Nap" ? <CloudSun className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />} tone="sleep">
-        <div className="mb-3 grid grid-cols-2 rounded-full bg-card/70 p-1" role="group" aria-label="Sleep type">
+        <div className="mb-3 grid grid-cols-2 rounded-full bg-muted/60 p-1" role="group" aria-label="Sleep type">
           {(["Nap", "Night Sleep"] as const).map((kind) => (
             <Button key={kind} type="button" variant="ghost" disabled={sleep.elapsed > 0} aria-pressed={sleepKind === kind} onClick={() => setSleepKind(kind)} className={cn("h-11 rounded-full text-foreground", sleepKind === kind && "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground")}>
               {kind === "Nap" ? <CloudSun /> : <MoonStar />}{kind}
             </Button>
           ))}
         </div>
-        <div className="flex items-center justify-between rounded-2xl bg-card/70 px-4 py-3">
+        <div className="flex items-center justify-between rounded-2xl bg-muted/60 px-4 py-3">
           <span className="text-sm text-muted-foreground">{sleep.active ? `${sleepKind} in progress` : `No ${sleepKind.toLowerCase()} running`}</span>
           <span className="font-display text-2xl font-bold tabular-nums">{formatDuration(sleep.elapsed)}</span>
         </div>
