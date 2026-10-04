@@ -60,7 +60,7 @@ function MilestonesPage() {
   const saveNote = async (key: string) => {
     const text = note.trim().slice(0, 200) || null;
     const { error } = await supabase.from("baby_milestones").update({ note: text }).eq("baby_id", baby.id).eq("milestone_key", key);
-    if (error) return toast.error("Couldn't save note");
+    if (error) { toast.error("Couldn't save note"); return; }
     setDone((d) => ({ ...d, [key]: { ...d[key]!, note: text } }));
     setNoteFor(null);
   };
