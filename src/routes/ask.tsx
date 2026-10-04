@@ -1,42 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send, Sparkles, WifiOff } from "lucide-react";
+import { Crown, Loader2, PlayCircle, Send, Sparkles, WifiOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { askBabyAi } from "@/lib/ai.functions";
 import { buildBabyContext } from "@/lib/babyContext";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/hooks/useFamily";
-import { usePro } from "@/hooks/usePro";
-import { tryStripeEnvironment } from "@/lib/stripe";
-
-const FREE_DAILY = 5;
-const todayKey = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
-const LIMIT_MSG = "You've used your 5 free Nanny AI questions today. Go Pro for unlimited answers, day and night.";
-
-/** Returns true if this question may be sent (and counts it). */
-async function consumeQuestion(signedIn: boolean, isPro: boolean): Promise<boolean> {
-  if (isPro) return true;
-  const day = todayKey();
-  if (signedIn) {
-    const { data, error } = await supabase.rpc("consume_ai_question", {
-      check_env: tryStripeEnvironment() ?? "sandbox",
-      _day: day,
-    });
-    if (error) return false;
-    return !!(data as { allowed?: boolean } | null)?.allowed;
-  }
-  const key = `nestling-ai-${day}`;
-  const used = Number(localStorage.getItem(key) ?? 0);
-  if (used >= FREE_DAILY) return false;
-  localStorage.setItem(key, String(used + 1));
-  return true;
-}
+import { FREE_AI_DAILY, usePro } from "@/hooks/usePro";
 
 export const Route = createFileRoute("/ask")({
   head: () => ({
@@ -94,8 +66,9 @@ function AskPage() {
   const offline = hydrated && !online;
 
   const ask = useServerFn(askBabyAi);
-  const { user, baby } = useFamily();
-  const { isPro, openUpgrade } = usePro();
+  const { baby } = useFamily();
+  const { isPro, openUpgrade, consumeQuestion, aiQuestionsRemaining, watchRewardedAd, grantAiBonus } = usePro();
+  const outOfQuestions = !isPro && aiQuestionsRemaining === 0;
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -103,15 +76,12 @@ function AskPage() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, outOfQuestions]);
 
   const send = async (text: string) => {
     const question = text.trim();
-    if (!question || loading || offline) return;
-    if (!(await consumeQuestion(!!user, isPro))) {
-      openUpgrade(LIMIT_MSG);
-      return;
-    }
+    if (!question || loading || offline || outOfQuestions) return;
+    if (!(await consumeQuestion())) return;
     const next: Msg[] = [...messages, { role: "user", content: question }];
     setMessages(next);
     setInput("");
@@ -173,12 +143,41 @@ function AskPage() {
       )}
 
       <div className="sticky bottom-20 z-10 -mx-4 bg-background/95 px-4 pb-2 pt-2 backdrop-blur">
+      {outOfQuestions ? (
+        <div className="mb-2 rounded-3xl bg-card p-4 shadow-soft">
+          <p className="font-display text-base font-bold">You've reached your daily free questions.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Free questions reset at midnight.</p>
+          <div className="mt-3 grid gap-2">
+            <button
+              type="button"
+              onClick={() => watchRewardedAd(grantAiBonus)}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold transition active:scale-[0.98]"
+            >
+              <PlayCircle className="h-5 w-5 text-primary" /> Watch 1 quick ad (+3 questions)
+            </button>
+            <button
+              type="button"
+              onClick={() => openUpgrade()}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition active:scale-[0.98]"
+            >
+              <Crown className="h-5 w-5" /> Get Unlimited with PRO
+            </button>
+          </div>
+        </div>
+      ) : (
+        !isPro &&
+        aiQuestionsRemaining !== null && (
+          <p className="mb-2 text-center text-xs font-medium text-muted-foreground">
+            {aiQuestionsRemaining} of {Math.max(FREE_AI_DAILY, aiQuestionsRemaining)} free questions remaining today
+          </p>
+        )
+      )}
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
         {CHIPS.map((c) => (
           <button
             key={c.label}
             type="button"
-            disabled={offline || loading}
+            disabled={offline || loading || outOfQuestions}
             onClick={() => void send(c.prompt)}
             className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition hover:bg-muted active:scale-[0.98] disabled:opacity-50"
           >
@@ -197,14 +196,14 @@ function AskPage() {
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={offline}
+          disabled={offline || outOfQuestions}
           rows={1}
-          placeholder={offline ? "Offline — AI unavailable" : "Ask Nanny AI anything..."}
+          placeholder={offline ? "Offline — AI unavailable" : outOfQuestions ? "Daily free questions used" : "Ask Nanny AI anything..."}
           className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60"
         />
         <button
           type="submit"
-          disabled={offline || loading || input.trim().length === 0}
+          disabled={offline || loading || outOfQuestions || input.trim().length === 0}
           aria-label="Send"
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition active:scale-[0.98] disabled:opacity-40"
         >

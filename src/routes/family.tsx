@@ -238,7 +238,8 @@ function FamilyPage() {
 }
 
 function ProSection({ babyName }: { babyName: string | null }) {
-  const { isPro, ownSub, openUpgrade } = usePro();
+  const { isPro, ownSub, openUpgrade, testPro, canTestPro, setTestPro } = usePro();
+  const lifetime = ownSub?.price_id === "pro_lifetime";
   const [busy, setBusy] = useState(false);
 
   const manage = async () => {
@@ -279,13 +280,17 @@ function ProSection({ babyName }: { babyName: string | null }) {
       </div>
       <p className="text-sm text-muted-foreground">
         {isPro
-          ? ownSub
+          ? lifetime
+            ? "Lifetime PRO — thank you!"
+            : ownSub
             ? ownSub.status === "trialing"
               ? `Free trial active${ends ? ` · first charge ${ends}` : ""}`
               : ownSub.cancel_at_period_end
                 ? `Pro until ${ends}`
                 : `Pro active${ends ? ` · renews ${ends}` : ""}`
-            : "Pro is shared with you by your partner."
+            : testPro
+              ? "PRO switched on in test mode."
+              : "Pro is shared with you by your partner."
           : "Unlimited Nanny AI, all sleep sounds and doctor-ready reports."}
       </p>
 
@@ -296,10 +301,15 @@ function ProSection({ babyName }: { babyName: string | null }) {
 
       {!isPro && (
         <Button onClick={() => openUpgrade()} className="h-12 w-full text-base">
-          Start 7-Day Free Trial
+          See PRO plans
         </Button>
       )}
-      {ownSub && (
+      {canTestPro && testPro && (
+        <Button variant="ghost" onClick={() => setTestPro(false)} className="h-10 w-full text-xs text-muted-foreground">
+          Test mode: switch PRO off
+        </Button>
+      )}
+      {ownSub && !lifetime && (
         <Button variant="outline" disabled={busy} onClick={manage} className="h-12 w-full text-base">
           <CreditCard /> Manage Subscription
         </Button>

@@ -16,16 +16,19 @@ export type Database = {
     Tables: {
       ai_usage: {
         Row: {
+          bonus: number
           count: number
           day: string
           user_id: string
         }
         Insert: {
+          bonus?: number
           count?: number
           day: string
           user_id: string
         }
         Update: {
+          bonus?: number
           count?: number
           day?: string
           user_id?: string
@@ -318,6 +321,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      grant_ai_bonus: { Args: { _day: string }; Returns: undefined }
       has_family_pro: { Args: { check_env: string }; Returns: boolean }
       is_baby_member: { Args: { _baby: string }; Returns: boolean }
       join_baby: {

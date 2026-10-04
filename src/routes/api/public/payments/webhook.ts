@@ -58,6 +58,31 @@ async function handleWebhook(req: Request, env: StripeEnv) {
         .eq("stripe_subscription_id", event.data.object.id)
         .eq("environment", env);
       break;
+    case "checkout.session.completed":
+    case "checkout.session.async_payment_succeeded": {
+      const s = event.data.object;
+      if (s.mode !== "payment" || s.payment_status === "unpaid") break;
+      const userId = s.metadata?.userId;
+      if (!userId) break;
+      // Lifetime purchase: active row with no end date counts as Pro forever.
+      await (getSupabase().from("subscriptions") as any).upsert(
+        {
+          user_id: userId,
+          stripe_subscription_id: s.id,
+          stripe_customer_id: typeof s.customer === "string" ? s.customer : s.customer?.id ?? "",
+          product_id: "nestling_pro_lifetime",
+          price_id: s.metadata?.priceId ?? "pro_lifetime",
+          status: "active",
+          current_period_start: new Date().toISOString(),
+          current_period_end: null,
+          cancel_at_period_end: false,
+          environment: env,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "stripe_subscription_id" },
+      );
+      break;
+    }
     default:
       console.log("Unhandled event:", event.type);
   }
