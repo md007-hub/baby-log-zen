@@ -11,6 +11,7 @@ import { useFamily } from "@/hooks/useFamily";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RemindersCard } from "@/components/RemindersCard";
 import { DatePicker } from "@/components/ui/date-picker";
 
