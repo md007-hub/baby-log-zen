@@ -42,6 +42,7 @@ export type Database = {
           gender: string | null
           id: string
           invite_code: string
+          milestones_enabled: boolean
           name: string
           photo_url: string | null
           solids_enabled: boolean
@@ -55,6 +56,7 @@ export type Database = {
           gender?: string | null
           id?: string
           invite_code: string
+          milestones_enabled?: boolean
           name: string
           photo_url?: string | null
           solids_enabled?: boolean
@@ -68,6 +70,7 @@ export type Database = {
           gender?: string | null
           id?: string
           invite_code?: string
+          milestones_enabled?: boolean
           name?: string
           photo_url?: string | null
           solids_enabled?: boolean
@@ -185,6 +188,38 @@ export type Database = {
           },
         ]
       }
+      baby_milestones: {
+        Row: {
+          achieved_at: string
+          baby_id: string
+          created_by: string
+          milestone_key: string
+          note: string | null
+        }
+        Insert: {
+          achieved_at?: string
+          baby_id: string
+          created_by?: string
+          milestone_key: string
+          note?: string | null
+        }
+        Update: {
+          achieved_at?: string
+          baby_id?: string
+          created_by?: string
+          milestone_key?: string
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baby_milestones_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -271,6 +306,7 @@ export type Database = {
           gender: string | null
           id: string
           invite_code: string
+          milestones_enabled: boolean
           name: string
           photo_url: string | null
           solids_enabled: boolean
@@ -295,6 +331,7 @@ export type Database = {
           gender: string | null
           id: string
           invite_code: string
+          milestones_enabled: boolean
           name: string
           photo_url: string | null
           solids_enabled: boolean

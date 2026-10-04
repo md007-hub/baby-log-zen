@@ -68,13 +68,13 @@ export function DailySummary() {
   const pills = [
     { label: `${feeds.length} ${feeds.length === 1 ? "feed" : "feeds"}${bottleMl ? ` · ${bottleMl}ml` : ""}`, cls: "bg-feed-tint text-feed-foreground" },
     { label: `${diapers.length} ${diapers.length === 1 ? "diaper" : "diapers"}`, cls: "bg-diaper-tint text-diaper-foreground" },
-    { label: `${Math.floor(sleepMin / 60)}h ${sleepMin % 60}m sleep`, cls: "bg-sleep-tint text-sleep-foreground" },
+    { label: `${Math.floor(sleepMin / 60)}h ${sleepMin % 60}m sleep`, cls: "bg-[#EFEBFF] text-[#5B4EB1] dark:bg-[#252038] dark:text-[#C4B5FD]" },
     ...(tummyMin ? [{ label: `${tummyMin}m tummy`, cls: "bg-tummy-tint text-tummy-foreground" }] : []),
     ...(pumps.length ? [{ label: `Pumped ${pumpMl}ml`, cls: "bg-feed-tint text-feed-foreground" }] : []),
   ];
 
   return (
-    <section aria-label="Today's summary" className="mb-4 rounded-3xl bg-card p-4 shadow-soft">
+    <section aria-label="Today's summary" className="mb-4 rounded-3xl border border-transparent bg-card p-4 shadow-soft dark:border-[#2A2622] dark:bg-[#1C1A18]">
       <div className="flex items-center gap-3">
         <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-display text-2xl font-bold text-accent-foreground" aria-hidden>
           {photo ? <img src={photo} alt="" className="h-full w-full object-cover" /> : name.charAt(0).toUpperCase()}

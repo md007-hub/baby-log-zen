@@ -194,6 +194,21 @@ function FamilyPage() {
               }}
             />
           </label>
+          <label className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-3">
+            <span>
+              <span className="block text-sm font-semibold">Track Developmental Milestones</span>
+              <span className="block text-xs text-muted-foreground">Shows a Milestones card on the Tracker.</span>
+            </span>
+            <Switch
+              checked={baby.milestones_enabled}
+              onCheckedChange={async (on) => {
+                const { error } = await supabase.from("babies").update({ milestones_enabled: on }).eq("id", baby.id);
+                if (error) { toast.error("Couldn't update setting"); return; }
+                await refresh();
+                toast.success(on ? "Milestones on" : "Milestones hidden");
+              }}
+            />
+          </label>
         </section>
       )}
 
