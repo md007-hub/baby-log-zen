@@ -7,36 +7,8 @@ import { askBabyAi } from "@/lib/ai.functions";
 import { buildBabyContext } from "@/lib/babyContext";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/hooks/useFamily";
-import { usePro } from "@/hooks/usePro";
-import { tryStripeEnvironment } from "@/lib/stripe";
-
-const FREE_DAILY = 5;
-const todayKey = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
-const LIMIT_MSG = "You've used your 5 free Nanny AI questions today. Go Pro for unlimited answers, day and night.";
-
-/** Returns true if this question may be sent (and counts it). */
-async function consumeQuestion(signedIn: boolean, isPro: boolean): Promise<boolean> {
-  if (isPro) return true;
-  const day = todayKey();
-  if (signedIn) {
-    const { data, error } = await supabase.rpc("consume_ai_question", {
-      check_env: tryStripeEnvironment() ?? "sandbox",
-      _day: day,
-    });
-    if (error) return false;
-    return !!(data as { allowed?: boolean } | null)?.allowed;
-  }
-  const key = `nestling-ai-${day}`;
-  const used = Number(localStorage.getItem(key) ?? 0);
-  if (used >= FREE_DAILY) return false;
-  localStorage.setItem(key, String(used + 1));
-  return true;
-}
+import { FREE_AI_DAILY, usePro } from "@/hooks/usePro";
 
 export const Route = createFileRoute("/ask")({
   head: () => ({

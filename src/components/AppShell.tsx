@@ -97,15 +97,24 @@ function FamilyChip() {
 }
 
 function HeaderTitle() {
-  const { baby } = useFamily();
-  const { isPro } = usePro();
+  const { baby, user } = useFamily();
+  const { isPro, openUpgrade } = usePro();
   return (
     <p className="flex items-center gap-1.5 font-display text-lg font-bold leading-none">
       <span className="truncate">{baby ? baby.name : "Nestling"}</span>
-      {isPro && (
-        <span className="rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-sans text-[10px] font-semibold tracking-wider text-primary">
-          PRO
-        </span>
+      {user && (
+        <button
+          type="button"
+          onClick={() => openUpgrade()}
+          aria-label={isPro ? "Nestling PRO membership" : "Upgrade to PRO"}
+          className={
+            isPro
+              ? "rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-sans text-[10px] font-semibold tracking-wider text-primary"
+              : "rounded-md border border-dashed border-primary/50 px-1.5 py-0.5 font-sans text-[10px] font-semibold tracking-wider text-primary/80"
+          }
+        >
+          {isPro ? "PRO" : "GO PRO"}
+        </button>
       )}
     </p>
   );
