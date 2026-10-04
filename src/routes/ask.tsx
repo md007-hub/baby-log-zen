@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send, Sparkles, WifiOff } from "lucide-react";
+import { Crown, Loader2, PlayCircle, Send, Sparkles, WifiOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { askBabyAi } from "@/lib/ai.functions";
 import { buildBabyContext } from "@/lib/babyContext";
@@ -143,12 +143,41 @@ function AskPage() {
       )}
 
       <div className="sticky bottom-20 z-10 -mx-4 bg-background/95 px-4 pb-2 pt-2 backdrop-blur">
+      {outOfQuestions ? (
+        <div className="mb-2 rounded-3xl bg-card p-4 shadow-soft">
+          <p className="font-display text-base font-bold">You've reached your daily free questions.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Free questions reset at midnight.</p>
+          <div className="mt-3 grid gap-2">
+            <button
+              type="button"
+              onClick={() => watchRewardedAd(grantAiBonus)}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold transition active:scale-[0.98]"
+            >
+              <PlayCircle className="h-5 w-5 text-primary" /> Watch 1 quick ad (+3 questions)
+            </button>
+            <button
+              type="button"
+              onClick={() => openUpgrade()}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition active:scale-[0.98]"
+            >
+              <Crown className="h-5 w-5" /> Get Unlimited with PRO
+            </button>
+          </div>
+        </div>
+      ) : (
+        !isPro &&
+        aiQuestionsRemaining !== null && (
+          <p className="mb-2 text-center text-xs font-medium text-muted-foreground">
+            {aiQuestionsRemaining} of {Math.max(FREE_AI_DAILY, aiQuestionsRemaining)} free questions remaining today
+          </p>
+        )
+      )}
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
         {CHIPS.map((c) => (
           <button
             key={c.label}
             type="button"
-            disabled={offline || loading}
+            disabled={offline || loading || outOfQuestions}
             onClick={() => void send(c.prompt)}
             className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition hover:bg-muted active:scale-[0.98] disabled:opacity-50"
           >
@@ -167,14 +196,14 @@ function AskPage() {
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={offline}
+          disabled={offline || outOfQuestions}
           rows={1}
-          placeholder={offline ? "Offline — AI unavailable" : "Ask Nanny AI anything..."}
+          placeholder={offline ? "Offline — AI unavailable" : outOfQuestions ? "Daily free questions used" : "Ask Nanny AI anything..."}
           className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60"
         />
         <button
           type="submit"
-          disabled={offline || loading || input.trim().length === 0}
+          disabled={offline || loading || outOfQuestions || input.trim().length === 0}
           aria-label="Send"
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition active:scale-[0.98] disabled:opacity-40"
         >
