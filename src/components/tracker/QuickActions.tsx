@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
+  ChevronRight,
+  StickyNote,
   CloudSun,
   Droplets,
   Hourglass,
@@ -25,10 +27,13 @@ import {
 import { addLog, db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { useFamily } from "@/hooks/useFamily";
+import { useHomePrefs } from "@/hooks/useHomePrefs";
+import { wakeRangeFor, wakeStatus } from "@/lib/wakeWindow";
 
 const FOODS = ["Avocado", "Banana", "Sweet Potato", "Oatmeal", "Egg", "Yogurt"];
 const PORTIONS = ["Few tastes", "Small (1-2 tbsp)", "Medium (~1/2 cup)", "Full meal"];
 const REACTIONS = ["😋 Loved it", "😐 Neutral", "😣 Disliked", "⚠️ Allergic reaction / Rash"];
+const NOTE_TAGS = ["Doctor", "Medicine", "Symptom", "General"] as const;
 
 function formatDuration(ms: number) {
   const total = Math.floor(ms / 1000);
@@ -114,28 +119,75 @@ const pill: Record<Tone, string> = {
   tummy: "bg-tummy text-tummy-foreground ring-2 ring-tummy-foreground/40",
 };
 
+type ButtonTone = "sky" | "sage" | "peach" | "lilac" | "rose" | "tummy";
+const living: Record<ButtonTone, string> = {
+  sky: "bg-sky text-sky-foreground border-sky-foreground/10",
+  sage: "bg-sage text-sage-foreground border-sage-foreground/10",
+  peach: "bg-peach text-peach-foreground border-peach-foreground/10",
+  lilac: "bg-lilac text-lilac-foreground border-lilac-foreground/10",
+  rose: "bg-rose text-rose-foreground border-rose-foreground/10",
+  tummy: "bg-tummy-tint text-tummy-foreground border-tummy-foreground/10",
+};
+
+/** Living pill button on the home stack; tapping opens the log form in a bottom sheet. */
 function SectionCard({
   title,
   icon,
   tone,
+  context,
+  live,
+  className,
   extra,
+  open,
+  onOpenChange,
   children,
 }: {
   title: string;
   icon: React.ReactNode;
-  tone: Tone;
+  tone: ButtonTone;
+  context: string;
+  live?: boolean;
+  className?: string;
   extra?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (o: boolean) => void;
   children: React.ReactNode;
 }) {
+  const [inner, setInner] = useState(false);
+  const isOpen = open ?? inner;
+  const setOpen = onOpenChange ?? setInner;
   return (
-    <section className={cn("rounded-3xl p-4 shadow-soft", tint[tone])}>
-      <div className="mb-3 flex items-center gap-2">
-        <span className={cn("flex h-9 w-9 items-center justify-center rounded-full", badge[tone])}>{icon}</span>
-        <h2 className="text-base font-bold">{title}</h2>
-        {extra}
-      </div>
-      {children}
-    </section>
+    <Dialog open={isOpen} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "group flex min-h-[76px] w-full items-center gap-4 rounded-full border py-3 pl-3 pr-5 text-left shadow-soft backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]",
+            living[tone],
+            className,
+          )}
+        >
+          <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-card/80 shadow-sm dark:bg-card/40">
+            {icon}
+            {live && <span className="absolute right-0.5 top-0.5 h-3 w-3 animate-pulse rounded-full bg-current ring-2 ring-card" />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg font-bold leading-tight">{title}</span>
+            <span className="block truncate text-sm font-medium tabular-nums opacity-80">{context}</span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 opacity-50 transition-transform group-hover:translate-x-0.5" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="bottom-0 top-auto max-h-[90dvh] w-full max-w-lg translate-y-0 overflow-y-auto rounded-b-none rounded-t-3xl border-border bg-background p-5 pb-8 sm:rounded-t-3xl">
+        <DialogHeader className="flex-row items-center gap-3 space-y-0 text-left">
+          <span className={cn("flex h-10 w-10 items-center justify-center rounded-full", living[tone])}>{icon}</span>
+          <DialogTitle className="font-display text-xl">{title}</DialogTitle>
+          {extra}
+        </DialogHeader>
+        <DialogDescription className="sr-only">Log {title.toLowerCase()}</DialogDescription>
+        {children}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -209,6 +261,21 @@ export function QuickActions() {
   const [sleepKind, setSleepKind] = useState<"Nap" | "Night Sleep">(() => defaultSleepKind());
   const [napStart, setNapStart] = useState("");
   const [napEnd, setNapEnd] = useState("");
+  const [prefs] = useHomePrefs();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, []);
+  const recent = useLiveQuery(
+    () => db.logs.where("timestamp").aboveOrEqual(Date.now() - 7 * 86400000).reverse().sortBy("timestamp"),
+    [],
+    [] as LogEntry[],
+  );
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [diaperOpen, setDiaperOpen] = useState(false);
+  const [noteTag, setNoteTag] = useState<(typeof NOTE_TAGS)[number]>("General");
+  const [noteText, setNoteText] = useState("");
   const diaperCount = useLiveQuery(
     () =>
       db.logs
@@ -287,9 +354,65 @@ export function QuickActions() {
     toast.success(`Past ${kind.toLowerCase()} logged`);
   };
 
+  const ago = (ts: number) => {
+    const m = Math.max(0, Math.round((now - ts) / 60000));
+    return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+  };
+  const last = (t: LogEntry["type"]) => recent.find((l) => l.type === t);
+  const lastFeed = last("feed");
+  const lastSleep = last("sleep");
+  const lastDiaper = last("diaper");
+  const lastPump = last("pumping");
+  const lastTummy = last("tummy");
+  const lastNote = last("note");
+  const range = wakeRangeFor(baby?.birth_date, baby?.date_kind);
+  const sleepCtx = sleep.active
+    ? `${sleepKind} in progress · ${formatDuration(sleep.elapsed)}`
+    : lastSleep
+      ? (() => {
+          const awake = Math.round((now - lastSleep.timestamp) / 60000);
+          const st = range ? wakeStatus(awake, range) : null;
+          const hint =
+            st === "early" ? "Next nap soon-ish" : st === "soon" ? "Wind down soon" : st === "now" ? "Sleep window open" : st === "over" ? "Overtired cues likely" : null;
+          return `Awake ${ago(lastSleep.timestamp)}${hint ? ` • ${hint}` : ""}`;
+        })()
+      : `Tap to start a ${sleepKind.toLowerCase()}`;
+  const feedCtx = nursing.active || nursing.elapsed
+    ? `Nursing ${side} · ${formatDuration(nursing.elapsed)}`
+    : lastFeed
+      ? `Last fed ${ago(lastFeed.timestamp)} ago • ${lastFeed.value.split(" · ").join(" ")}`
+      : "No feeds logged yet";
+  const diaperCtx = lastDiaper ? `Last changed ${ago(lastDiaper.timestamp)} ago • ${lastDiaper.value}` : "No changes logged yet";
+  const pumpCtx = pumping.active || pumping.elapsed
+    ? `Pumping · ${formatDuration(pumping.elapsed)}`
+    : lastPump
+      ? (() => {
+          const [, s, ml] = lastPump.value.split(" · ");
+          return `Last pumped ${ago(lastPump.timestamp)} ago • ${s}: ${ml}`;
+        })()
+      : "No sessions logged yet";
+  const noteCtx = lastNote
+    ? `${new Date(lastNote.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} • ${lastNote.value}`
+    : "Jot down doctor tips, medicine, symptoms";
+  const tummyCtx = tummy.active
+    ? `In progress · ${formatDuration(tummy.elapsed)}`
+    : lastTummy
+      ? `Last session ${ago(lastTummy.timestamp)} ago • ${lastTummy.notes ?? ""}`
+      : "Build strength with short sessions";
+  const saveNote = async () => {
+    const text = noteText.trim();
+    if (!text) {
+      toast.error("Write a short note first");
+      return;
+    }
+    await logWithUndo({ type: "note", value: `${noteTag}: ${text.slice(0, 300)}` }, "Note saved");
+    setNoteText("");
+    setNoteOpen(false);
+  };
+
   return (
-    <div className="space-y-4">
-      <SectionCard title="Feed" icon={<Milk className="h-5 w-5" strokeWidth={2.25} />} tone="feed">
+    <div className="flex flex-col gap-3">
+      <SectionCard title="Feed" icon={<Milk className="h-6 w-6" strokeWidth={2.25} />} tone="sage" context={feedCtx} live={nursing.active} className="order-2">
         <div
           className={cn("mb-3 grid rounded-full bg-card/70 p-1", solidsOn ? "grid-cols-3" : "grid-cols-2")}
           role="group"
@@ -483,7 +606,8 @@ export function QuickActions() {
         )}
       </SectionCard>
 
-      <SectionCard title="Pumping" icon={<Droplets className="h-5 w-5" />} tone="feed">
+      {prefs.pumping && (
+      <SectionCard title="Pumping" icon={<Droplets className="h-6 w-6" />} tone="lilac" context={pumpCtx} live={pumping.active} className="order-4">
         <div className="mb-3 grid grid-cols-3 gap-2" role="group" aria-label="Pumping side">
           {(["Left", "Right", "Both"] as const).map((s) => (
             <Button
@@ -582,13 +706,18 @@ export function QuickActions() {
           Log Pumping
         </Button>
       </SectionCard>
+      )}
 
       <SectionCard
         title="Diaper"
-        icon={<DiaperIcon className="h-5 w-5" />}
-        tone="diaper"
+        icon={<DiaperIcon className="h-6 w-6" />}
+        tone="peach"
+        context={diaperCtx}
+        className="order-3"
+        open={diaperOpen}
+        onOpenChange={setDiaperOpen}
         extra={
-          <span className="ml-auto rounded-full bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground">
+          <span className="ml-auto mr-8 rounded-full bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground">
             Today: {diaperCount}
           </span>
         }
@@ -613,8 +742,11 @@ export function QuickActions() {
 
       <SectionCard
         title="Sleep"
-        icon={sleepKind === "Nap" ? <CloudSun className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />}
-        tone="sleep"
+        icon={sleepKind === "Nap" ? <CloudSun className="h-6 w-6" /> : <MoonStar className="h-6 w-6" />}
+        tone="sky"
+        context={sleepCtx}
+        live={sleep.active}
+        className="order-1"
       >
         <div className="mb-3 grid grid-cols-2 rounded-full bg-muted/60 p-1" role="group" aria-label="Sleep type">
           {(["Nap", "Night Sleep"] as const).map((kind) => (
@@ -716,7 +848,7 @@ export function QuickActions() {
         </Dialog>
       </SectionCard>
 
-      <SectionCard title="Tummy Time" icon={<Hourglass className="h-5 w-5" strokeWidth={2.25} />} tone="tummy">
+      <SectionCard title="Tummy Time" icon={<Hourglass className="h-6 w-6" strokeWidth={2.25} />} tone="tummy" context={tummyCtx} className="order-6">
         <div className="flex items-center justify-between rounded-2xl bg-card/70 px-4 py-3">
           <span className="text-sm text-muted-foreground">
             {tummy.active ? "Tummy time in progress" : "Not running"}
@@ -778,6 +910,43 @@ export function QuickActions() {
           </Button>
         </div>
       </SectionCard>
+
+      {prefs.notes && (
+        <SectionCard
+          title="Notes"
+          icon={<StickyNote className="h-6 w-6" />}
+          tone="rose"
+          context={noteCtx}
+          className="order-5"
+          open={noteOpen}
+          onOpenChange={setNoteOpen}
+        >
+          <div className="mb-3 grid grid-cols-2 gap-2" role="group" aria-label="Note tag">
+            {NOTE_TAGS.map((t) => (
+              <Button
+                key={t}
+                type="button"
+                aria-pressed={noteTag === t}
+                onClick={() => setNoteTag(t)}
+                className={cn(pillBase, "min-h-11", noteTag === t && "bg-rose text-rose-foreground ring-2 ring-rose-foreground/40 hover:bg-rose")}
+              >
+                {t}
+              </Button>
+            ))}
+          </div>
+          <textarea
+            aria-label="Note"
+            placeholder="What would you like to remember?"
+            maxLength={300}
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            className="min-h-28 w-full rounded-2xl border border-input bg-card p-3 text-base"
+          />
+          <Button type="button" onClick={() => void saveNote()} className={cn(bigButton, "mt-3 w-full")}>
+            Save
+          </Button>
+        </SectionCard>
+      )}
     </div>
   );
 }
