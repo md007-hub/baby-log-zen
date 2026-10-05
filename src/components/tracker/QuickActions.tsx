@@ -475,7 +475,7 @@ export function QuickActions() {
     <div className="flex flex-col gap-3">
       <SectionCard title="Feed" icon={<Milk className="h-6 w-6" strokeWidth={2.25} />} tone="sage" context={feedCtx} live={nursing.active} className="order-2">
         <div
-          className={cn("mb-3 grid rounded-full bg-card/70 p-1", solidsOn ? "grid-cols-3" : "grid-cols-2")}
+          className={cn("mb-3 grid", segmentTrack, solidsOn ? "grid-cols-3" : "grid-cols-2")}
           role="group"
           aria-label="Feed type"
         >
@@ -487,9 +487,7 @@ export function QuickActions() {
               aria-pressed={feedMode === mode}
               onClick={() => setFeedMode(mode)}
               className={cn(
-                "h-11 rounded-full capitalize text-foreground",
-                feedMode === mode &&
-                  "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground",
+                segmentBase, "capitalize", feedMode === mode && sheetStyle.sage.selected,
               )}
             >
               {mode === "solids" && <UtensilsCrossed className="h-4 w-4" />}
@@ -506,31 +504,15 @@ export function QuickActions() {
                   type="button"
                   aria-pressed={bottleMl === String(ml)}
                   onClick={() => setBottleMl(String(ml))}
-                  className={cn(pillBase, bottleMl === String(ml) && pill.feed)}
+                  variant="ghost"
+                  className={cn(pillBase, bottleMl === String(ml) && sheetStyle.sage.selected)}
                 >
                   {ml}
                 </Button>
               ))}
             </div>
-            <div className="mt-3 flex items-center gap-2">
-              <label htmlFor="custom-ml" className="shrink-0 text-sm font-medium">
-                Amount
-              </label>
-              <input
-                id="custom-ml"
-                type="number"
-                min="1"
-                max="2000"
-                inputMode="numeric"
-                placeholder="0"
-                value={bottleMl}
-                onFocus={selectAll}
-                onChange={(e) => setBottleMl(e.target.value)}
-                className={numInput}
-              />
-              <span className="text-sm text-muted-foreground">ml</span>
-            </div>
-            <Button type="button" onClick={() => void logBottle()} className={cn(bigButton, "mt-3 w-full")}>
+            <div className="mt-3"><AmountStepper id="custom-ml" label="Amount" value={bottleMl} onChange={setBottleMl} min={1} max={2000} step={10} unit="ml" tone="sage" /></div>
+            <Button type="button" variant="ghost" onClick={() => void logBottle()} className={cn(bigButton, sheetStyle.sage.action, "mt-3 w-full")}>
               Log Feed
             </Button>
           </>
@@ -546,51 +528,51 @@ export function QuickActions() {
             />
             <div className="flex flex-wrap gap-2">
               {FOODS.map((f) => (
-                <button
+                <Button
                   key={f}
                   type="button"
+                  variant="ghost"
                   onClick={() => setFood(f)}
                   className={cn(
-                    "rounded-full bg-card px-3 py-2 text-sm font-medium shadow-soft tap-card",
-                    food === f && pill.tummy,
+                    pillBase, "min-h-10 flex-none px-3", food === f && sheetStyle.sage.selected,
                   )}
                 >
                   {f}
-                </button>
+                </Button>
               ))}
             </div>
             <p className="text-sm font-semibold">Portion</p>
             <div className="grid grid-cols-2 gap-2">
               {PORTIONS.map((p) => (
-                <button
+                <Button
                   key={p}
                   type="button"
+                  variant="ghost"
                   aria-pressed={portion === p}
                   onClick={() => setPortion(p)}
                   className={cn(
-                    "min-h-11 rounded-full bg-card px-3 text-sm font-medium shadow-soft tap-card",
-                    portion === p && pill.feed,
+                    pillBase, "min-h-11", portion === p && sheetStyle.sage.selected,
                   )}
                 >
                   {p}
-                </button>
+                </Button>
               ))}
             </div>
             <p className="text-sm font-semibold">Reaction</p>
             <div className="grid grid-cols-2 gap-2">
               {REACTIONS.map((r) => (
-                <button
+                <Button
                   key={r}
                   type="button"
+                  variant="ghost"
                   aria-pressed={reaction === r}
                   onClick={() => setReaction(reaction === r ? null : r)}
                   className={cn(
-                    "min-h-11 rounded-full bg-card px-3 text-sm font-medium shadow-soft tap-card",
-                    reaction === r && (r.startsWith("⚠️") ? "bg-destructive text-destructive-foreground" : pill.feed),
+                    pillBase, "min-h-11 whitespace-normal leading-tight", reaction === r && (r.startsWith("⚠️") ? "bg-destructive text-destructive-foreground" : sheetStyle.sage.selected),
                   )}
                 >
                   {r}
-                </button>
+                </Button>
               ))}
             </div>
             {(reaction?.startsWith("⚠️") || solidNotes) && (
@@ -600,17 +582,17 @@ export function QuickActions() {
                 maxLength={300}
                 value={solidNotes}
                 onChange={(e) => setSolidNotes(e.target.value)}
-                className="min-h-20 w-full rounded-xl border border-input bg-card p-3 text-base"
+                className="min-h-20 w-full rounded-xl border border-input bg-card p-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             )}
-            <Button type="button" onClick={() => void logSolids()} className={cn(bigButton, "w-full")}>
+            <Button type="button" variant="ghost" onClick={() => void logSolids()} className={cn(bigButton, sheetStyle.sage.action, "w-full")}>
               Log Solids
             </Button>
           </div>
         ) : (
-          <div className="rounded-2xl bg-card/70 p-3">
+          <div className={cn(timerBase, sheetStyle.sage.surface, "p-3")}>
             <div className="flex items-center justify-between gap-2">
-              <div className="flex gap-1 rounded-full bg-background p-1">
+              <div className={cn("flex gap-1", segmentTrack)}>
                 {(["Left", "Right"] as const).map((s) => (
                   <Button
                     key={s}
@@ -620,9 +602,7 @@ export function QuickActions() {
                     aria-pressed={side === s}
                     onClick={() => setSide(s)}
                     className={cn(
-                      "h-10 rounded-full px-3 text-foreground",
-                      side === s &&
-                        "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+                      segmentBase, "h-10 px-3", side === s && sheetStyle.sage.selected,
                     )}
                   >
                     {s}
@@ -632,7 +612,7 @@ export function QuickActions() {
               <span className="font-display text-xl font-bold tabular-nums">{formatDuration(nursing.elapsed)}</span>
             </div>
             {nursing.elapsed === 0 && !nursing.active ? (
-              <Button type="button" onClick={nursing.start} className={cn(bigButton, "mt-3 w-full")}>
+              <Button type="button" variant="ghost" onClick={nursing.start} className={cn(bigButton, sheetStyle.sage.action, "mt-3 w-full")}>
                 <Play />
                 Start nursing
               </Button>
@@ -649,6 +629,7 @@ export function QuickActions() {
                 </Button>
                 <Button
                   type="button"
+                  variant="ghost"
                   onClick={async () => {
                     const ms = nursing.stop();
                     await logWithUndo(
@@ -656,7 +637,7 @@ export function QuickActions() {
                       "Nursing logged",
                     );
                   }}
-                  className={cn(bigButton, "min-w-0")}
+                  className={cn(bigButton, sheetStyle.sage.action, "min-w-0")}
                 >
                   <Square />
                   Done
