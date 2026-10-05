@@ -181,6 +181,7 @@ function AskPage() {
             onClick={() => void send(c.prompt)}
             className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-lilac-foreground/15 bg-tummy-tint px-4 text-sm font-semibold shadow-soft transition hover:bg-lilac active:scale-[0.98] disabled:opacity-50"
           >
+            <Sparkles className="mr-1.5 inline h-3.5 w-3.5 text-lilac-foreground" />
             {c.label}
           </button>
         ))}

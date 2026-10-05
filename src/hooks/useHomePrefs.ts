@@ -66,7 +66,7 @@ export function useActionOrder() {
     const i = cur.indexOf(k);
     const j = i + dir;
     if (j < 0 || j >= cur.length) return;
-    [cur[i], cur[j]] = [cur[j], cur[i]];
+    const a = cur[i]!; cur[i] = cur[j]!; cur[j] = a;
     localStorage.setItem(ORDER_KEY, JSON.stringify(cur));
     window.dispatchEvent(new Event("nestling-action-order"));
   };
