@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,17 +26,26 @@ type Row = { milestone_key: string; achieved_at: string; note: string | null };
 function MilestonesPage() {
   const { baby } = useFamily();
   const [tab, setTab] = useState<string | null>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState<Record<string, Row>>({});
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [note, setNote] = useState("");
 
   useEffect(() => {
     if (!baby) return;
-    setTab((t) => t ?? bracketForAge(baby.birth_date, baby.date_kind));
+    setTab(bracketForAge(baby.birth_date, baby.date_kind));
     void supabase.from("baby_milestones").select("milestone_key, achieved_at, note").eq("baby_id", baby.id).then(({ data }) => {
       setDone(Object.fromEntries((data ?? []).map((r) => [r.milestone_key, r])));
     });
-  }, [baby]);
+  }, [baby?.id, baby?.birth_date, baby?.date_kind]);
+
+  useEffect(() => {
+    const row = tabsRef.current;
+    const selected = row?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!row || !selected) return;
+    const left = selected.offsetLeft - row.offsetLeft - (row.clientWidth - selected.clientWidth) / 2;
+    row.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  }, [tab]);
 
   if (!baby || !tab) return <div className="h-80 animate-pulse rounded-3xl bg-muted/60" />;
   const bracket = BRACKETS.find((b) => b.id === tab)!;
@@ -75,7 +84,7 @@ function MilestonesPage() {
         <h1 className="font-display text-2xl font-bold">Developmental Milestones</h1>
         <p className="text-sm text-muted-foreground">Tap to mark what {baby.name} can do. Every baby develops at their own pace.</p>
       </header>
-      <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist">
+      <div ref={tabsRef} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto overscroll-x-contain scroll-smooth px-4 py-1 touch-pan-x" role="tablist" aria-label="Milestone age groups">
         {BRACKETS.map((b) => (
           <button key={b.id} role="tab" aria-selected={b.id === tab} onClick={() => setTab(b.id)} className={cn("shrink-0 rounded-full px-4 py-2 text-sm font-semibold shadow-soft tap-card", b.id === tab ? "bg-peach text-peach-foreground ring-2 ring-peach-foreground/20" : "bg-card")}>{b.label}</button>
         ))}

@@ -97,11 +97,11 @@ function FamilyChip() {
 }
 
 function HeaderTitle() {
-  const { baby, user } = useFamily();
+  const { user } = useFamily();
   const { isPro, openUpgrade } = usePro();
   return (
     <p className="flex items-center gap-1.5 font-display text-lg font-bold leading-none">
-      <span className="truncate">{baby ? baby.name : "Nestling"}</span>
+      <span>Nestling</span>
       {user && (
         <button
           type="button"

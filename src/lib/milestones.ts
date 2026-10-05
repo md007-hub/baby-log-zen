@@ -62,6 +62,9 @@ export function labelOf(key: string): string | null {
 
 export function bracketForAge(birthDate: string | null | undefined, dateKind?: string | null): string {
   if (!birthDate || dateKind === "due") return BRACKETS[0]!.id;
-  const months = (Date.now() - new Date(`${birthDate}T00:00:00`).getTime()) / (30.4375 * 86400000);
-  return (BRACKETS.find((b) => months < b.maxMonths) ?? BRACKETS[BRACKETS.length - 1]!).id;
+  const [year, month, day] = birthDate.split("-").map(Number);
+  if (!year || !month || !day) return BRACKETS[0]!.id;
+  const today = new Date();
+  const months = Math.max(0, (today.getFullYear() - year) * 12 + today.getMonth() + 1 - month - (today.getDate() < day ? 1 : 0));
+  return (BRACKETS.find((b) => months <= b.maxMonths) ?? BRACKETS[BRACKETS.length - 1]!).id;
 }
