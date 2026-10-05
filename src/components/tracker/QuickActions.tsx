@@ -320,6 +320,7 @@ export function QuickActions() {
     }
     await logWithUndo({ type: "diaper", value: diaperKind }, `${diaperKind} diaper logged`);
     setDiaperKind(null);
+    setDiaperOpen(false);
   };
   const savePump = async () => {
     const ml = Math.round(Number(pumpVolume) * (pumpUnit === "oz" ? 29.5735 : 1));
