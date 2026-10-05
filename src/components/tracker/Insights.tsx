@@ -64,10 +64,10 @@ export function Insights() {
           <span className="font-display text-xl font-bold tabular-nums">{done} of {total}</span>
           <span className="text-xs font-medium opacity-80">completed · {bracket.label}</span>
           <span className="flex h-8 items-center gap-1" aria-hidden>
-            {Array.from({ length: Math.min(total, 10) }, (_, i) => (
+            {Array.from({ length: Math.min(total, 7) }, (_, i) => (
               <span key={i} className="flex flex-1 items-center gap-1">
-                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${i < Math.round((done / total) * Math.min(total, 10)) ? "bg-current" : "border-2 border-current opacity-40"}`} />
-                {i < Math.min(total, 10) - 1 && <span className="h-0.5 flex-1 rounded bg-current opacity-25" />}
+                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${i < Math.round((done / total) * Math.min(total, 7)) ? "bg-current" : "border-2 border-current opacity-40"}`} />
+                {i < Math.min(total, 7) - 1 && <span className="h-0.5 flex-1 rounded bg-current opacity-25" />}
               </span>
             ))}
           </span>
