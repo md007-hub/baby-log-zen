@@ -1,53 +1,49 @@
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
+import { Moon, Settings2 } from "lucide-react";
 import { db, startOfToday } from "@/lib/db";
 import { useFamily } from "@/hooks/useFamily";
+import { useHomePrefs, type HomePrefs } from "@/hooks/useHomePrefs";
 import { supabase } from "@/integrations/supabase/client";
-import { Moon } from "lucide-react";
-import { wakeRangeFor, wakeStatus } from "@/lib/wakeWindow";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 
-function durationSeconds(value?: string) {
-  if (!value) return 0;
-  const parts = value.split(":").map(Number);
-  if (parts.some((part) => !Number.isFinite(part))) return 0;
-  return parts.reduce((total, part) => total * 60 + part, 0);
-}
 function ago(ms: number) {
   const m = Math.max(0, Math.round(ms / 60000));
   return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
 }
+function ageLabel(birth?: string | null, kind?: string | null) {
+  if (!birth || kind === "due") return null;
+  const days = (Date.now() - new Date(`${birth}T12:00:00`).getTime()) / 86400000;
+  if (!(days >= 0)) return null;
+  if (days < 30) return `${Math.floor(days / 7)}w`;
+  const m = Math.floor(days / 30.4375);
+  return m < 24 ? `${m}m` : `${Math.floor(m / 12)}y`;
+}
+
+const TOGGLES: { key: keyof HomePrefs; label: string }[] = [
+  { key: "pumping", label: "Show Pumping" },
+  { key: "notes", label: "Show Notes" },
+  { key: "growth", label: "Show WHO Growth Curve" },
+  { key: "milestones", label: "Show Milestones" },
+];
 
 export function DailySummary() {
   const { baby } = useFamily();
+  const [prefs, setPref] = useHomePrefs();
+  const [editOpen, setEditOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(t);
   }, []);
-  const logs = useLiveQuery(
-    () =>
-      db.logs
-        .where("timestamp")
-        .aboveOrEqual(startOfToday() - 86400000)
-        .toArray(),
-    [],
-    [],
-  );
-  const today = logs.filter((l) => l.timestamp >= startOfToday());
-  const feeds = today.filter((l) => l.type === "feed");
-  const pumps = today.filter((l) => l.type === "pumping");
-  const pumpMl = pumps.reduce((s, l) => s + (Number(l.value.match(/(\d+)ml/)?.[1]) || 0), 0);
-  const diapers = today.filter((l) => l.type === "diaper");
-  const sleep = today.filter((l) => l.type === "sleep");
-  const tummy = today.filter((l) => l.type === "tummy");
-  const bottleMl = feeds.reduce((s, l) => s + (Number(l.value.match(/Bottle · (\d+)ml/)?.[1]) || 0), 0);
-  const sleepMin = Math.floor(sleep.reduce((s, l) => s + durationSeconds(l.notes), 0) / 60);
-  const tummyMin = Math.floor(tummy.reduce((s, l) => s + durationSeconds(l.notes), 0) / 60);
-
+  const logs = useLiveQuery(() => db.logs.where("timestamp").aboveOrEqual(startOfToday() - 86400000).toArray(), [], []);
   const sorted = [...logs].sort((a, b) => b.timestamp - a.timestamp);
   const lastFeed = sorted.find((l) => l.type === "feed");
   const lastSleep = sorted.find((l) => l.type === "sleep");
   const name = baby?.name ?? "Baby";
+  const age = ageLabel(baby?.birth_date, baby?.date_kind);
+
   const [sleepStart, setSleepStart] = useState<number | null>(null);
   useEffect(() => {
     const read = () => {
@@ -62,16 +58,13 @@ export function DailySummary() {
       window.removeEventListener("storage", read);
     };
   }, []);
-  const fedText = lastFeed ? ` · Last fed ${ago(now - lastFeed.timestamp)} ago` : "";
   const asleep = sleepStart != null;
-  const status = asleep
-    ? [`Asleep for ${ago(now - sleepStart)}`, `${name} is resting${fedText}`]
-    : today.length === 0 && !lastSleep
-      ? ["Ready for the day", "Awaiting first log"]
-      : [
-          lastSleep ? `Awake for ${ago(now - lastSleep.timestamp)}${fedText}` : `${name} is awake${fedText}`,
-          `${name}'s day so far`,
-        ];
+  const parts = [
+    asleep ? `Asleep ${ago(now - sleepStart)}` : lastSleep ? `Awake ${ago(now - lastSleep.timestamp)}` : null,
+    lastFeed ? `Last fed ${ago(now - lastFeed.timestamp)} ago` : null,
+  ].filter(Boolean);
+  const subline = parts.length ? parts.join(" • ") : "Ready for the day — awaiting first log";
+
   const [photo, setPhoto] = useState<string | null>(null);
   useEffect(() => {
     if (!baby?.photo_url) {
@@ -84,88 +77,58 @@ export function DailySummary() {
       .then(({ data }) => setPhoto(data?.signedUrl ?? null));
   }, [baby?.photo_url]);
 
-  const range = wakeRangeFor(baby?.birth_date, baby?.date_kind);
-  const awakeMin = lastSleep ? Math.round((now - lastSleep.timestamp) / 60000) : null;
-  const coach =
-    range && awakeMin != null
-      ? (() => {
-          const st = wakeStatus(awakeMin, range);
-          const fmt = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ""}` : `${m}m`);
-          const msg =
-            st === "early"
-              ? `Next sleep in about ${fmt(range.min - awakeMin)}`
-              : st === "soon"
-                ? "Start winding down soon"
-                : st === "now"
-                  ? "Sleep window is open — watch for yawns"
-                  : `Past typical window by ${fmt(awakeMin - range.max)} — overtired cues likely`;
-          return {
-            msg,
-            pct: Math.min(100, (awakeMin / range.max) * 100),
-            range: `${fmt(range.min)}–${fmt(range.max)}`,
-            st,
-          };
-        })()
-      : null;
-
-  const pills = [
-    {
-      label: `${feeds.length} ${feeds.length === 1 ? "feed" : "feeds"}${bottleMl ? ` · ${bottleMl}ml` : ""}`,
-      cls: "bg-feed-tint text-feed-foreground",
-    },
-    {
-      label: `${diapers.length} ${diapers.length === 1 ? "diaper" : "diapers"}`,
-      cls: "bg-feed-tint text-feed-foreground",
-    },
-    { label: `${Math.floor(sleepMin / 60)}h ${sleepMin % 60}m sleep`, cls: "bg-feed-tint text-feed-foreground" },
-    ...(tummyMin ? [{ label: `${tummyMin}m tummy`, cls: "bg-tummy-tint text-tummy-foreground" }] : []),
-    ...(pumps.length ? [{ label: `Pumped ${pumpMl}ml`, cls: "bg-feed-tint text-feed-foreground" }] : []),
-  ];
-
   return (
     <section
-      aria-label="Today's summary"
-      className="mb-4 rounded-3xl border border-transparent bg-card p-4 shadow-soft dark:border-[#2A2622] dark:bg-[#1C1A18]"
+      aria-label="Baby status"
+      className="mb-4 flex items-center gap-3 rounded-full border border-border/50 bg-card py-2 pl-2 pr-2 shadow-soft"
     >
-      <div className="flex items-center gap-3">
-        <span
-          className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-display text-2xl font-bold text-accent-foreground"
-          aria-hidden
-        >
-          {photo ? <img src={photo} alt="" className="h-full w-full object-cover" /> : name.charAt(0).toUpperCase()}
-        </span>
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 truncate font-display text-lg font-bold">
-            {status[0]}
-            {asleep && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-sleep-tint px-2 py-0.5 text-xs font-semibold text-sleep-foreground">
-                <Moon className="h-3 w-3" />
-                Sleeping
-              </span>
-            )}
-          </p>
-          <p className="text-sm text-muted-foreground">{status[1]}</p>
-        </div>
+      <span
+        className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-display text-2xl font-bold text-accent-foreground"
+        aria-hidden
+      >
+        {photo ? <img src={photo} alt="" className="h-full w-full object-cover" /> : name.charAt(0).toUpperCase()}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-2 truncate font-display text-lg font-bold leading-tight">
+          <span className="truncate">
+            {name}
+            {age && <span className="font-semibold text-muted-foreground"> ({age})</span>}
+          </span>
+          {asleep && (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-sky px-2 py-0.5 text-xs font-semibold text-sky-foreground">
+              <Moon className="h-3 w-3" />
+              Sleeping
+            </span>
+          )}
+        </p>
+        <p className="truncate text-sm tabular-nums text-muted-foreground">{subline}</p>
       </div>
-      {coach && (
-        <div className="mt-3 rounded-2xl bg-sleep-tint p-3 text-sleep-foreground">
-          <div className="flex items-baseline justify-between gap-2 text-xs font-semibold">
-            <span>Wake-window coach</span>
-            <span className="tabular-nums opacity-80">Typical {coach.range}</span>
-          </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-background/60">
-            <div className="h-full rounded-full bg-current transition-all" style={{ width: `${coach.pct}%` }} />
-          </div>
-          <p className="mt-2 text-sm font-medium">{coach.msg}</p>
-        </div>
-      )}
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {pills.map((p) => (
-          <li key={p.label} className={`rounded-full px-3 py-1.5 text-xs font-semibold tabular-nums ${p.cls}`}>
-            {p.label}
-          </li>
-        ))}
-      </ul>
+      <button
+        type="button"
+        aria-label="Edit Home"
+        onClick={() => setEditOpen(true)}
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted/70 text-foreground transition active:scale-95 hover:bg-muted"
+      >
+        <Settings2 className="h-5 w-5" />
+      </button>
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="bottom-0 top-auto w-full max-w-lg translate-y-0 rounded-b-none rounded-t-3xl border-border bg-background p-5 pb-8 sm:rounded-t-3xl">
+          <DialogHeader className="text-left">
+            <DialogTitle className="font-display text-xl">Edit Home</DialogTitle>
+            <DialogDescription>Choose what shows on your home screen. Saved on this phone.</DialogDescription>
+          </DialogHeader>
+          <ul className="divide-y divide-border rounded-3xl border border-border/50 bg-card">
+            {TOGGLES.map((t) => (
+              <li key={t.key}>
+                <label className="flex min-h-14 cursor-pointer items-center justify-between gap-3 px-4 text-base font-medium">
+                  {t.label}
+                  <Switch checked={prefs[t.key]} onCheckedChange={(v) => setPref(t.key, v)} />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
