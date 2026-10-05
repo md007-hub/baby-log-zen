@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Baby, LogOut, User, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
+import { registerAppSW } from "@/lib/registerSW";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "@/hooks/useFamily";
@@ -175,7 +176,7 @@ function StatusBadge() {
       )}
     >
       {showOnline ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
-      {showOnline ? "Online" : "Offline (Saving locally)"}
+      {showOnline ? "Online" : "Offline (Local)"}
     </span>
   );
 }
@@ -189,6 +190,9 @@ const tabs = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { ready, user, baby } = useFamily();
+  useEffect(() => {
+    void registerAppSW();
+  }, []);
   useEffect(() => {
     if (!baby || !notificationsSupported()) return;
     const run = () => void checkReminders(baby).catch(() => {});
