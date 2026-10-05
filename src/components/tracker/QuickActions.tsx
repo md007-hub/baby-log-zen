@@ -7,11 +7,13 @@ import {
   Droplets,
   Hourglass,
   Milk,
+  Minus,
   MoonStar,
   Pause,
   Play,
   Plus,
   Square,
+  Sparkles,
   UtensilsCrossed,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -129,6 +131,39 @@ const living: Record<ButtonTone, string> = {
   tummy: "bg-tummy-tint text-tummy-foreground border-tummy-foreground/10",
 };
 
+const sheetStyle: Record<ButtonTone, { action: string; selected: string; surface: string }> = {
+  sky: {
+    action: "bg-sky text-sky-foreground hover:bg-sky/80 hover:text-sky-foreground dark:shadow-[0_0_22px_-8px_var(--sky-foreground)]",
+    selected: "bg-sky text-sky-foreground hover:bg-sky hover:text-sky-foreground shadow-soft",
+    surface: "bg-sky/50 dark:bg-sky",
+  },
+  sage: {
+    action: "bg-sage text-sage-foreground hover:bg-sage/80 hover:text-sage-foreground dark:shadow-[0_0_22px_-8px_var(--sage-foreground)]",
+    selected: "bg-sage text-sage-foreground hover:bg-sage hover:text-sage-foreground shadow-soft",
+    surface: "bg-sage/50 dark:bg-sage",
+  },
+  peach: {
+    action: "bg-peach text-peach-foreground hover:bg-peach/80 hover:text-peach-foreground dark:shadow-[0_0_22px_-8px_var(--peach-foreground)]",
+    selected: "bg-peach text-peach-foreground hover:bg-peach hover:text-peach-foreground shadow-soft",
+    surface: "bg-peach/50 dark:bg-peach",
+  },
+  lilac: {
+    action: "bg-lilac text-lilac-foreground hover:bg-lilac/80 hover:text-lilac-foreground dark:shadow-[0_0_22px_-8px_var(--lilac-foreground)]",
+    selected: "bg-lilac text-lilac-foreground hover:bg-lilac hover:text-lilac-foreground shadow-soft",
+    surface: "bg-lilac/50 dark:bg-lilac",
+  },
+  rose: {
+    action: "bg-rose text-rose-foreground hover:bg-rose/80 hover:text-rose-foreground dark:shadow-[0_0_22px_-8px_var(--rose-foreground)]",
+    selected: "bg-rose text-rose-foreground hover:bg-rose hover:text-rose-foreground shadow-soft",
+    surface: "bg-rose/50 dark:bg-rose",
+  },
+  tummy: {
+    action: "bg-tummy text-tummy-foreground hover:bg-tummy/80 hover:text-tummy-foreground",
+    selected: "bg-tummy text-tummy-foreground shadow-soft",
+    surface: "bg-tummy-tint",
+  },
+};
+
 /** Living pill button on the home stack; tapping opens the log form in a bottom sheet. */
 function SectionCard({
   title,
@@ -159,8 +194,9 @@ function SectionCard({
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="ghost"
           className={cn(
             "group flex min-h-[76px] w-full items-center gap-4 rounded-full border py-3 pl-3 pr-5 text-left shadow-soft backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]",
             living[tone],
@@ -176,12 +212,13 @@ function SectionCard({
             <span className="block truncate text-sm font-medium tabular-nums opacity-80">{context}</span>
           </span>
           <ChevronRight className="h-5 w-5 shrink-0 opacity-50 transition-transform group-hover:translate-x-0.5" />
-        </button>
+        </Button>
       </DialogTrigger>
-      <DialogContent className="bottom-0 top-auto max-h-[90dvh] w-full max-w-lg translate-y-0 overflow-y-auto rounded-b-none rounded-t-3xl border-border bg-background p-5 pb-8 sm:rounded-t-3xl">
+      <DialogContent className="bottom-0 top-auto max-h-[90dvh] w-full max-w-lg translate-y-0 overflow-y-auto rounded-b-none rounded-t-[2rem] border-border/60 bg-background p-5 pb-[max(2rem,env(safe-area-inset-bottom))] text-foreground shadow-lift sm:rounded-t-[2rem]">
+        <span aria-hidden="true" className={cn("mx-auto -mt-1 mb-1 h-1 w-12 rounded-full", sheetStyle[tone].surface)} />
         <DialogHeader className="flex-row items-center gap-3 space-y-0 text-left">
-          <span className={cn("flex h-10 w-10 items-center justify-center rounded-full", living[tone])}>{icon}</span>
-          <DialogTitle className="font-display text-xl">{title}</DialogTitle>
+          <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-full", living[tone])}>{icon}</span>
+          <DialogTitle className="font-display text-xl font-bold">{title}</DialogTitle>
           {extra}
         </DialogHeader>
         <DialogDescription className="sr-only">Log {title.toLowerCase()}</DialogDescription>
@@ -191,11 +228,34 @@ function SectionCard({
   );
 }
 
-const bigButton = "min-h-14 flex-1 rounded-2xl px-3 text-base font-semibold tap-card";
-const numInput = "h-12 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-base tabular-nums";
+const bigButton = "min-h-14 flex-1 rounded-2xl px-4 text-base font-display font-bold shadow-soft transition-all duration-200 active:scale-[0.97]";
+const numInput = "h-12 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-base tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const selectAll = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 const pillBase =
-  "min-h-12 flex-1 rounded-full bg-card px-3 text-base font-semibold text-foreground shadow-soft tap-card hover:bg-card";
+  "min-h-12 min-w-0 flex-1 rounded-full bg-card/80 px-2 text-sm font-semibold text-foreground shadow-inner transition-all active:scale-[0.96] hover:bg-card";
+const segmentBase = "h-11 min-w-0 rounded-full px-2 text-sm font-semibold text-foreground shadow-inner transition-all active:scale-[0.97] hover:bg-card/70";
+const segmentTrack = "rounded-full bg-muted/60 p-1 shadow-inner";
+const timerBase = "rounded-2xl border border-border/30 px-4 py-4";
+
+function AmountStepper({ id, label, value, onChange, min, max, step = 1, unit, tone }: {
+  id: string; label: string; value: string; onChange: (value: string) => void;
+  min: number; max: number; step?: number; unit: string; tone: ButtonTone;
+}) {
+  const change = (direction: -1 | 1) => {
+    const current = value === "" ? (direction === 1 ? min - step : min + step) : Number(value);
+    const next = Math.min(max, Math.max(min, Math.round((current + direction * step) * 10) / 10));
+    onChange(String(next));
+  };
+  return (
+    <div className="flex items-center gap-2">
+      <label htmlFor={id} className="shrink-0 text-sm font-semibold">{label}</label>
+      <Button type="button" variant="ghost" size="icon" aria-label={`Decrease ${label.toLowerCase()}`} onClick={() => change(-1)} className={cn("h-10 w-10 shrink-0 rounded-full shadow-soft", sheetStyle[tone].selected)}><Minus /></Button>
+      <input id={id} type="number" min={min} max={max} step={step} inputMode={step === 1 ? "numeric" : "decimal"} placeholder="0" value={value} onFocus={selectAll} onChange={(e) => onChange(e.target.value)} className={cn(numInput, "w-full text-center font-display font-bold")} />
+      <span className="shrink-0 text-sm text-muted-foreground">{unit}</span>
+      <Button type="button" variant="ghost" size="icon" aria-label={`Increase ${label.toLowerCase()}`} onClick={() => change(1)} className={cn("h-10 w-10 shrink-0 rounded-full shadow-soft", sheetStyle[tone].selected)}><Plus /></Button>
+    </div>
+  );
+}
 
 function localDateTime(date: Date) {
   const offset = date.getTimezoneOffset() * 60000;
