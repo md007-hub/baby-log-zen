@@ -110,9 +110,9 @@ function GrowthPage() {
   return (
     <div className="space-y-4">
       <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground"><ArrowLeft className="h-4 w-4" />Tracker</Link>
-      <section className="rounded-3xl bg-tummy-tint p-4 shadow-soft">
+      <section className="rounded-3xl bg-sage p-4 shadow-soft">
         <div className="mb-3 flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tummy text-tummy-foreground"><Ruler className="h-5 w-5" /></span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-sage-foreground"><Ruler className="h-5 w-5" /></span>
           <h1 className="text-lg font-bold">{baby.name}'s growth</h1>
         </div>
         {badges.length > 0 ? (
@@ -123,23 +123,23 @@ function GrowthPage() {
         {(!sex || !birth) && <p className="mt-2 text-xs text-muted-foreground">Percentiles need a date of birth and a gender of Boy or Girl in the baby profile.</p>}
       </section>
 
-      <section className="space-y-3 rounded-3xl bg-card p-4 shadow-soft">
+      <section className="space-y-3 rounded-3xl bg-sage/30 p-4 shadow-soft">
         <h2 className="text-base font-bold">Add measurement</h2>
         <label className="flex items-center gap-2 text-sm font-medium">Date<input type="date" max={today()} value={date} onChange={(e) => setDate(e.target.value)} className={field} /></label>
-        <div className="flex items-center gap-2"><label htmlFor="g-w" className="w-16 text-sm font-medium">Weight</label><input id="g-w" type="number" inputMode="decimal" step="0.01" placeholder="0" value={weight} onFocus={selectAll} onChange={(e) => setWeight(e.target.value)} className={field} /><Button type="button" variant="outline" onClick={() => { setWeight(""); setWUnit(wUnit === "kg" ? "lb" : "kg"); }} className="h-12 w-16 rounded-xl">{wUnit}</Button></div>
-        <div className="flex items-center gap-2"><label htmlFor="g-l" className="w-16 text-sm font-medium">Length</label><input id="g-l" type="number" inputMode="decimal" step="0.1" placeholder="0" value={length} onFocus={selectAll} onChange={(e) => setLength(e.target.value)} className={field} /><Button type="button" variant="outline" onClick={() => { setLength(""); setHead(""); setLUnit(lUnit === "cm" ? "in" : "cm"); }} className="h-12 w-16 rounded-xl">{lUnit}</Button></div>
-        <div className="flex items-center gap-2"><label htmlFor="g-h" className="w-16 text-sm font-medium">Head</label><input id="g-h" type="number" inputMode="decimal" step="0.1" placeholder="0" value={head} onFocus={selectAll} onChange={(e) => setHead(e.target.value)} className={field} /><span className="w-16 text-center text-sm text-muted-foreground">{lUnit}</span></div>
-        <Button type="button" disabled={busy} onClick={() => void save()} className="h-12 w-full rounded-2xl text-base">Save measurement</Button>
+        <div className="flex items-center gap-2"><label htmlFor="g-w" className="w-16 text-sm font-medium">Weight</label><input id="g-w" type="number" inputMode="decimal" step="0.01" placeholder="0" value={weight} onFocus={selectAll} onChange={(e) => setWeight(e.target.value)} className={field} /><Button type="button" variant="outline" onClick={() => { setWeight(""); setWUnit(wUnit === "kg" ? "lb" : "kg"); }} className="h-12 w-16 rounded-full border-sage-foreground/30 bg-sage/40 font-semibold text-sage-foreground">{wUnit}</Button></div>
+        <div className="flex items-center gap-2"><label htmlFor="g-l" className="w-16 text-sm font-medium">Length</label><input id="g-l" type="number" inputMode="decimal" step="0.1" placeholder="0" value={length} onFocus={selectAll} onChange={(e) => setLength(e.target.value)} className={field} /><Button type="button" variant="outline" onClick={() => { setLength(""); setHead(""); setLUnit(lUnit === "cm" ? "in" : "cm"); }} className="h-12 w-16 rounded-full border-sage-foreground/30 bg-sage/40 font-semibold text-sage-foreground">{lUnit}</Button></div>
+        <div className="flex items-center gap-2"><label htmlFor="g-h" className="w-16 text-sm font-medium">Head</label><input id="g-h" type="number" inputMode="decimal" step="0.1" placeholder="0" value={head} onFocus={selectAll} onChange={(e) => setHead(e.target.value)} className={field} /><span className="flex h-12 w-16 items-center justify-center rounded-full border border-sage-foreground/30 text-sm font-semibold text-sage-foreground">{lUnit}</span></div>
+        <Button type="button" disabled={busy} onClick={() => void save()} className="h-14 w-full rounded-2xl bg-sage font-display text-base font-bold text-sage-foreground shadow-soft transition active:scale-[0.97] hover:bg-sage/80">Save measurement</Button>
       </section>
 
       {chart && (
         <section className="rounded-3xl bg-card p-4 shadow-soft">
           <div className="mb-3 grid grid-cols-3 rounded-full bg-muted p-1" role="group" aria-label="Chart metric">
-            {(["weight", "length", "head"] as Metric[]).map((m) => <Button key={m} type="button" variant="ghost" aria-pressed={metric === m} onClick={() => setMetric(m)} className={cn("h-10 rounded-full text-foreground", metric === m && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground")}>{METRIC_LABEL[m]}</Button>)}
+            {(["weight", "length", "head"] as Metric[]).map((m) => <Button key={m} type="button" variant="ghost" aria-pressed={metric === m} onClick={() => setMetric(m)} className={cn("h-10 rounded-full text-foreground", metric === m && "bg-sage text-sage-foreground hover:bg-sage hover:text-sage-foreground")}>{METRIC_LABEL[m]}</Button>)}
           </div>
           <p className="mb-2 text-xs text-muted-foreground">WHO {sex === "boy" ? "boys" : "girls"} · 3rd, 15th, 50th, 85th, 97th percentiles ({unitFor(metric)} by month, 0–{chartMax})</p>
            {currentMeasurement && (
-             <div className="mb-4 rounded-2xl bg-tummy-tint p-4" aria-live="polite">
+             <div className="mb-4 rounded-2xl bg-sage/50 p-4" aria-live="polite">
                {currentMeasurement.pct != null ? (
                  <>
                    <p className="font-display text-lg font-bold">{baby.name} is in the ~{Math.round(currentMeasurement.pct)}th percentile ({currentMeasurement.value} {unitFor(metric)}) for {METRIC_LABEL[metric].toLowerCase()}.</p>
@@ -157,7 +157,7 @@ function GrowthPage() {
                 <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                 <XAxis dataKey="m" type="number" domain={[0, chartMax]} ticks={chartMax === 60 ? [0, 12, 24, 36, 48, 60] : [0, 3, 6, 9, 12, 15, 18, 21, 24]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
                 <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                {PERCENTILES.map((p) => <Line key={p} data={chart.curves} dataKey={`p${p}`} name={`${ordinal(p)}`} dot={false} strokeWidth={p === 50 ? 2 : 1} stroke={p === 50 ? "var(--primary)" : "var(--muted-foreground)"} strokeOpacity={p === 50 ? 0.9 : 0.45} isAnimationActive={false} />)}
+                {PERCENTILES.map((p) => <Line key={p} data={chart.curves} dataKey={`p${p}`} name={`${ordinal(p)}`} dot={false} strokeWidth={p === 50 ? 2 : 1} stroke={p === 50 ? "var(--sage-foreground)" : "var(--muted-foreground)"} strokeOpacity={p === 50 ? 0.9 : 0.45} isAnimationActive={false} />)}
                 <Line data={chart.points} dataKey="baby" name={baby.name} stroke="var(--tummy-foreground)" strokeWidth={2.5} dot={{ r: 4, fill: "var(--tummy-foreground)" }} isAnimationActive={false} />
                 {chart.latest && <ReferenceDot x={chart.latest.m} y={chart.latest.baby} r={7} fill="var(--tummy-foreground)" stroke="var(--card)" strokeWidth={3} className="drop-shadow-[0_0_7px_var(--tummy-foreground)]" />}
               </LineChart>

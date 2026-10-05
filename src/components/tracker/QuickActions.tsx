@@ -29,7 +29,7 @@ import {
 import { addLog, db, deleteLog, startOfToday, type LogEntry } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { useFamily } from "@/hooks/useFamily";
-import { useHomePrefs } from "@/hooks/useHomePrefs";
+import { useActionOrder, useHomePrefs } from "@/hooks/useHomePrefs";
 import { wakeRangeFor, wakeStatus } from "@/lib/wakeWindow";
 
 const FOODS = ["Avocado", "Banana", "Sweet Potato", "Oatmeal", "Egg", "Yogurt"];
@@ -322,6 +322,7 @@ export function QuickActions() {
   const [napStart, setNapStart] = useState("");
   const [napEnd, setNapEnd] = useState("");
   const [prefs] = useHomePrefs();
+  const { orderClass } = useActionOrder();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 30000);
@@ -473,7 +474,7 @@ export function QuickActions() {
 
   return (
     <div className="flex flex-col gap-3">
-      <SectionCard title="Feed" icon={<Milk className="h-6 w-6" strokeWidth={2.25} />} tone="sage" context={feedCtx} live={nursing.active} className="order-2">
+      <SectionCard title="Feed" icon={<Milk className="h-6 w-6" strokeWidth={2.25} />} tone="sage" context={feedCtx} live={nursing.active} className={orderClass("feed")}>
         <div
           className={cn("mb-3 grid", segmentTrack, solidsOn ? "grid-cols-3" : "grid-cols-2")}
           role="group"
@@ -649,7 +650,7 @@ export function QuickActions() {
       </SectionCard>
 
       {prefs.pumping && (
-      <SectionCard title="Pumping" icon={<Droplets className="h-6 w-6" />} tone="lilac" context={pumpCtx} live={pumping.active} className="order-4">
+      <SectionCard title="Pumping" icon={<Droplets className="h-6 w-6" />} tone="lilac" context={pumpCtx} live={pumping.active} className={orderClass("pumping")}>
         <div className="mb-3 grid grid-cols-3 gap-2" role="group" aria-label="Pumping side">
           {(["Left", "Right", "Both"] as const).map((s) => (
             <Button
@@ -722,7 +723,7 @@ export function QuickActions() {
         icon={<DiaperIcon className="h-6 w-6" />}
         tone="peach"
         context={diaperCtx}
-        className="order-3"
+        className={orderClass("diaper")}
         open={diaperOpen}
         onOpenChange={setDiaperOpen}
         extra={
@@ -756,7 +757,7 @@ export function QuickActions() {
         tone="sky"
         context={sleepCtx}
         live={sleep.active}
-        className="order-1"
+        className={orderClass("sleep")}
       >
         <div className={cn("mb-3 grid grid-cols-2", segmentTrack)} role="group" aria-label="Sleep type">
           {(["Nap", "Night Sleep"] as const).map((kind) => (
@@ -856,7 +857,7 @@ export function QuickActions() {
         </Dialog>
       </SectionCard>
 
-      <SectionCard title="Tummy Time" icon={<Hourglass className="h-6 w-6" strokeWidth={2.25} />} tone="tummy" context={tummyCtx} className="order-6">
+      <SectionCard title="Tummy Time" icon={<Hourglass className="h-6 w-6" strokeWidth={2.25} />} tone="tummy" context={tummyCtx} className={orderClass("tummy")}>
         <div className="flex items-center justify-between rounded-2xl bg-card/70 px-4 py-3">
           <span className="text-sm text-muted-foreground">
             {tummy.active ? "Tummy time in progress" : "Not running"}
@@ -925,7 +926,7 @@ export function QuickActions() {
           icon={<StickyNote className="h-6 w-6" />}
           tone="rose"
           context={noteCtx}
-          className="order-5"
+          className={orderClass("notes")}
           open={noteOpen}
           onOpenChange={setNoteOpen}
         >

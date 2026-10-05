@@ -74,14 +74,14 @@ export function SoundPlayer() {
                 aria-pressed={on}
                 aria-label={`${on ? "Pause" : "Play"} ${label}`}
                 className={cn(
-                  "tap-card flex w-full items-center gap-4 rounded-3xl p-4 shadow-soft active:scale-[0.98] transition-transform text-left",
-                  on ? "bg-primary/10 ring-1 ring-inset ring-primary/40" : "bg-card",
+                  "tap-card flex w-full items-center gap-4 rounded-full p-3 pr-4 shadow-soft active:scale-[0.98] transition-transform text-left",
+                  on ? "bg-lilac ring-1 ring-inset ring-lilac-foreground/25" : "bg-card",
                 )}
               >
                 <span
                   className={cn(
                     "flex h-12 w-12 shrink-0 items-center justify-center rounded-full",
-                    on ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground",
+                    on ? "bg-card text-lilac-foreground" : "bg-sky text-sky-foreground",
                   )}
                 >
                   <Icon className={cn("h-6 w-6", on && "animate-pulse")} />
@@ -94,7 +94,7 @@ export function SoundPlayer() {
                   <span
                     className={cn(
                       "flex h-12 w-12 items-center justify-center rounded-full",
-                      on ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                      on ? "bg-lilac-foreground text-card shadow-[0_0_14px_var(--lilac-foreground)]" : "bg-lilac text-lilac-foreground",
                     )}
                   >
                     {on ? (
@@ -106,7 +106,7 @@ export function SoundPlayer() {
                   {locked && (
                     <span
                       aria-label="Pro"
-                      className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm"
+                      className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-lilac-foreground text-card shadow-sm"
                     >
                       <Lock className="h-3.5 w-3.5" />
                     </span>
@@ -133,7 +133,7 @@ export function SoundPlayer() {
             step={0.01}
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
-            className="h-3 w-full cursor-pointer rounded-full accent-primary"
+            className="h-3 w-full cursor-pointer rounded-full accent-[var(--lilac-foreground)]"
           />
           <Volume2 className="h-5 w-5 shrink-0 text-muted-foreground" />
         </div>
@@ -151,8 +151,8 @@ export function SoundPlayer() {
                 "tap-card min-h-12 rounded-full px-1 text-sm font-semibold",
                 d.minutes === 0 && "text-xs",
                 minutes === d.minutes
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-foreground",
+                  ? "bg-lilac text-lilac-foreground ring-2 ring-lilac-foreground/30 shadow-[0_0_18px_color-mix(in_oklab,var(--lilac-foreground)_45%,transparent)] hover:bg-lilac"
+                  : "bg-sky/60 text-foreground",
               )}
             >
               {d.label}

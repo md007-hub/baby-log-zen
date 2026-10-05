@@ -44,9 +44,9 @@ const CHIPS = [
 
 function Greeting() {
   return (
-    <div className="rounded-3xl bg-card p-4 shadow-soft">
+    <div className="rounded-[1.75rem] border border-lilac-foreground/20 bg-gradient-to-br from-lilac to-tummy-tint p-4 shadow-soft">
       <div className="flex items-center gap-2.5">
-        <Sparkles className="h-5 w-5 text-primary" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-lilac-foreground shadow-soft"><Sparkles className="h-5 w-5" /></span>
         <h2 className="font-display text-lg font-bold leading-tight">Nanny AI</h2>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-foreground">
@@ -153,12 +153,12 @@ function AskPage() {
               onClick={() => watchRewardedAd(grantAiBonus)}
               className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-border bg-background px-4 text-sm font-semibold transition active:scale-[0.98]"
             >
-              <PlayCircle className="h-5 w-5 text-primary" /> Watch 1 quick ad (+3 questions)
+              <PlayCircle className="h-5 w-5 text-lilac-foreground" /> Watch 1 quick ad (+3 questions)
             </button>
             <button
               type="button"
               onClick={() => openUpgrade()}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition active:scale-[0.98]"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-lilac px-4 text-sm font-bold text-lilac-foreground transition active:scale-[0.98]"
             >
               <Crown className="h-5 w-5" /> Get Unlimited with PRO
             </button>
@@ -179,8 +179,9 @@ function AskPage() {
             type="button"
             disabled={offline || loading || outOfQuestions}
             onClick={() => void send(c.prompt)}
-            className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-border/60 bg-card px-4 text-sm font-medium shadow-soft transition hover:bg-muted active:scale-[0.98] disabled:opacity-50"
+            className="min-h-10 shrink-0 whitespace-nowrap rounded-full border border-lilac-foreground/15 bg-tummy-tint px-4 text-sm font-semibold shadow-soft transition hover:bg-lilac active:scale-[0.98] disabled:opacity-50"
           >
+            <Sparkles className="mr-1.5 inline h-3.5 w-3.5 text-lilac-foreground" />
             {c.label}
           </button>
         ))}
@@ -191,7 +192,7 @@ function AskPage() {
           e.preventDefault();
           void send(input);
         }}
-        className="flex items-end gap-2 rounded-3xl bg-card p-2 shadow-soft"
+        className="flex items-end gap-2 rounded-[1.75rem] border border-lilac-foreground/15 bg-card p-2 shadow-soft"
       >
         <textarea
           value={input}
@@ -205,7 +206,7 @@ function AskPage() {
           type="submit"
           disabled={offline || loading || outOfQuestions || input.trim().length === 0}
           aria-label="Send"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition active:scale-[0.98] disabled:opacity-40"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lilac text-lilac-foreground shadow-soft ring-1 ring-lilac-foreground/20 transition active:scale-90 disabled:opacity-40"
         >
           <Send className="h-5 w-5" />
         </button>

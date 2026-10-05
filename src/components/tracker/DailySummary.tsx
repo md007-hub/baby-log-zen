@@ -7,6 +7,8 @@ import { useHomePrefs, type HomePrefs } from "@/hooks/useHomePrefs";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { ACTION_LABELS, useActionOrder } from "@/hooks/useHomePrefs";
 
 function ago(ms: number) {
   const m = Math.max(0, Math.round(ms / 60000));
@@ -31,6 +33,7 @@ const TOGGLES: { key: keyof HomePrefs; label: string }[] = [
 export function DailySummary() {
   const { baby } = useFamily();
   const [prefs, setPref] = useHomePrefs();
+  const { order, move } = useActionOrder();
   const [editOpen, setEditOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -112,7 +115,7 @@ export function DailySummary() {
         <Settings2 className="h-5 w-5" />
       </button>
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="bottom-0 top-auto w-full max-w-lg translate-y-0 rounded-b-none rounded-t-3xl border-border bg-background p-5 pb-8 sm:rounded-t-3xl">
+        <DialogContent className="bottom-0 top-auto max-h-[90dvh] overflow-y-auto w-full max-w-lg translate-y-0 rounded-b-none rounded-t-3xl border-border bg-background p-5 pb-8 sm:rounded-t-3xl">
           <DialogHeader className="text-left">
             <DialogTitle className="font-display text-xl">Edit Home</DialogTitle>
             <DialogDescription>Choose what shows on your home screen. Saved on this phone.</DialogDescription>
@@ -127,6 +130,16 @@ export function DailySummary() {
               </li>
             ))}
           </ul>
+          <h3 className="mt-2 font-display text-base font-bold">Button order</h3>
+          <ol className="divide-y divide-border rounded-3xl border border-border/50 bg-card">
+            {order.map((k, i) => (
+              <li key={k} className="flex min-h-14 items-center gap-2 px-4">
+                <span className="flex-1 text-base font-medium">{ACTION_LABELS[k]}</span>
+                <button type="button" aria-label={`Move ${ACTION_LABELS[k]} up`} disabled={i === 0} onClick={() => move(k, -1)} className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/70 transition active:scale-90 disabled:opacity-30"><ChevronUp className="h-5 w-5" /></button>
+                <button type="button" aria-label={`Move ${ACTION_LABELS[k]} down`} disabled={i === order.length - 1} onClick={() => move(k, 1)} className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/70 transition active:scale-90 disabled:opacity-30"><ChevronDown className="h-5 w-5" /></button>
+              </li>
+            ))}
+          </ol>
         </DialogContent>
       </Dialog>
     </section>

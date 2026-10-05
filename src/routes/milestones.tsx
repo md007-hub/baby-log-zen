@@ -77,12 +77,12 @@ function MilestonesPage() {
       </header>
       <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist">
         {BRACKETS.map((b) => (
-          <button key={b.id} role="tab" aria-selected={b.id === tab} onClick={() => setTab(b.id)} className={cn("shrink-0 rounded-full px-4 py-2 text-sm font-semibold shadow-soft tap-card", b.id === tab ? "bg-primary text-primary-foreground" : "bg-card")}>{b.label}</button>
+          <button key={b.id} role="tab" aria-selected={b.id === tab} onClick={() => setTab(b.id)} className={cn("shrink-0 rounded-full px-4 py-2 text-sm font-semibold shadow-soft tap-card", b.id === tab ? "bg-peach text-peach-foreground ring-2 ring-peach-foreground/20" : "bg-card")}>{b.label}</button>
         ))}
       </div>
       <p className="text-sm font-semibold text-muted-foreground">{count} of {total} achieved</p>
       {CATEGORIES.map((c) => (
-        <section key={c.key} className="rounded-3xl bg-card p-4 shadow-soft">
+        <section key={c.key} className="rounded-[2rem] bg-card p-4 shadow-soft">
           <h2 className="mb-2 font-display text-lg font-bold">{c.label}</h2>
           <ul className="space-y-2">
             {bracket.items[c.key].map((label, i) => {
@@ -90,8 +90,8 @@ function MilestonesPage() {
               const row = done[key];
               return (
                 <li key={key}>
-                  <button type="button" aria-pressed={!!row} onClick={() => void toggle(key)} className={cn("flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 py-2 text-left tap-card", row ? "bg-feed-tint" : "bg-muted/50")}>
-                    <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2", row ? "border-feed bg-feed text-feed-foreground" : "border-border")}>{row && <Check className="h-4 w-4" />}</span>
+                  <button type="button" aria-pressed={!!row} onClick={() => void toggle(key)} className={cn("flex min-h-14 w-full items-center gap-3 rounded-3xl px-3 py-2.5 text-left tap-card transition active:scale-[0.98]", row ? "bg-peach" : "bg-muted/50")}>
+                    <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition", row ? "border-peach-foreground/30 bg-card text-peach-foreground shadow-soft" : "border-border bg-card")}>{row && <Check className="h-4 w-4" strokeWidth={3} />}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium">{label}</span>
                       {row && <span className="block text-xs text-muted-foreground">Achieved {new Date(row.achieved_at).toLocaleDateString()}{row.note ? ` · ${row.note}` : ""}</span>}
@@ -101,7 +101,7 @@ function MilestonesPage() {
                   {row && noteFor === key && (
                     <div className="mt-2 flex gap-2 pl-12">
                       <input autoFocus maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note…" className="h-10 min-w-0 flex-1 rounded-xl border border-input bg-card px-3 text-sm" />
-                      <button type="button" onClick={() => void saveNote(key)} className="rounded-xl bg-primary px-3 text-sm font-semibold text-primary-foreground">Save</button>
+                      <button type="button" onClick={() => void saveNote(key)} className="rounded-full bg-peach px-4 text-sm font-bold text-peach-foreground transition active:scale-95">Save</button>
                     </div>
                   )}
                 </li>
