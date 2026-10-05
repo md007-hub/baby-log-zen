@@ -1,6 +1,6 @@
 # Current polish
-- [ ] Keep Nestling in the persistent header and baby identity only in the Tracker profile card.
-- [ ] Open Milestones on the baby's current age bracket and keep its tabs comfortably scrollable.
+- [x] Keep Nestling in the persistent header and baby identity only in the Tracker profile card.
+- [x] Open Milestones on the baby's current age bracket and keep its tabs comfortably scrollable.
 - [x] Restore the Sleep card lavender/twilight category tint.
 - [x] Extend WHO weight and length/height standards and charts through 60 months with a highlighted latest point.
 - [x] Polish feature-tour imagery and copy.
