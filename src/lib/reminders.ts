@@ -30,7 +30,11 @@ export const isStandalone = () =>
 
 async function registration() {
   if (!("serviceWorker" in navigator) || inPreview()) return null;
-  try { return await navigator.serviceWorker.register("/notify-sw.js"); } catch { return null; }
+  try {
+    // Reuse the offline worker (it imports the notification handlers) instead of replacing it.
+    const existing = await navigator.serviceWorker.getRegistration("/");
+    return existing ?? (await navigator.serviceWorker.register("/notify-sw.js"));
+  } catch { return null; }
 }
 
 export async function requestPermission() {

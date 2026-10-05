@@ -45,10 +45,27 @@ function buildBuffer(c: AudioContext, type: NoiseType) {
         const envelope = Math.pow(1 - (t * 2) % 1, 1.5);
         d[i] = envelope * (Math.sin(2 * Math.PI * note * t) * 0.22 + Math.sin(2 * Math.PI * note * 2 * t) * 0.05);
       }
-      else if (type === "vacuum") d[i] = smooth * 3 + Math.sin(2 * Math.PI * 95 * t) * 0.11 + w * 0.04;
-      else if (type === "dryer") d[i] = smooth * 2 + w * 0.16 + Math.sin(2 * Math.PI * 60 * t) * 0.055;
-      else if (type === "ocean") d[i] = (smooth * 5 + w * 0.07) * (0.45 + 0.4 * Math.sin(2 * Math.PI * t / 4));
-      else if (type === "rain") d[i] = w * 0.13 + smooth * 1.5 + (Math.random() < 0.0004 ? (Math.random() - 0.5) * 0.35 : 0);
+      else if (type === "vacuum") {
+        // deep resonant motor hum (100Hz + harmonics, all whole cycles in 8s) + low rumble
+        last = (last + 0.02 * w) / 1.02;
+        d[i] = Math.sin(2 * Math.PI * 100 * t) * 0.12 + Math.sin(2 * Math.PI * 200 * t) * 0.06 +
+          Math.sin(2 * Math.PI * 300 * t) * 0.03 + last * 2.2 + smooth * 1.2;
+      } else if (type === "dryer") {
+        // warm steady mid-frequency rush: band-passed noise (white minus heavy low-pass)
+        b0 = b0 * 0.6 + w * 0.4;
+        d[i] = (b0 - smooth) * 0.45 + Math.sin(2 * Math.PI * 120 * t) * 0.02;
+      } else if (type === "ocean") {
+        // rhythmic low-pass swell, 8s period = exactly one wave per loop
+        const swell = Math.pow(0.5 - 0.5 * Math.cos((2 * Math.PI * t) / 8), 2);
+        b1 = b1 * 0.995 + w * 0.005;
+        d[i] = (b1 * 9 * (0.25 + swell) + smooth * 2 * swell + w * 0.03 * swell);
+      } else if (type === "rain") {
+        // crisp light pink-ish hiss with scattered droplets
+        b2 = 0.969 * b2 + w * 0.153852;
+        b3 = 0.8665 * b3 + w * 0.3104856;
+        b6 = b6 * 0.9 + (Math.random() < 0.0015 ? (Math.random() - 0.5) * 0.6 : 0);
+        d[i] = (b2 + b3 + w * 0.3) * 0.12 + b6;
+      }
       else if (type === "pink") {
         // Paul Kellet's 1/f filter
         b0 = 0.99886 * b0 + w * 0.0555179;
@@ -159,6 +176,7 @@ export async function play(type: NoiseType) {
   source.start();
   set({ active: type });
   scheduleTimer();
+  updateMediaSession();
 }
 
 export function stop() {
@@ -167,10 +185,40 @@ export function stop() {
   silentEl?.pause();
   if (master && ctx) master.gain.setValueAtTime(state.volume, ctx.currentTime);
   set({ active: null, endsAt: null, fading: false });
+  updateMediaSession();
 }
 
 export function toggle(type: NoiseType) {
   return state.active === type ? stop() : play(type);
+}
+
+const TITLES: Record<NoiseType, string> = {
+  white: "White Noise", lullaby: "Gentle Lullaby", pink: "Pink Noise", brown: "Brown Noise",
+  vacuum: "Vacuum Cleaner", dryer: "Hair Dryer", ocean: "Ocean Waves", rain: "Soft Rain",
+};
+let lastTrack: NoiseType | null = null;
+
+function updateMediaSession() {
+  if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+  const ms = navigator.mediaSession;
+  if (state.active) {
+    lastTrack = state.active;
+    ms.metadata = new MediaMetadata({
+      title: TITLES[state.active],
+      artist: "Nursery Sounds",
+      album: "Nestling",
+      artwork: [
+        { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+        { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+    });
+  }
+  ms.playbackState = state.active ? "playing" : "paused";
+  try {
+    ms.setActionHandler("play", () => { if (lastTrack) void play(lastTrack); });
+    ms.setActionHandler("pause", () => stop());
+    ms.setActionHandler("stop", () => stop());
+  } catch { /* unsupported action */ }
 }
 
 export function setVolume(v: number) {

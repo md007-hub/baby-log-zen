@@ -74,7 +74,12 @@ export function Timeline() {
                   <p className="text-xs text-muted-foreground">
                     {startTs(log) !== log.timestamp ? `${time(startTs(log))}–${time(log.timestamp)}` : time(log.timestamp)}
                     {log.notes ? ` · ${log.notes}` : ""}
-                    {baby && log.sync_status === "pending" ? " · not synced yet" : ""}
+                    {log.sync_status === "pending" && (
+                      <span className="ml-1.5 inline-flex items-center gap-1 text-offline" title="Waiting to sync">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-offline" />
+                        pending sync
+                      </span>
+                    )}
                   </p>
                 </div>
                 <Button

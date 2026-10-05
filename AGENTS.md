@@ -20,3 +20,4 @@
 - Growth percentiles use bundled WHO LMS tables computed client-side (weight and length/height 0–60 months; head circumference 0–24 months); measurements live in `baby_growth` since they're infrequent and shared.
 - Baby profile dates use the shared calendar picker, and profile saves refresh FamilyProvider so growth and wake-window views use the updated baby immediately.
 - Milestones are stored per baby in `baby_milestones` keyed by stable bracket:category:index ids from src/lib/milestones.ts — shared between parents; never reorder existing items.
+- Offline app shell uses vite-plugin-pwa (generateSW, output to dist/client) registered only via src/lib/registerSW.ts; the worker imports notify-sw.js so reminders share one worker — prevents two workers fighting over the same scope.
