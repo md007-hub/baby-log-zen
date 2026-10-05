@@ -657,13 +657,14 @@ export function QuickActions() {
               type="button"
               aria-pressed={pumpSide === s}
               onClick={() => setPumpSide(s)}
-              className={cn(pillBase, "min-h-11", pumpSide === s && pill.feed)}
+              variant="ghost"
+              className={cn(pillBase, "min-h-11", pumpSide === s && sheetStyle.lilac.selected)}
             >
               {s}
             </Button>
           ))}
         </div>
-        <div className="mb-3 grid grid-cols-2 rounded-full bg-card/70 p-1" role="group" aria-label="Duration entry">
+        <div className={cn("mb-3 grid grid-cols-2", segmentTrack)} role="group" aria-label="Duration entry">
           {(["timer", "manual"] as const).map((m) => (
             <Button
               key={m}
@@ -672,9 +673,7 @@ export function QuickActions() {
               aria-pressed={pumpMode === m}
               onClick={() => setPumpMode(m)}
               className={cn(
-                "h-11 rounded-full capitalize text-foreground",
-                pumpMode === m &&
-                  "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+                segmentBase, "capitalize", pumpMode === m && sheetStyle.lilac.selected,
               )}
             >
               {m}
@@ -682,56 +681,24 @@ export function QuickActions() {
           ))}
         </div>
         {pumpMode === "timer" ? (
-          <div className="mb-3 flex items-center justify-between rounded-2xl bg-card/70 px-3 py-2">
+          <div className={cn("mb-3 flex items-center justify-between gap-2", timerBase, sheetStyle.lilac.surface)}>
             <span className="text-sm text-muted-foreground">Duration</span>
             <span className="font-display text-xl font-bold tabular-nums">{formatDuration(pumping.elapsed)}</span>
             <Button
               type="button"
               variant={pumping.active ? "outline" : "default"}
               onClick={pumping.active ? pumping.pause : pumping.elapsed ? pumping.resume : pumping.start}
-              className="h-10 rounded-full"
+              className={cn("h-10 rounded-full", sheetStyle.lilac.selected)}
             >
               {pumping.active ? <Pause /> : <Play />}
               {pumping.active ? "Pause" : pumping.elapsed ? "Resume" : "Start"}
             </Button>
           </div>
         ) : (
-          <div className="mb-3 flex items-center gap-2">
-            <label htmlFor="pump-min" className="text-sm font-medium">
-              Duration
-            </label>
-            <input
-              id="pump-min"
-              type="number"
-              min={1}
-              max={720}
-              inputMode="numeric"
-              placeholder="0"
-              value={pumpMin}
-              onFocus={selectAll}
-              onChange={(e) => setPumpMin(e.target.value)}
-              className={numInput}
-            />
-            <span className="text-sm text-muted-foreground">min</span>
-          </div>
+          <div className="mb-3"><AmountStepper id="pump-min" label="Duration" value={pumpMin} onChange={setPumpMin} min={1} max={720} unit="min" tone="lilac" /></div>
         )}
-        <div className="flex items-center gap-2">
-          <label htmlFor="pump-volume" className="text-sm font-medium">
-            Expressed
-          </label>
-          <input
-            id="pump-volume"
-            type="number"
-            min="0.1"
-            max={pumpUnit === "ml" ? 2000 : 68}
-            step="0.1"
-            inputMode="decimal"
-            placeholder="0"
-            value={pumpVolume}
-            onFocus={selectAll}
-            onChange={(e) => setPumpVolume(e.target.value)}
-            className={numInput}
-          />
+        <div className="space-y-2">
+          <AmountStepper id="pump-volume" label="Expressed" value={pumpVolume} onChange={setPumpVolume} min={0.1} max={pumpUnit === "ml" ? 2000 : 68} step={pumpUnit === "ml" ? 5 : 0.5} unit={pumpUnit} tone="lilac" />
           <Button
             type="button"
             variant="outline"
@@ -739,12 +706,12 @@ export function QuickActions() {
               setPumpVolume("");
               setPumpUnit(pumpUnit === "ml" ? "oz" : "ml");
             }}
-            className="h-12 w-16 rounded-xl"
+            className="h-10 rounded-full"
           >
-            {pumpUnit}
+            Switch to {pumpUnit === "ml" ? "oz" : "ml"}
           </Button>
         </div>
-        <Button type="button" onClick={() => void savePump()} className={cn(bigButton, "mt-3 w-full")}>
+        <Button type="button" variant="ghost" onClick={() => void savePump()} className={cn(bigButton, sheetStyle.lilac.action, "mt-3 w-full")}>
           Log Pumping
         </Button>
       </SectionCard>
@@ -759,7 +726,7 @@ export function QuickActions() {
         open={diaperOpen}
         onOpenChange={setDiaperOpen}
         extra={
-          <span className="ml-auto mr-8 rounded-full bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground">
+          <span className={cn("ml-auto mr-8 rounded-full px-2.5 py-1 text-xs font-medium", sheetStyle.peach.selected)}>
             Today: {diaperCount}
           </span>
         }
@@ -771,13 +738,14 @@ export function QuickActions() {
               type="button"
               aria-pressed={diaperKind === kind}
               onClick={() => setDiaperKind(kind)}
-              className={cn(pillBase, diaperKind === kind && pill.diaper)}
+              variant="ghost"
+              className={cn(pillBase, diaperKind === kind && sheetStyle.peach.selected)}
             >
               {kind}
             </Button>
           ))}
         </div>
-        <Button type="button" onClick={() => void logDiaper()} className={cn(bigButton, "mt-3 w-full")}>
+        <Button type="button" variant="ghost" onClick={() => void logDiaper()} className={cn(bigButton, sheetStyle.peach.action, "mt-3 w-full")}>
           Log Diaper
         </Button>
       </SectionCard>
@@ -790,7 +758,7 @@ export function QuickActions() {
         live={sleep.active}
         className="order-1"
       >
-        <div className="mb-3 grid grid-cols-2 rounded-full bg-muted/60 p-1" role="group" aria-label="Sleep type">
+        <div className={cn("mb-3 grid grid-cols-2", segmentTrack)} role="group" aria-label="Sleep type">
           {(["Nap", "Night Sleep"] as const).map((kind) => (
             <Button
               key={kind}
@@ -800,17 +768,15 @@ export function QuickActions() {
               aria-pressed={sleepKind === kind}
               onClick={() => setSleepKind(kind)}
               className={cn(
-                "h-11 rounded-full text-foreground",
-                sleepKind === kind &&
-                  "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 hover:text-primary-foreground",
+                segmentBase, sleepKind === kind && sheetStyle.sky.selected,
               )}
             >
-              {kind === "Nap" ? <CloudSun /> : <MoonStar />}
+              <span className={cn("flex h-6 w-6 items-center justify-center rounded-full", sleepKind === kind && "bg-card/50")}>{kind === "Nap" ? <CloudSun /> : <MoonStar />}</span>
               {kind}
             </Button>
           ))}
         </div>
-        <div className="flex items-center justify-between rounded-2xl bg-muted/60 px-4 py-3">
+        <div className={cn("flex items-center justify-between gap-2", timerBase, sheetStyle.sky.surface)}>
           <span className="text-sm text-muted-foreground">
             {sleep.active ? `${sleepKind} in progress` : `No ${sleepKind.toLowerCase()} running`}
           </span>
@@ -818,6 +784,7 @@ export function QuickActions() {
         </div>
         <Button
           type="button"
+          variant="ghost"
           onClick={async () => {
             if (!sleep.active) {
               setSleepKind((k) => k);
@@ -831,8 +798,7 @@ export function QuickActions() {
           }}
           className={cn(
             bigButton,
-            "mt-3 w-full",
-            sleep.active && "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+            "mt-3 w-full", sheetStyle.sky.action,
           )}
         >
           {sleep.active ? <Square /> : <Play />}
@@ -849,7 +815,7 @@ export function QuickActions() {
           }}
         >
           <DialogTrigger asChild>
-            <Button variant="link" type="button" className="mt-2 h-10 px-0">
+            <Button variant="link" type="button" className="mt-2 h-10 px-0 text-sky-foreground">
               <Plus />
               Log Past Sleep
             </Button>
@@ -882,7 +848,7 @@ export function QuickActions() {
                   className="mt-1 h-12 w-full rounded-xl border border-input bg-background px-3 text-base"
                 />
               </label>
-              <Button type="submit" className="h-12 w-full rounded-2xl">
+              <Button type="submit" variant="ghost" className={cn(bigButton, sheetStyle.sky.action, "w-full")}>
                 Save sleep
               </Button>
             </form>
@@ -970,7 +936,8 @@ export function QuickActions() {
                 type="button"
                 aria-pressed={noteTag === t}
                 onClick={() => setNoteTag(t)}
-                className={cn(pillBase, "min-h-11", noteTag === t && "bg-rose text-rose-foreground ring-2 ring-rose-foreground/40 hover:bg-rose")}
+                variant="ghost"
+                className={cn(pillBase, "min-h-11", noteTag === t && sheetStyle.rose.selected)}
               >
                 {t}
               </Button>
@@ -982,10 +949,10 @@ export function QuickActions() {
             maxLength={300}
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
-            className="min-h-28 w-full rounded-2xl border border-input bg-card p-3 text-base"
+            className="min-h-32 w-full resize-none rounded-xl border border-input bg-card p-4 text-base shadow-inner outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <Button type="button" onClick={() => void saveNote()} className={cn(bigButton, "mt-3 w-full")}>
-            Save
+          <Button type="button" variant="ghost" onClick={() => void saveNote()} className={cn(bigButton, sheetStyle.rose.action, "mt-3 w-full")}>
+            <Sparkles /> Save Note
           </Button>
         </SectionCard>
       )}
