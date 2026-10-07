@@ -1,4 +1,6 @@
 # Current polish
+- [ ] Make Tracker profile and action subtitles fully readable on narrow screens.
+- [ ] Refresh welcome and introduction screens with cream, sage and warm slate styling.
 - [x] Keep Nestling in the persistent header and baby identity only in the Tracker profile card.
 - [x] Open Milestones on the baby's current age bracket and keep its tabs comfortably scrollable.
 - [x] Restore the Sleep card lavender/twilight category tint.
