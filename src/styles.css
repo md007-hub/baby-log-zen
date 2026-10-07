@@ -51,6 +51,7 @@
   --color-sky-foreground: var(--sky-foreground);
   --color-sage: var(--sage);
   --color-sage-foreground: var(--sage-foreground);
+  --color-sage-strong: var(--sage-strong);
   --color-peach: var(--peach);
   --color-peach-foreground: var(--peach-foreground);
   --color-lilac: var(--lilac);
@@ -124,6 +125,7 @@
   --logo-cream: oklch(0.97 0.018 86);
   --logo-ink: oklch(0.42 0.06 160);
   --welcome-ink: #2C3E50;
+  --sage-strong: #88AB8E;
 }
 
 .dark {
@@ -177,6 +179,7 @@
   --logo-cream: oklch(0.95 0.02 86);
   --logo-ink: oklch(0.27 0.035 145);
   --welcome-ink: oklch(0.96 0.008 85);
+  --sage-strong: oklch(0.74 0.07 150);
 }
 
 @layer base {
@@ -193,6 +196,16 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     overscroll-behavior-y: none;
+  }
+
+  /* Autofill blends into the cream/charcoal theme instead of browser blue */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-foreground);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-card) inset;
+    transition: background-color 9999s ease-out 0s;
+    caret-color: var(--color-foreground);
   }
 
   h1,
