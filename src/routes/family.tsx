@@ -3,7 +3,7 @@ import { BookOpen, Copy, CreditCard, FileText, Lock, LogOut, Sparkles, Users } f
 import { usePro } from "@/hooks/usePro";
 import { createPortalSession } from "@/lib/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
-import { exportDoctorPdf } from "@/lib/exportPdf";
+import { exportDoctorPdf, exportLogsCsv } from "@/lib/exportPdf";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -346,6 +346,9 @@ function ProSection({ babyName }: { babyName: string | null }) {
       <Button variant="secondary" onClick={exportPdf} className="h-12 w-full justify-start text-base">
         <FileText /> Doctor PDF export (last 7 days)
         {!isPro && <Lock className="ml-auto text-muted-foreground" />}
+      </Button>
+      <Button variant="secondary" onClick={() => void exportLogsCsv()} className="h-12 w-full justify-start text-base">
+        <FileText /> Export Logs (CSV)
       </Button>
 
       {!isPro && (
