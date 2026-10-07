@@ -93,9 +93,9 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
   } catch { /* growth is optional */ }
 
   const cells: [string, string, string][] = [
-    ["Feeds", `${feeds.length} feeds`, ml ? `${ml} ml (${(ml / 29.5735).toFixed(1)} oz)` : "No bottle volume"],
-    ["Sleep", fmtDur(sleepSec), `${logs.filter((l) => l.type === "sleep").length} sleeps`],
-    ["Diapers", `${diapers.length} total`, `Wet ${count("wet")} / Poop ${count("dirty") + count("poop")} / Mixed ${count("both") + count("mixed")}`],
+    ["Feeds", `${feeds.length} feeds (${(feeds.length / days).toFixed(1)}/day)`, ml ? `${ml} ml (${(ml / 29.5735).toFixed(1)} oz)` : "No bottle volume"],
+    ["Sleep", fmtDur(sleepSec), `Avg ${fmtDur(Math.round(sleepSec / days))} per 24h · ${logs.filter((l) => l.type === "sleep").length} sleeps`],
+    ["Diapers", `${diapers.length} total (${(diapers.length / days).toFixed(1)}/day)`, `Wet ${count("wet")} / Poop ${count("dirty") + count("poop")} / Mixed ${count("both") + count("mixed")}`],
     ["Growth & percentile", growthMain, growthSub],
   ];
   const gap = 10;
@@ -198,4 +198,23 @@ export async function exportDoctorPdf(babyName: string | null, days = 7) {
   }
 
   doc.save(`nestling-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+/** Downloads every local log as a CSV. Sleep rows include start and end ISO times (start = end - duration). */
+export async function exportLogsCsv() {
+  const logs = await db.logs.orderBy("timestamp").toArray();
+  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const rows = [["type", "value", "notes", "start_iso", "end_iso", "duration_minutes", "summary_date"].join(",")];
+  for (const l of logs) {
+    const sec = l.type === "sleep" || l.type === "tummy" || l.type === "pumping" || l.type === "feed" ? parseDurationSec(l.notes) : null;
+    const end = new Date(l.timestamp);
+    const start = sec ? new Date(l.timestamp - sec * 1000) : null;
+    rows.push([l.type, l.value, l.notes, start?.toISOString() ?? "", end.toISOString(), sec ? Math.round(sec / 60) : "", end.toLocaleDateString("en-CA")].map(esc).join(","));
+  }
+  const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `nestling-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
