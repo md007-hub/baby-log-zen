@@ -66,18 +66,18 @@ function AuthPage() {
       <Button variant="ghost" onClick={() => { setSent(false); setMode("in"); }}>Back to log in</Button>
     </div> : <>
       {mode !== "reset" && <div className="mb-7 grid grid-cols-2 border-b border-border" role="tablist" aria-label="Account">
-        {(["in", "up"] as const).map(m => <Button key={m} type="button" role="tab" aria-selected={mode === m} variant="ghost" onClick={() => setMode(m)} className={cn("h-12 rounded-none border-b-2 text-sm", mode === m ? "border-primary text-foreground" : "border-transparent text-muted-foreground")}>{m === "in" ? "Log In" : "Create Account"}</Button>)}
+        {(["in", "up"] as const).map(m => <Button key={m} type="button" role="tab" aria-selected={mode === m} variant="ghost" onClick={() => setMode(m)} className={cn("h-12 rounded-none border-b-2 text-sm", mode === m ? "border-sage-strong text-foreground" : "border-transparent text-muted-foreground")}>{m === "in" ? "Log In" : "Create Account"}</Button>)}
       </div>}
       <h1 className="mb-1 font-display text-2xl font-bold">{mode === "reset" ? "Reset your password" : mode === "up" ? "Welcome to the family" : "Welcome back"}</h1>
       <p className="mb-6 text-sm text-muted-foreground">{mode === "reset" ? "We'll email you a secure link." : mode === "up" ? "Start sharing the little moments." : "Pick up where you left off."}</p>
       <form onSubmit={submit} className="space-y-4">
-        <label className="block text-sm font-medium">Email address<Input aria-label="Email address" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="mt-1.5 h-12 text-base" /></label>
+        <label className="block text-sm font-medium">Email address<Input aria-label="Email address" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="mt-1.5 h-12 text-base focus-visible:ring-sage-strong/50" /></label>
         {mode !== "reset" && <label className="block text-sm font-medium">Password
-          <span className="relative mt-1.5 block"><Input aria-label="Password" type={visible ? "text" : "password"} required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" className="h-12 pr-12 text-base" />
+          <span className="relative mt-1.5 block"><Input aria-label="Password" type={visible ? "text" : "password"} required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" className="h-12 pr-12 text-base focus-visible:ring-sage-strong/50" />
             <Button type="button" variant="ghost" aria-label={visible ? "Hide password" : "Show password"} onClick={() => setVisible(!visible)} className="absolute right-1 top-1 h-10 w-10 px-0">{visible ? <EyeOff /> : <Eye />}</Button></span>
         </label>}
         {mode === "in" && <Button type="button" variant="link" onClick={() => setMode("reset")} className="ml-auto flex h-8 px-0">Forgot password?</Button>}
-        <Button type="submit" disabled={busy} className="h-12 w-full text-base">{busy ? "Please wait…" : mode === "reset" ? "Send reset link" : mode === "up" ? "Create account" : "Log in"}{!busy && <ArrowRight />}</Button>
+        <Button type="submit" disabled={busy} className="h-12 w-full rounded-full bg-sage-strong text-base text-white shadow-soft transition hover:bg-sage-strong/90 active:scale-[0.98]">{busy ? "Please wait…" : mode === "reset" ? "Send reset link" : mode === "up" ? "Create account" : "Log in"}{!busy && <ArrowRight />}</Button>
       </form>
       {mode === "reset" && <Button variant="ghost" onClick={() => setMode("in")} className="mt-4 w-full">Back to log in</Button>}
     </>}
