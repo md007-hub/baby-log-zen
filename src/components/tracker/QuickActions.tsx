@@ -331,7 +331,6 @@ export function QuickActions() {
     window.dispatchEvent(new Event("nestling-sleep"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sleep.active]);
-...
   const pumping = useStopwatch("pumping");
   const [pumpSide, setPumpSide] = useState<"Left" | "Right" | "Both">("Both");
   const [pumpMode, setPumpMode] = useState<"timer" | "manual">("timer");
