@@ -48,14 +48,42 @@ function formatDuration(ms: number) {
     .join(":");
 }
 
-function useStopwatch() {
+/** Stopwatch that persists its absolute start time to localStorage so it survives force-closes. */
+function useStopwatch(key: string) {
+  const storageKey = `nestling-timer-${key}`;
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [accumulated, setAccumulated] = useState(0);
   const [now, setNow] = useState(() => Date.now());
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const s = JSON.parse(raw) as { startedAt: number | null; accumulated: number };
+        setStartedAt(typeof s.startedAt === "number" ? s.startedAt : null);
+        setAccumulated(Number(s.accumulated) || 0);
+      } else if (key === "sleep") {
+        const legacy = Number(localStorage.getItem("nestling-sleep-start"));
+        if (legacy > 0) setStartedAt(legacy);
+      }
+    } catch { /* ignore corrupt state */ }
+    setNow(Date.now());
+    setLoaded(true);
+  }, [storageKey, key]);
+  useEffect(() => {
+    if (!loaded) return;
+    if (startedAt === null && accumulated === 0) localStorage.removeItem(storageKey);
+    else localStorage.setItem(storageKey, JSON.stringify({ startedAt, accumulated }));
+  }, [loaded, startedAt, accumulated, storageKey]);
   useEffect(() => {
     if (startedAt === null) return;
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
+    const tick = () => setNow(Date.now());
+    const timer = setInterval(tick, 1000);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
+    };
   }, [startedAt]);
   const elapsed = accumulated + (startedAt === null ? 0 : now - startedAt);
   return {
@@ -294,16 +322,17 @@ export function QuickActions() {
   const [portion, setPortion] = useState<string | null>(null);
   const [reaction, setReaction] = useState<string | null>(null);
   const [solidNotes, setSolidNotes] = useState("");
-  const nursing = useStopwatch();
-  const sleep = useStopwatch();
-  const tummy = useStopwatch();
+  const nursing = useStopwatch("nursing");
+  const sleep = useStopwatch("sleep");
+  const tummy = useStopwatch("tummy");
   useEffect(() => {
     if (sleep.active) localStorage.setItem("nestling-sleep-start", String(Date.now() - sleep.elapsed));
-    else localStorage.removeItem("nestling-sleep-start");
+    else if (localStorage.getItem("nestling-timer-sleep") === null) localStorage.removeItem("nestling-sleep-start");
     window.dispatchEvent(new Event("nestling-sleep"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sleep.active]);
-  const pumping = useStopwatch();
+...
+  const pumping = useStopwatch("pumping");
   const [pumpSide, setPumpSide] = useState<"Left" | "Right" | "Both">("Both");
   const [pumpMode, setPumpMode] = useState<"timer" | "manual">("timer");
   const [pumpMin, setPumpMin] = useState("");
