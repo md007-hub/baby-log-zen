@@ -83,7 +83,7 @@ export function DailySummary() {
   return (
     <section
       aria-label="Baby status"
-      className="mb-4 flex items-center gap-3 rounded-full border border-border/50 bg-card py-2 pl-2 pr-2 shadow-soft"
+      className="mb-4 flex items-center gap-2 rounded-[2rem] border border-border/50 bg-card py-3 pl-2 pr-2 shadow-soft"
     >
       <span
         className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-display text-2xl font-bold text-accent-foreground"
@@ -104,7 +104,7 @@ export function DailySummary() {
             </span>
           )}
         </p>
-        <p className="truncate text-sm tabular-nums text-muted-foreground">{subline}</p>
+        <p className="mt-1 whitespace-normal break-words text-sm leading-relaxed tabular-nums text-muted-foreground">{subline}</p>
       </div>
       <button
         type="button"

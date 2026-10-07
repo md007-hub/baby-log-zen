@@ -226,7 +226,7 @@ function SectionCard({
           type="button"
           variant="ghost"
           className={cn(
-            "group flex min-h-[76px] w-full items-center gap-4 rounded-full border py-3 pl-3 pr-5 text-left shadow-soft backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]",
+            "group flex h-auto min-h-[88px] w-full items-center gap-3 whitespace-normal rounded-[2rem] border py-3 pl-3 pr-3 text-left shadow-soft backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.98]",
             living[tone],
             className,
           )}
@@ -237,7 +237,7 @@ function SectionCard({
           </span>
           <span className="min-w-0 flex-1">
             <span className="block font-display text-lg font-bold leading-tight">{title}</span>
-            <span className="block truncate text-sm font-medium tabular-nums opacity-80">{context}</span>
+            <span className="mt-1 block whitespace-normal break-words text-sm font-medium leading-relaxed tabular-nums opacity-80">{context}</span>
           </span>
           <ChevronRight className="h-5 w-5 shrink-0 opacity-50 transition-transform group-hover:translate-x-0.5" />
         </Button>
