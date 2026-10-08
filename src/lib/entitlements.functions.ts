@@ -9,7 +9,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const syncEntitlementsFromRevenueCat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const key = process.env.REVENUECAT_SECRET_API_KEY;
+    const key = process.env['REVENUECAT_SECRET_API_KEY'];
     if (!key) return { ok: false as const, reason: "not_configured" as const };
 
     const res = await fetch(

@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { initRevenueCat, revenueCatLogIn, revenueCatLogOut } from "@/lib/revenuecat";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { setLocalChangeListener } from "@/lib/db";
