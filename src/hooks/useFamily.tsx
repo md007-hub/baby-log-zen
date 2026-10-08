@@ -56,13 +56,17 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    void initRevenueCat();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
       setReady(true);
+      if (data.user) void revenueCatLogIn(data.user.id); // session restore
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       setUser(session?.user ?? null);
+      if (event === "SIGNED_IN" && session?.user) void revenueCatLogIn(session.user.id);
+      if (event === "SIGNED_OUT") void revenueCatLogOut();
     });
     return () => sub.subscription.unsubscribe();
   }, []);
