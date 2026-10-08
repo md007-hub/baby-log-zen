@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Baby, LogOut, User, UserPlus, Users, Moon, Sparkles, Sun, Waves, Wifi, WifiOff, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
+import { AdBanner } from "@/components/AdBanner";
 import { registerAppSW } from "@/lib/registerSW";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -231,6 +232,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>}
 
       <main className={`relative z-0 flex-1 px-4 pt-4 ${isIntroduction ? "pb-4" : "pb-28"}`}>{children}</main>
+
+      {!isIntroduction && <AdBanner />}
 
       {!isIntroduction && <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-border/60 bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
         <div className="grid grid-cols-3">
