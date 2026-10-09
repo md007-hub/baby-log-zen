@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useHydrated, useOnline } from "@/hooks/useOnline";
 import { AdBanner } from "@/components/AdBanner";
 import { registerAppSW } from "@/lib/registerSW";
+import { rescheduleInactivityReminder } from "@/lib/inactivityReminder";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "@/hooks/useFamily";
@@ -193,6 +194,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { ready, user, baby } = useFamily();
   useEffect(() => {
     void registerAppSW();
+    void rescheduleInactivityReminder();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void rescheduleInactivityReminder();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
   useEffect(() => {
     if (!baby || !notificationsSupported()) return;
