@@ -546,6 +546,7 @@ export function QuickActions() {
           <>
             <div className={cn("mb-3 grid grid-cols-2", segmentTrack)} role="group" aria-label="Feed volume unit">
               {(["oz", "ml"] as const).map((unit) => <Button key={unit} type="button" variant="ghost" aria-pressed={feedUnit === unit} onClick={() => {
+                if (unit === feedUnit) return;
                 if (bottleMl) setBottleMl(String(Math.round(Number(bottleMl) * (unit === "oz" ? 1 / 29.5735 : 29.5735) * 10) / 10));
                 setFeedUnit(unit);
               }} className={cn(segmentBase, feedUnit === unit && sheetStyle.sage.selected)}>{unit}</Button>)}
