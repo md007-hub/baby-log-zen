@@ -31,6 +31,9 @@ import { cn } from "@/lib/utils";
 import { useFamily } from "@/hooks/useFamily";
 import { useActionOrder, useHomePrefs } from "@/hooks/useHomePrefs";
 import { wakeRangeFor, wakeStatus } from "@/lib/wakeWindow";
+import { z } from "zod";
+import { EntryDateTime } from "@/components/tracker/EntryDateTime";
+import { entryTimestamp, localDateTime, parseLocal } from "@/lib/logTime";
 
 const FOODS = ["Avocado", "Banana", "Sweet Potato", "Oatmeal", "Egg", "Yogurt"];
 const PORTIONS = ["Few tastes", "Small (1-2 tbsp)", "Medium (~1/2 cup)", "Full meal"];
@@ -285,15 +288,9 @@ function AmountStepper({ id, label, value, onChange, min, max, step = 1, unit, t
   );
 }
 
-function localDateTime(date: Date) {
-  const offset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
-}
-// datetime-local "YYYY-MM-DDTHH:mm" parsed explicitly as device-local time.
-function parseLocal(v: string) {
-  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-  if (!m) return NaN;
-  return new Date(+m[1]!, +m[2]! - 1, +m[3]!, +m[4]!, +m[5]!).getTime();
+function selectedTimestamp(value: string) {
+  try { return entryTimestamp(value); }
+  catch { toast.error("Choose a valid date and time in the past or now"); return null; }
 }
 export function defaultSleepKind(ts = Date.now()): "Nap" | "Night Sleep" {
   const h = new Date(ts).getHours();
@@ -344,6 +341,12 @@ export function QuickActions() {
   }, [solidsOn, feedMode]);
   const [side, setSide] = useState<"Left" | "Right">("Left");
   const [bottleMl, setBottleMl] = useState("");
+  const [feedUnit, setFeedUnit] = useState<"oz" | "ml">("oz");
+  const [feedTime, setFeedTime] = useState("");
+  const [diaperTime, setDiaperTime] = useState("");
+  const [pumpTime, setPumpTime] = useState("");
+  const [tummyTime, setTummyTime] = useState("");
+  const [nursingMin, setNursingMin] = useState("");
   const [diaperKind, setDiaperKind] = useState<"Wet" | "Poop" | "Mixed" | null>(null);
   const [napOpen, setNapOpen] = useState(false);
   const [sleepKind, setSleepKind] = useState<"Nap" | "Night Sleep">(() => defaultSleepKind());
@@ -377,13 +380,18 @@ export function QuickActions() {
   );
 
   const logBottle = async () => {
-    const ml = Number(bottleMl);
-    if (!Number.isInteger(ml) || ml < 1 || ml > 2000) {
-      toast.error("Pick or enter an amount between 1 and 2000ml");
+    const amount = z.coerce.number().finite().positive().max(feedUnit === "oz" ? 67 : 2000).safeParse(bottleMl);
+    if (!amount.success) {
+      toast.error(`Enter an amount between 0 and ${feedUnit === "oz" ? 67 : 2000}${feedUnit}`);
       return;
     }
-    await logWithUndo({ type: "feed", value: `Bottle · ${ml}ml` }, `Bottle ${ml}ml logged`);
+    const timestamp = selectedTimestamp(feedTime);
+    if (timestamp === null) return;
+    const ml = Math.round(amount.data * (feedUnit === "oz" ? 29.5735 : 1));
+    if (ml < 1) { toast.error("Enter at least 1ml (0.04oz)"); return; }
+    await logWithUndo({ type: "feed", value: `Bottle · ${ml}ml`, timestamp }, `Bottle ${amount.data}${feedUnit} logged`);
     setBottleMl("");
+    setFeedTime("");
   };
   const logSolids = async () => {
     const name = food.trim();
@@ -396,7 +404,10 @@ export function QuickActions() {
       return;
     }
     const value = ["Solids", name, portion, reaction].filter(Boolean).join(" · ");
-    await logWithUndo({ type: "solids", value, notes: solidNotes.trim().slice(0, 300) || undefined }, `${name} logged`);
+    const timestamp = selectedTimestamp(feedTime);
+    if (timestamp === null) return;
+    await logWithUndo({ type: "solids", value, timestamp, notes: solidNotes.trim().slice(0, 300) || undefined }, `${name} logged`);
+    setFeedTime("");
     setFood("");
     setPortion(null);
     setReaction(null);
@@ -407,7 +418,10 @@ export function QuickActions() {
       toast.error("Choose Wet, Poop or Mixed first");
       return;
     }
-    await logWithUndo({ type: "diaper", value: diaperKind }, `${diaperKind} diaper logged`);
+    const timestamp = selectedTimestamp(diaperTime);
+    if (timestamp === null) return;
+    await logWithUndo({ type: "diaper", value: diaperKind, timestamp }, `${diaperKind} diaper logged`);
+    setDiaperTime("");
     setDiaperKind(null);
     setDiaperOpen(false);
   };
@@ -422,7 +436,10 @@ export function QuickActions() {
       toast.error("Enter a duration between 1 minute and 12 hours");
       return;
     }
-    await addLog({ type: "pumping", value: `Pumping · ${pumpSide} · ${ml}ml`, notes: formatDuration(ms) });
+    const timestamp = selectedTimestamp(pumpTime);
+    if (timestamp === null) return;
+    await addLog({ type: "pumping", value: `Pumping · ${pumpSide} · ${ml}ml`, notes: formatDuration(ms), timestamp });
+    setPumpTime("");
     pumping.stop();
     setPumpVolume("");
     setPumpMin("");
@@ -503,6 +520,7 @@ export function QuickActions() {
   return (
     <div className="flex flex-col gap-3">
       <SectionCard title="Feed" icon={<Milk className="h-6 w-6" strokeWidth={2.25} />} tone="sage" context={feedCtx} live={nursing.active} className={orderClass("feed")}>
+        <EntryDateTime label="Feed" value={feedTime} onChange={setFeedTime} />
         <div
           className={cn("mb-3 grid", segmentTrack, solidsOn ? "grid-cols-3" : "grid-cols-2")}
           role="group"
@@ -526,8 +544,14 @@ export function QuickActions() {
         </div>
         {feedMode === "bottle" ? (
           <>
+            <div className={cn("mb-3 grid grid-cols-2", segmentTrack)} role="group" aria-label="Feed volume unit">
+              {(["oz", "ml"] as const).map((unit) => <Button key={unit} type="button" variant="ghost" aria-pressed={feedUnit === unit} onClick={() => {
+                if (bottleMl) setBottleMl(String(Math.round(Number(bottleMl) * (unit === "oz" ? 1 / 29.5735 : 29.5735) * 10) / 10));
+                setFeedUnit(unit);
+              }} className={cn(segmentBase, feedUnit === unit && sheetStyle.sage.selected)}>{unit}</Button>)}
+            </div>
             <div className="flex gap-2" role="group" aria-label="Bottle presets">
-              {[60, 90, 120, 150].map((ml) => (
+              {(feedUnit === "oz" ? [2, 3, 4, 5] : [60, 90, 120, 150]).map((ml) => (
                 <Button
                   key={ml}
                   type="button"
@@ -536,11 +560,11 @@ export function QuickActions() {
                   variant="ghost"
                   className={cn(pillBase, bottleMl === String(ml) && sheetStyle.sage.selected)}
                 >
-                  {ml}
+                  {ml}{feedUnit}
                 </Button>
               ))}
             </div>
-            <div className="mt-3"><AmountStepper id="custom-ml" label="Amount" value={bottleMl} onChange={setBottleMl} min={1} max={2000} step={10} unit="ml" tone="sage" /></div>
+            <div className="mt-3"><AmountStepper id="custom-ml" label="Amount" value={bottleMl} onChange={setBottleMl} min={feedUnit === "oz" ? 0.1 : 1} max={feedUnit === "oz" ? 67 : 2000} step={feedUnit === "oz" ? 0.5 : 10} unit={feedUnit} tone="sage" /></div>
             <Button type="button" variant="ghost" onClick={() => void logBottle()} className={cn(bigButton, sheetStyle.sage.action, "mt-3 w-full")}>
               Log Feed
             </Button>
@@ -660,11 +684,15 @@ export function QuickActions() {
                   type="button"
                   variant="ghost"
                   onClick={async () => {
-                    const ms = nursing.stop();
+                    const timestamp = selectedTimestamp(feedTime);
+                    if (timestamp === null) return;
+                    const ms = nursing.elapsed;
                     await logWithUndo(
-                      { type: "feed", value: `Breastfeed · ${side}`, notes: formatDuration(ms) },
+                      { type: "feed", value: `Breastfeed · ${side}`, notes: formatDuration(ms), timestamp },
                       "Nursing logged",
                     );
+                    nursing.stop();
+                    setFeedTime("");
                   }}
                   className={cn(bigButton, sheetStyle.sage.action, "min-w-0")}
                 >
@@ -673,12 +701,24 @@ export function QuickActions() {
                 </Button>
               </div>
             )}
+            {!nursing.active && nursing.elapsed === 0 && <div className="mt-3 space-y-3">
+              <AmountStepper id="nursing-min" label="Duration" value={nursingMin} onChange={setNursingMin} min={1} max={720} unit="min" tone="sage" />
+              <Button type="button" variant="ghost" className={cn(bigButton, sheetStyle.sage.action, "w-full")} onClick={async () => {
+                const duration = z.coerce.number().int().min(1).max(720).safeParse(nursingMin);
+                if (!duration.success) { toast.error("Enter 1–720 minutes"); return; }
+                const timestamp = selectedTimestamp(feedTime);
+                if (timestamp === null) return;
+                await logWithUndo({ type: "feed", value: `Breastfeed · ${side}`, notes: formatDuration(duration.data * 60000), timestamp }, "Nursing logged");
+                setNursingMin(""); setFeedTime("");
+              }}>Log Nursing</Button>
+            </div>}
           </div>
         )}
       </SectionCard>
 
       {prefs.pumping && (
       <SectionCard title="Pumping" icon={<Droplets className="h-6 w-6" />} tone="lilac" context={pumpCtx} live={pumping.active} className={orderClass("pumping")}>
+        <EntryDateTime label="Pumping" value={pumpTime} onChange={setPumpTime} />
         <div className="mb-3 grid grid-cols-3 gap-2" role="group" aria-label="Pumping side">
           {(["Left", "Right", "Both"] as const).map((s) => (
             <Button
@@ -760,6 +800,7 @@ export function QuickActions() {
           </span>
         }
       >
+        <EntryDateTime label="Diaper" value={diaperTime} onChange={setDiaperTime} />
         <div className="flex gap-2" role="group" aria-label="Diaper type">
           {(["Wet", "Poop", "Mixed"] as const).map((kind) => (
             <Button
@@ -886,6 +927,7 @@ export function QuickActions() {
       </SectionCard>
 
       <SectionCard title="Tummy Time" icon={<Hourglass className="h-6 w-6" strokeWidth={2.25} />} tone="tummy" context={tummyCtx} className={orderClass("tummy")}>
+        <EntryDateTime label="Tummy Time" value={tummyTime} onChange={setTummyTime} />
         <div className="flex items-center justify-between rounded-2xl bg-card/70 px-4 py-3">
           <span className="text-sm text-muted-foreground">
             {tummy.active ? "Tummy time in progress" : "Not running"}
@@ -899,8 +941,12 @@ export function QuickActions() {
               tummy.start();
               return;
             }
-            const ms = tummy.stop();
-            await addLog({ type: "tummy", value: "Tummy time", notes: formatDuration(ms) });
+            const timestamp = selectedTimestamp(tummyTime);
+            if (timestamp === null) return;
+            const ms = tummy.elapsed;
+            await addLog({ type: "tummy", value: "Tummy time", notes: formatDuration(ms), timestamp });
+            tummy.stop();
+            setTummyTime("");
             toast.success("Tummy time logged");
           }}
           className={cn(
@@ -937,7 +983,10 @@ export function QuickActions() {
                 toast.error("Enter 1–180 minutes");
                 return;
               }
-              await addLog({ type: "tummy", value: "Tummy time", notes: formatDuration(n * 60000) });
+              const timestamp = selectedTimestamp(tummyTime);
+              if (timestamp === null) return;
+              await addLog({ type: "tummy", value: "Tummy time", notes: formatDuration(n * 60000), timestamp });
+              setTummyTime("");
               setTummyMin("");
               toast.success(`${n} min tummy time logged`);
             }}
