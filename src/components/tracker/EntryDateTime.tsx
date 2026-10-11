@@ -5,7 +5,7 @@ export function EntryDateTime({ label, value, onChange }: { label: string; value
   const displayed = value || localDateTime(new Date());
   const [date = "", time = ""] = displayed.split("T");
   return (
-    <div className="mb-3 grid min-w-0 grid-cols-[minmax(0,1fr)_7rem] items-end gap-2">
+    <div className="mb-3 grid min-w-0 grid-cols-1 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_10rem]">
       <div className="min-w-0">
         <p className="text-sm font-semibold">Date</p>
         <DatePicker label={`${label} date`} value={date} onChange={(next) => onChange(`${next}T${time}`)} maxDate={new Date()} />
