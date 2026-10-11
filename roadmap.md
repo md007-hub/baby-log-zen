@@ -1,4 +1,6 @@
 # Current polish
+- [ ] Standardize Pumping units and add compact past-entry dialogs for Pumping, Diaper and Tummy Time without changing Feed, Sleep or navigation.
+- [ ] Verify unit conversion, backdated saves and 5-second Undo for the three trackers.
 - [x] Make Tracker profile and action subtitles fully readable on narrow screens.
 - [x] Refresh welcome and introduction screens with cream, sage and warm slate styling.
 - [x] Keep Nestling in the persistent header and baby identity only in the Tracker profile card.
