@@ -339,6 +339,13 @@ export function QuickActions() {
   const [pumpUnit, setPumpUnit] = useState<"ml" | "oz">("ml");
   const [tummyMin, setTummyMin] = useState("");
   const [feedMode, setFeedMode] = useState<"bottle" | "nursing" | "solids">("bottle");
+  const [pastFeedOpen, setPastFeedOpen] = useState(false);
+  const [pastFeedKind, setPastFeedKind] = useState<"Bottle" | "Breastfeed">("Bottle");
+  const [pastFeedTime, setPastFeedTime] = useState("");
+  const [pastFeedStart, setPastFeedStart] = useState("");
+  const [pastFeedEnd, setPastFeedEnd] = useState("");
+  const [pastFeedMl, setPastFeedMl] = useState("");
+  const [pastFeedSide, setPastFeedSide] = useState<"Left" | "Right">("Left");
   useEffect(() => {
     if (!solidsOn && feedMode === "solids") setFeedMode("bottle");
   }, [solidsOn, feedMode]);
@@ -384,6 +391,39 @@ export function QuickActions() {
     }
     await logWithUndo({ type: "feed", value: `Bottle · ${ml}ml` }, `Bottle ${ml}ml logged`);
     setBottleMl("");
+  };
+  const savePastFeed = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (pastFeedKind === "Bottle") {
+      const ml = Number(pastFeedMl);
+      const ts = parseLocal(pastFeedTime);
+      if (!Number.isInteger(ml) || ml < 1 || ml > 2000) {
+        toast.error("Pick or enter an amount between 1 and 2000ml");
+        return;
+      }
+      if (!Number.isFinite(ts) || ts > Date.now() + 60000) {
+        toast.error("Enter a valid past time");
+        return;
+      }
+      await logWithUndo({ type: "feed", value: `Bottle · ${ml}ml`, timestamp: ts }, `Bottle ${ml}ml logged`);
+      setPastFeedMl("");
+      setPastFeedTime("");
+      setPastFeedOpen(false);
+    } else {
+      const start = parseLocal(pastFeedStart);
+      const end = parseLocal(pastFeedEnd);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end || end > Date.now() + 60000) {
+        toast.error("Enter a valid past start and end time");
+        return;
+      }
+      await logWithUndo(
+        { type: "feed", value: `Breastfeed · ${pastFeedSide}`, notes: formatDuration(end - start), timestamp: end },
+        "Nursing logged",
+      );
+      setPastFeedStart("");
+      setPastFeedEnd("");
+      setPastFeedOpen(false);
+    }
   };
   const logSolids = async () => {
     const name = food.trim();
@@ -675,6 +715,105 @@ export function QuickActions() {
             )}
           </div>
         )}
+        <Dialog
+          open={pastFeedOpen}
+          onOpenChange={(open) => {
+            setPastFeedOpen(open);
+            if (open) {
+              setPastFeedKind(feedMode === "nursing" ? "Breastfeed" : "Bottle");
+              setPastFeedTime(localDateTime(new Date()));
+              setPastFeedStart(localDateTime(new Date(Date.now() - 1800000)));
+              setPastFeedEnd(localDateTime(new Date()));
+            }
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button variant="link" type="button" className="mt-2 h-10 px-0 text-sage-foreground">
+              <Plus />
+              Log Past Feed
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-3xl border-border bg-card">
+            <DialogHeader>
+              <DialogTitle>Log Past Feed</DialogTitle>
+              <DialogDescription>
+                Enter when the feed happened. Nursing saves the duration between start and end.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={(event) => void savePastFeed(event)} className="space-y-4">
+              <div className={cn("grid grid-cols-2", segmentTrack)} role="group" aria-label="Past feed type">
+                {(["Bottle", "Breastfeed"] as const).map((kind) => (
+                  <Button
+                    key={kind}
+                    type="button"
+                    variant="ghost"
+                    aria-pressed={pastFeedKind === kind}
+                    onClick={() => setPastFeedKind(kind)}
+                    className={cn(segmentBase, pastFeedKind === kind && sheetStyle.sage.selected)}
+                  >
+                    {kind}
+                  </Button>
+                ))}
+              </div>
+              {pastFeedKind === "Bottle" ? (
+                <>
+                  <AmountStepper id="past-feed-ml" label="Amount" value={pastFeedMl} onChange={setPastFeedMl} min={1} max={2000} step={10} unit="ml" tone="sage" />
+                  <label className="block text-sm font-medium">
+                    Time
+                    <input
+                      type="datetime-local"
+                      required
+                      value={pastFeedTime}
+                      onChange={(e) => setPastFeedTime(e.target.value)}
+                      className="mt-1 h-12 w-full rounded-xl border border-input bg-background px-3 text-base"
+                    />
+                  </label>
+                </>
+              ) : (
+                <>
+                  <div className={cn("flex justify-center gap-1", segmentTrack)} role="group" aria-label="Nursing side">
+                    {(["Left", "Right"] as const).map((s) => (
+                      <Button
+                        key={s}
+                        type="button"
+                        variant="ghost"
+                        aria-pressed={pastFeedSide === s}
+                        onClick={() => setPastFeedSide(s)}
+                        className={cn(segmentBase, "h-10 px-3", pastFeedSide === s && sheetStyle.sage.selected)}
+                      >
+                        {s}
+                      </Button>
+                    ))}
+                  </div>
+                  <label className="block text-sm font-medium">
+                    Start time
+                    <input
+                      type="datetime-local"
+                      required
+                      value={pastFeedStart}
+                      onChange={(e) => setPastFeedStart(e.target.value)}
+                      className="mt-1 h-12 w-full rounded-xl border border-input bg-background px-3 text-base"
+                    />
+                  </label>
+                  <label className="block text-sm font-medium">
+                    End time
+                    <input
+                      type="datetime-local"
+                      required
+                      value={pastFeedEnd}
+                      onChange={(e) => setPastFeedEnd(e.target.value)}
+                      className="mt-1 h-12 w-full rounded-xl border border-input bg-background px-3 text-base"
+                    />
+                  </label>
+                </>
+              )}
+              <Button type="submit" variant="ghost" className={cn(bigButton, sheetStyle.sage.action, "w-full")}>
+                Save feed
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+
       </SectionCard>
 
       {prefs.pumping && (
