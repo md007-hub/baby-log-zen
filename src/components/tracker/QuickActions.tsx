@@ -285,6 +285,26 @@ function AmountStepper({ id, label, value, onChange, min, max, step = 1, unit, t
   );
 }
 
+// Compact oz | ml segmented control shared by the Feed card and Log Past Feed dialog.
+function FeedUnitToggle({ unit, onSwitch, label }: { unit: "ml" | "oz"; onSwitch: (unit: "ml" | "oz") => void; label: string }) {
+  return (
+    <div className={cn("flex shrink-0", segmentTrack)} role="group" aria-label={label}>
+      {(["oz", "ml"] as const).map((u) => (
+        <Button
+          key={u}
+          type="button"
+          variant="ghost"
+          aria-pressed={unit === u}
+          onClick={() => onSwitch(u)}
+          className={cn("h-8 rounded-full px-3 text-xs font-semibold uppercase", unit === u && sheetStyle.sage.selected)}
+        >
+          {u}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 function localDateTime(date: Date) {
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
@@ -295,6 +315,19 @@ function parseLocal(v: string) {
   if (!m) return NaN;
   return new Date(+m[1]!, +m[2]! - 1, +m[3]!, +m[4]!, +m[5]!).getTime();
 }
+const ML_PER_OZ = 29.5735;
+const FEED_LIMITS = {
+  ml: { min: 1, max: 2000, step: 10 },
+  oz: { min: 0.5, max: 68, step: 0.5 },
+} as const;
+
+// Converts a stored amount between feed units, rounding to 0.5 oz or whole ml.
+function convertFeedAmount(value: string, to: "ml" | "oz") {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return to === "oz" ? String(Math.round((n / ML_PER_OZ) * 2) / 2) : String(Math.round(n * ML_PER_OZ));
+}
+
 export function defaultSleepKind(ts = Date.now()): "Nap" | "Night Sleep" {
   const h = new Date(ts).getHours();
   return h >= 7 && h < 19 ? "Nap" : "Night Sleep";
@@ -351,6 +384,7 @@ export function QuickActions() {
   }, [solidsOn, feedMode]);
   const [side, setSide] = useState<"Left" | "Right">("Left");
   const [bottleMl, setBottleMl] = useState("");
+  const [feedUnit, setFeedUnit] = useState<"ml" | "oz">("oz");
   const [diaperKind, setDiaperKind] = useState<"Wet" | "Poop" | "Mixed" | null>(null);
   const [napOpen, setNapOpen] = useState(false);
   const [sleepKind, setSleepKind] = useState<"Nap" | "Night Sleep">(() => defaultSleepKind());
@@ -383,24 +417,32 @@ export function QuickActions() {
     0,
   );
 
+  const switchFeedUnit = (unit: "ml" | "oz") => {
+    if (unit === feedUnit) return;
+    setBottleMl(convertFeedAmount(bottleMl, unit));
+    setPastFeedMl(convertFeedAmount(pastFeedMl, unit));
+    setFeedUnit(unit);
+  };
   const logBottle = async () => {
-    const ml = Number(bottleMl);
-    if (!Number.isInteger(ml) || ml < 1 || ml > 2000) {
-      toast.error("Pick or enter an amount between 1 and 2000ml");
+    const amount = Number(bottleMl);
+    if (!Number.isFinite(amount) || amount < FEED_LIMITS[feedUnit].min || amount > FEED_LIMITS[feedUnit].max) {
+      toast.error(`Pick or enter an amount between ${FEED_LIMITS[feedUnit].min} and ${FEED_LIMITS[feedUnit].max}${feedUnit}`);
       return;
     }
+    const ml = feedUnit === "oz" ? Math.round(amount * ML_PER_OZ) : amount;
     await logWithUndo({ type: "feed", value: `Bottle · ${ml}ml` }, `Bottle ${ml}ml logged`);
     setBottleMl("");
   };
   const savePastFeed = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (pastFeedKind === "Bottle") {
-      const ml = Number(pastFeedMl);
+      const amount = Number(pastFeedMl);
       const ts = parseLocal(pastFeedTime);
-      if (!Number.isInteger(ml) || ml < 1 || ml > 2000) {
-        toast.error("Pick or enter an amount between 1 and 2000ml");
+      if (!Number.isFinite(amount) || amount < FEED_LIMITS[feedUnit].min || amount > FEED_LIMITS[feedUnit].max) {
+        toast.error(`Pick or enter an amount between ${FEED_LIMITS[feedUnit].min} and ${FEED_LIMITS[feedUnit].max}${feedUnit}`);
         return;
       }
+      const ml = feedUnit === "oz" ? Math.round(amount * ML_PER_OZ) : amount;
       if (!Number.isFinite(ts) || ts > Date.now() + 60000) {
         toast.error("Enter a valid past time");
         return;
@@ -566,21 +608,24 @@ export function QuickActions() {
         </div>
         {feedMode === "bottle" ? (
           <>
-            <div className="flex gap-2" role="group" aria-label="Bottle presets">
-              {[60, 90, 120, 150].map((ml) => (
-                <Button
-                  key={ml}
-                  type="button"
-                  aria-pressed={bottleMl === String(ml)}
-                  onClick={() => setBottleMl(String(ml))}
-                  variant="ghost"
-                  className={cn(pillBase, bottleMl === String(ml) && sheetStyle.sage.selected)}
-                >
-                  {ml}
-                </Button>
-              ))}
+            <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 gap-2" role="group" aria-label="Bottle presets">
+                {(feedUnit === "ml" ? [60, 90, 120, 150] : [2, 3, 4, 5]).map((preset) => (
+                  <Button
+                    key={preset}
+                    type="button"
+                    aria-pressed={bottleMl === String(preset)}
+                    onClick={() => setBottleMl(String(preset))}
+                    variant="ghost"
+                    className={cn(pillBase, bottleMl === String(preset) && sheetStyle.sage.selected)}
+                  >
+                    {preset}
+                  </Button>
+                ))}
+              </div>
+              <FeedUnitToggle unit={feedUnit} onSwitch={switchFeedUnit} label="Feed units" />
             </div>
-            <div className="mt-3"><AmountStepper id="custom-ml" label="Amount" value={bottleMl} onChange={setBottleMl} min={1} max={2000} step={10} unit="ml" tone="sage" /></div>
+            <div className="mt-3"><AmountStepper id="feed-amount" label="Amount" value={bottleMl} onChange={setBottleMl} min={FEED_LIMITS[feedUnit].min} max={FEED_LIMITS[feedUnit].max} step={FEED_LIMITS[feedUnit].step} unit={feedUnit} tone="sage" /></div>
             <Button type="button" variant="ghost" onClick={() => void logBottle()} className={cn(bigButton, sheetStyle.sage.action, "mt-3 w-full")}>
               Log Feed
             </Button>
@@ -757,7 +802,10 @@ export function QuickActions() {
               </div>
               {pastFeedKind === "Bottle" ? (
                 <>
-                  <AmountStepper id="past-feed-ml" label="Amount" value={pastFeedMl} onChange={setPastFeedMl} min={1} max={2000} step={10} unit="ml" tone="sage" />
+                  <div className="flex items-center justify-end">
+                    <FeedUnitToggle unit={feedUnit} onSwitch={switchFeedUnit} label="Past feed units" />
+                  </div>
+                  <AmountStepper id="past-feed-amount" label="Amount" value={pastFeedMl} onChange={setPastFeedMl} min={FEED_LIMITS[feedUnit].min} max={FEED_LIMITS[feedUnit].max} step={FEED_LIMITS[feedUnit].step} unit={feedUnit} tone="sage" />
                   <label className="block text-sm font-medium">
                     Time
                     <input
