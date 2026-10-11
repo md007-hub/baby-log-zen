@@ -397,24 +397,32 @@ export function QuickActions() {
     0,
   );
 
+  const switchFeedUnit = (unit: "ml" | "oz") => {
+    if (unit === feedUnit) return;
+    setBottleMl(convertFeedAmount(bottleMl, unit));
+    setPastFeedMl(convertFeedAmount(pastFeedMl, unit));
+    setFeedUnit(unit);
+  };
   const logBottle = async () => {
-    const ml = Number(bottleMl);
-    if (!Number.isInteger(ml) || ml < 1 || ml > 2000) {
-      toast.error("Pick or enter an amount between 1 and 2000ml");
+    const amount = Number(bottleMl);
+    if (!Number.isFinite(amount) || amount < FEED_LIMITS[feedUnit].min || amount > FEED_LIMITS[feedUnit].max) {
+      toast.error(`Pick or enter an amount between ${FEED_LIMITS[feedUnit].min} and ${FEED_LIMITS[feedUnit].max}${feedUnit}`);
       return;
     }
+    const ml = feedUnit === "oz" ? Math.round(amount * ML_PER_OZ) : amount;
     await logWithUndo({ type: "feed", value: `Bottle · ${ml}ml` }, `Bottle ${ml}ml logged`);
     setBottleMl("");
   };
   const savePastFeed = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (pastFeedKind === "Bottle") {
-      const ml = Number(pastFeedMl);
+      const amount = Number(pastFeedMl);
       const ts = parseLocal(pastFeedTime);
-      if (!Number.isInteger(ml) || ml < 1 || ml > 2000) {
-        toast.error("Pick or enter an amount between 1 and 2000ml");
+      if (!Number.isFinite(amount) || amount < FEED_LIMITS[feedUnit].min || amount > FEED_LIMITS[feedUnit].max) {
+        toast.error(`Pick or enter an amount between ${FEED_LIMITS[feedUnit].min} and ${FEED_LIMITS[feedUnit].max}${feedUnit}`);
         return;
       }
+      const ml = feedUnit === "oz" ? Math.round(amount * ML_PER_OZ) : amount;
       if (!Number.isFinite(ts) || ts > Date.now() + 60000) {
         toast.error("Enter a valid past time");
         return;
@@ -580,21 +588,24 @@ export function QuickActions() {
         </div>
         {feedMode === "bottle" ? (
           <>
-            <div className="flex gap-2" role="group" aria-label="Bottle presets">
-              {[60, 90, 120, 150].map((ml) => (
-                <Button
-                  key={ml}
-                  type="button"
-                  aria-pressed={bottleMl === String(ml)}
-                  onClick={() => setBottleMl(String(ml))}
-                  variant="ghost"
-                  className={cn(pillBase, bottleMl === String(ml) && sheetStyle.sage.selected)}
-                >
-                  {ml}
-                </Button>
-              ))}
+            <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 gap-2" role="group" aria-label="Bottle presets">
+                {(feedUnit === "ml" ? [60, 90, 120, 150] : [2, 3, 4, 5]).map((preset) => (
+                  <Button
+                    key={preset}
+                    type="button"
+                    aria-pressed={bottleMl === String(preset)}
+                    onClick={() => setBottleMl(String(preset))}
+                    variant="ghost"
+                    className={cn(pillBase, bottleMl === String(preset) && sheetStyle.sage.selected)}
+                  >
+                    {preset}
+                  </Button>
+                ))}
+              </div>
+              <FeedUnitToggle unit={feedUnit} onSwitch={switchFeedUnit} label="Feed units" />
             </div>
-            <div className="mt-3"><AmountStepper id="custom-ml" label="Amount" value={bottleMl} onChange={setBottleMl} min={1} max={2000} step={10} unit="ml" tone="sage" /></div>
+            <div className="mt-3"><AmountStepper id="feed-amount" label="Amount" value={bottleMl} onChange={setBottleMl} min={FEED_LIMITS[feedUnit].min} max={FEED_LIMITS[feedUnit].max} step={FEED_LIMITS[feedUnit].step} unit={feedUnit} tone="sage" /></div>
             <Button type="button" variant="ghost" onClick={() => void logBottle()} className={cn(bigButton, sheetStyle.sage.action, "mt-3 w-full")}>
               Log Feed
             </Button>
@@ -771,7 +782,10 @@ export function QuickActions() {
               </div>
               {pastFeedKind === "Bottle" ? (
                 <>
-                  <AmountStepper id="past-feed-ml" label="Amount" value={pastFeedMl} onChange={setPastFeedMl} min={1} max={2000} step={10} unit="ml" tone="sage" />
+                  <div className="flex items-center justify-end">
+                    <FeedUnitToggle unit={feedUnit} onSwitch={switchFeedUnit} label="Past feed units" />
+                  </div>
+                  <AmountStepper id="past-feed-amount" label="Amount" value={pastFeedMl} onChange={setPastFeedMl} min={FEED_LIMITS[feedUnit].min} max={FEED_LIMITS[feedUnit].max} step={FEED_LIMITS[feedUnit].step} unit={feedUnit} tone="sage" />
                   <label className="block text-sm font-medium">
                     Time
                     <input
