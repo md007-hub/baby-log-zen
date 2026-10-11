@@ -46,7 +46,7 @@ export function IntroductionCarousel() {
 
   return (
     <div
-      className="flex min-h-[calc(100dvh-3rem)] flex-col justify-between bg-background py-5 text-welcome-ink"
+      className="flex min-h-[calc(100svh-2rem)] flex-col gap-6 bg-background pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 text-welcome-ink"
       onTouchStart={(event) => { touchStart.current = event.touches[0]?.clientX ?? null; }}
       onTouchEnd={(event) => {
         if (touchStart.current === null) return;
@@ -56,7 +56,7 @@ export function IntroductionCarousel() {
       }}
     >
       {onSplash ? (
-        <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300 flex flex-1 flex-col items-center justify-center text-center">
+        <div className="welcome-brand motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300 flex flex-1 flex-col items-center justify-center py-4 text-center">
           <img
             src="/icon-512.png"
             alt="Nestling logo"
@@ -76,11 +76,11 @@ export function IntroductionCarousel() {
             </div>
           )}
 
-          <div key={featureStep} className="pt-8 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300">
+          <div key={featureStep} className="flex-1 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4 motion-safe:duration-300">
             {(() => {
               const SlideIcon = slide.icon;
               return (
-                <div className={`mb-9 flex aspect-[5/4] w-full items-center justify-center rounded-3xl ${slide.tint}`}>
+                <div className={`welcome-art mb-5 flex h-52 w-full items-center justify-center rounded-3xl ${slide.tint}`}>
                   {featureStep === 2 ? (
                     <div className="relative flex h-44 w-40 items-center justify-center rounded-3xl border border-current/15 bg-card/80 shadow-soft">
                       <ClipboardPlus aria-hidden="true" strokeWidth={1.35} className="h-24 w-24" />
@@ -102,7 +102,7 @@ export function IntroductionCarousel() {
         </>
       )}
 
-      <div className="space-y-6 pt-8">
+      <div className="shrink-0 space-y-3">
         {!onSplash && (
           <div className="flex justify-center gap-2" aria-label={`Feature slide ${featureStep + 1} of ${featureSlides.length}`}>
             {featureSlides.map((item, index) => (
@@ -112,7 +112,7 @@ export function IntroductionCarousel() {
             ))}
           </div>
         )}
-        <div className="flex gap-3">
+        <div className={onSplash ? "grid grid-cols-1 gap-3" : "flex gap-3"}>
           {step > 1 && <Button variant="outline" type="button" aria-label="Previous slide" onClick={() => go(step - 1)} className="h-14 w-14 rounded-full p-0 text-welcome-ink"><ArrowLeft /></Button>}
           {onSplash ? (
             <>
