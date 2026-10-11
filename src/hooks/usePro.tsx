@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/hooks/useFamily";
-import { subscriptionEnvironment } from "@/lib/subscriptionEnvironment";
+import { tryStripeEnvironment } from "@/lib/stripe";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
 export type OwnSub = { status: string; price_id: string; current_period_end: string | null; cancel_at_period_end: boolean | null };
@@ -59,7 +59,7 @@ export function ProProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<string | undefined>();
 
-  const canTestPro = import.meta.env.DEV;
+  const canTestPro = tryStripeEnvironment() === "sandbox";
   const isPro = realPro || (canTestPro && testPro);
 
   useEffect(() => {
@@ -72,8 +72,8 @@ export function ProProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshPro = useCallback(async () => {
-    const env = subscriptionEnvironment();
-    if (!user) {
+    const env = tryStripeEnvironment();
+    if (!user || !env) {
       setRealPro(false);
       setOwnSub(null);
       return;
@@ -110,7 +110,7 @@ export function ProProvider({ children }: { children: ReactNode }) {
     const day = todayKey();
     if (user) {
       const { data, error } = await supabase.rpc("consume_ai_question", {
-        check_env: subscriptionEnvironment(),
+        check_env: tryStripeEnvironment() ?? "sandbox",
         _day: day,
       });
       if (error) return false;

@@ -21,8 +21,6 @@
 - Baby profile dates use the shared calendar picker, and profile saves refresh FamilyProvider so growth and wake-window views use the updated baby immediately.
 - Milestones are stored per baby in `baby_milestones` keyed by stable bracket:category:index ids from src/lib/milestones.ts — shared between parents; never reorder existing items.
 - Offline app shell uses vite-plugin-pwa (generateSW, output to dist/client) registered only via src/lib/registerSW.ts; the worker imports notify-sw.js so reminders share one worker — prevents two workers fighting over the same scope.
-- Only existing rewarded AI/PDF ads are retained; banner components and initialization are absent to keep the app free of banner ads.
-- Subscription environment selection is independent of checkout configuration so existing family Pro and quota checks work without Stripe.
-- Activity date/time controls reuse the shared calendar and validate local timestamps before Dexie-first saves; bottle volumes are normalized to ml for existing summaries.
+- Ad display is gated by src/hooks/useEntitlements.ts (reads `user_entitlements.is_ad_free`); the AdMob banner in src/components/AdBanner.tsx must never initialize or render when `isAdFree` is true — add any new ad surfaces behind the same check.
 
 - RevenueCat (native only, src/lib/revenuecat.ts) never writes user_entitlements from the client; a server function re-verifies with the RevenueCat REST API before updating — prevents self-granted ad-free.
