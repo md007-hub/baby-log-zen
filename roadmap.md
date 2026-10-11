@@ -1,4 +1,7 @@
 # Current polish
+- [ ] Remove banner ads and Stripe checkout while preserving rewarded ads and Pro access checks.
+- [ ] Keep welcome logo, text and actions visible and reachable on short mobile screens.
+- [ ] Add past-entry date/time controls to Feed, Diaper, Pumping and Tummy Time; default feed volume to oz.
 - [x] Make Tracker profile and action subtitles fully readable on narrow screens.
 - [x] Refresh welcome and introduction screens with cream, sage and warm slate styling.
 - [x] Keep Nestling in the persistent header and baby identity only in the Tracker profile card.
