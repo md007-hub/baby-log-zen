@@ -11,6 +11,7 @@
 
 ## App architecture
 - Keep local-first tracking in Dexie and derive dashboard totals from live log queries, so offline writes immediately update the tracker.
+- Pumping, Diaper and Tummy Time past entries share compact dialog/time controls and the existing logWithUndo helper; this preserves consistent styling, local-first saves and undo without changing completed Feed/Sleep forms.
 
 ## Brand system
 - The Nestling brand mark is the hand-drawn feather app icon (`/icon-192.png` small, `/icon-512.png` splash/auth) — never the Lucide `<Feather />` vector. No bird/nest illustrations.
