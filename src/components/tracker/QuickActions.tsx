@@ -427,6 +427,8 @@ export function QuickActions() {
   const [pumpVolume, setPumpVolume] = useState("");
   const [pumpUnit, setPumpUnit] = useState<"ml" | "oz">("ml");
   const [pastPumpOpen, setPastPumpOpen] = useState(false);
+  const [pumpOpen, setPumpOpen] = useState(false);
+  const [tummyOpen, setTummyOpen] = useState(false);
   const [pastPumpSide, setPastPumpSide] = useState<"Left" | "Right" | "Both">("Both");
   const [pastPumpMin, setPastPumpMin] = useState("");
   const [pastPumpVolume, setPastPumpVolume] = useState("");
@@ -602,6 +604,7 @@ export function QuickActions() {
     const ml = pumpUnit === "oz" ? Math.round(amount * ML_PER_OZ) : Math.round(amount);
     await logWithUndo({ type: "pumping", value: `Pumping · ${pastPumpSide} · ${ml}ml`, notes: formatDuration(minutes * 60000), timestamp }, "Pumping session logged");
     setPastPumpOpen(false);
+    setPumpOpen(false);
     setPastPumpMin("");
     setPastPumpVolume("");
   };
@@ -613,6 +616,7 @@ export function QuickActions() {
     }
     await logWithUndo({ type: "diaper", value: pastDiaperKind, timestamp }, `${pastDiaperKind} diaper logged`);
     setPastDiaperOpen(false);
+    setDiaperOpen(false);
   };
   const savePastTummy = async () => {
     const minutes = Number(pastTummyMin);
@@ -627,6 +631,7 @@ export function QuickActions() {
     }
     await logWithUndo({ type: "tummy", value: "Tummy time", notes: formatDuration(minutes * 60000), timestamp }, `${minutes} min tummy time logged`);
     setPastTummyOpen(false);
+    setTummyOpen(false);
     setPastTummyMin("");
   };
   const savePastNap = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -984,7 +989,7 @@ export function QuickActions() {
       </SectionCard>
 
       {prefs.pumping && (
-      <SectionCard title="Pumping" icon={<Droplets className="h-6 w-6" />} tone="lilac" context={pumpCtx} live={pumping.active} className={orderClass("pumping")}>
+      <SectionCard title="Pumping" icon={<Droplets className="h-6 w-6" />} tone="lilac" context={pumpCtx} live={pumping.active} className={orderClass("pumping")} open={pumpOpen} onOpenChange={setPumpOpen}>
         <div className="mb-3 grid grid-cols-3 gap-2" role="group" aria-label="Pumping side">
           {(["Left", "Right", "Both"] as const).map((s) => (
             <Button
@@ -1214,7 +1219,7 @@ export function QuickActions() {
         </Dialog>
       </SectionCard>
 
-      <SectionCard title="Tummy Time" icon={<Hourglass className="h-6 w-6" strokeWidth={2.25} />} tone="tummy" context={tummyCtx} className={orderClass("tummy")}>
+      <SectionCard title="Tummy Time" icon={<Hourglass className="h-6 w-6" strokeWidth={2.25} />} tone="tummy" context={tummyCtx} className={orderClass("tummy")} open={tummyOpen} onOpenChange={setTummyOpen}>
         <div className="flex items-center justify-between rounded-2xl bg-card/70 px-4 py-3">
           <span className="text-sm text-muted-foreground">
             {tummy.active ? "Tummy time in progress" : "Not running"}
