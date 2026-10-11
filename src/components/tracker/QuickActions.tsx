@@ -348,6 +348,62 @@ async function logWithUndo(entry: Parameters<typeof addLog>[0], message: string)
   });
 }
 
+function PumpUnitToggle({ unit, onSwitch }: { unit: "ml" | "oz"; onSwitch: (unit: "ml" | "oz") => void }) {
+  return (
+    <div className={cn("flex shrink-0", segmentTrack)} role="group" aria-label="Pumping units">
+      {(["oz", "ml"] as const).map((u) => (
+        <Button key={u} type="button" variant="ghost" aria-pressed={unit === u} onClick={() => onSwitch(u)} className={cn("h-8 rounded-full px-3 text-xs font-semibold uppercase", unit === u && sheetStyle.lilac.selected)}>
+          {u}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+function PastEntryDialog({ title, tone, open, onOpenChange, onSave, children }: {
+  title: string; tone: ButtonTone; open: boolean; onOpenChange: (open: boolean) => void;
+  onSave: (event: React.FormEvent<HTMLFormElement>) => Promise<void>; children: React.ReactNode;
+}) {
+  const [saving, setSaving] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="link" type="button" className={cn("mx-auto mt-2 flex h-10 px-0", living[tone].split(" ")[1])}>
+          <Plus /> Log Past {title}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-sm overflow-y-auto rounded-3xl border-border bg-card">
+        <DialogHeader>
+          <DialogTitle>Log Past {title}</DialogTitle>
+          <DialogDescription className="sr-only">Log a past {title.toLowerCase()} entry.</DialogDescription>
+        </DialogHeader>
+        <form className="space-y-4" onSubmit={async (event) => {
+          event.preventDefault();
+          if (saving) return;
+          setSaving(true);
+          try { await onSave(event); }
+          catch { toast.error("Could not save this entry. Please try again."); }
+          finally { setSaving(false); }
+        }}>
+          {children}
+          <Button type="submit" variant="ghost" disabled={saving} className={cn(bigButton, sheetStyle[tone].action, "w-full")}>
+            {saving ? "Saving…" : `Save ${title.toLowerCase()}`}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PastEntryTime({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="block text-sm font-medium">
+      Time
+      <input type="datetime-local" required value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 h-12 w-full min-w-0 rounded-xl border border-input bg-background px-3 text-base" />
+    </label>
+  );
+}
+
 export function QuickActions() {
   const { baby } = useFamily();
   const solidsOn = !!baby?.solids_enabled;
@@ -370,6 +426,17 @@ export function QuickActions() {
   const [pumpMin, setPumpMin] = useState("");
   const [pumpVolume, setPumpVolume] = useState("");
   const [pumpUnit, setPumpUnit] = useState<"ml" | "oz">("ml");
+  const [pastPumpOpen, setPastPumpOpen] = useState(false);
+  const [pastPumpSide, setPastPumpSide] = useState<"Left" | "Right" | "Both">("Both");
+  const [pastPumpMin, setPastPumpMin] = useState("");
+  const [pastPumpVolume, setPastPumpVolume] = useState("");
+  const [pastPumpTime, setPastPumpTime] = useState("");
+  const [pastDiaperOpen, setPastDiaperOpen] = useState(false);
+  const [pastDiaperKind, setPastDiaperKind] = useState<"Wet" | "Poop" | "Mixed">("Wet");
+  const [pastDiaperTime, setPastDiaperTime] = useState("");
+  const [pastTummyOpen, setPastTummyOpen] = useState(false);
+  const [pastTummyMin, setPastTummyMin] = useState("");
+  const [pastTummyTime, setPastTummyTime] = useState("");
   const [tummyMin, setTummyMin] = useState("");
   const [feedMode, setFeedMode] = useState<"bottle" | "nursing" | "solids">("bottle");
   const [pastFeedOpen, setPastFeedOpen] = useState(false);
@@ -509,6 +576,58 @@ export function QuickActions() {
     setPumpVolume("");
     setPumpMin("");
     toast.success("Pumping session logged");
+  };
+  const switchPumpUnit = (unit: "ml" | "oz") => {
+    if (unit === pumpUnit) return;
+    setPumpVolume(convertFeedAmount(pumpVolume, unit));
+    setPastPumpVolume(convertFeedAmount(pastPumpVolume, unit));
+    setPumpUnit(unit);
+  };
+  const savePastPump = async () => {
+    const amount = Number(pastPumpVolume);
+    const minutes = Number(pastPumpMin);
+    const timestamp = parseLocal(pastPumpTime);
+    if (!Number.isFinite(amount) || amount < FEED_LIMITS[pumpUnit].min || amount > FEED_LIMITS[pumpUnit].max) {
+      toast.error(`Enter an amount between ${FEED_LIMITS[pumpUnit].min} and ${FEED_LIMITS[pumpUnit].max}${pumpUnit}`);
+      return;
+    }
+    if (!Number.isFinite(minutes) || minutes < 1 || minutes > 720) {
+      toast.error("Enter a duration between 1 minute and 12 hours");
+      return;
+    }
+    if (!Number.isFinite(timestamp) || timestamp > Date.now() + 60000) {
+      toast.error("Enter a valid past time");
+      return;
+    }
+    const ml = pumpUnit === "oz" ? Math.round(amount * ML_PER_OZ) : Math.round(amount);
+    await logWithUndo({ type: "pumping", value: `Pumping · ${pastPumpSide} · ${ml}ml`, notes: formatDuration(minutes * 60000), timestamp }, "Pumping session logged");
+    setPastPumpOpen(false);
+    setPastPumpMin("");
+    setPastPumpVolume("");
+  };
+  const savePastDiaper = async () => {
+    const timestamp = parseLocal(pastDiaperTime);
+    if (!Number.isFinite(timestamp) || timestamp > Date.now() + 60000) {
+      toast.error("Enter a valid past time");
+      return;
+    }
+    await logWithUndo({ type: "diaper", value: pastDiaperKind, timestamp }, `${pastDiaperKind} diaper logged`);
+    setPastDiaperOpen(false);
+  };
+  const savePastTummy = async () => {
+    const minutes = Number(pastTummyMin);
+    const timestamp = parseLocal(pastTummyTime);
+    if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
+      toast.error("Enter 1–180 minutes");
+      return;
+    }
+    if (!Number.isFinite(timestamp) || timestamp > Date.now() + 60000) {
+      toast.error("Enter a valid past time");
+      return;
+    }
+    await logWithUndo({ type: "tummy", value: "Tummy time", notes: formatDuration(minutes * 60000), timestamp }, `${minutes} min tummy time logged`);
+    setPastTummyOpen(false);
+    setPastTummyMin("");
   };
   const savePastNap = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -914,22 +1033,34 @@ export function QuickActions() {
           <div className="mb-3"><AmountStepper id="pump-min" label="Duration" value={pumpMin} onChange={setPumpMin} min={1} max={720} unit="min" tone="lilac" /></div>
         )}
         <div className="space-y-2">
-          <AmountStepper id="pump-volume" label="Expressed" value={pumpVolume} onChange={setPumpVolume} min={0.1} max={pumpUnit === "ml" ? 2000 : 68} step={pumpUnit === "ml" ? 5 : 0.5} unit={pumpUnit} tone="lilac" />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setPumpVolume("");
-              setPumpUnit(pumpUnit === "ml" ? "oz" : "ml");
-            }}
-            className="h-10 rounded-full"
-          >
-            Switch to {pumpUnit === "ml" ? "oz" : "ml"}
-          </Button>
+          <div className="flex items-center justify-between gap-2">
+            <label htmlFor="pump-volume" className="text-sm font-semibold">Expressed</label>
+            <PumpUnitToggle unit={pumpUnit} onSwitch={switchPumpUnit} />
+          </div>
+          <AmountStepper id="pump-volume" label="" value={pumpVolume} onChange={setPumpVolume} min={FEED_LIMITS[pumpUnit].min} max={FEED_LIMITS[pumpUnit].max} step={FEED_LIMITS[pumpUnit].step} unit={pumpUnit} tone="lilac" />
         </div>
         <Button type="button" variant="ghost" onClick={() => void savePump()} className={cn(bigButton, sheetStyle.lilac.action, "mt-3 w-full")}>
           Log Pumping
         </Button>
+        <PastEntryDialog title="Pumping" tone="lilac" open={pastPumpOpen} onOpenChange={(open) => {
+          setPastPumpOpen(open);
+          if (open) { setPastPumpSide(pumpSide); setPastPumpTime(localDateTime(new Date())); }
+        }} onSave={savePastPump}>
+          <div className={cn("grid grid-cols-3", segmentTrack)} role="group" aria-label="Past pumping side">
+            {(["Left", "Right", "Both"] as const).map((s) => (
+              <Button key={s} type="button" variant="ghost" aria-pressed={pastPumpSide === s} onClick={() => setPastPumpSide(s)} className={cn(segmentBase, pastPumpSide === s && sheetStyle.lilac.selected)}>{s}</Button>
+            ))}
+          </div>
+          <AmountStepper id="past-pump-min" label="Duration" value={pastPumpMin} onChange={setPastPumpMin} min={1} max={720} unit="min" tone="lilac" />
+          <PastEntryTime value={pastPumpTime} onChange={setPastPumpTime} />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <label htmlFor="past-pump-volume" className="text-sm font-semibold">Expressed</label>
+              <PumpUnitToggle unit={pumpUnit} onSwitch={switchPumpUnit} />
+            </div>
+            <AmountStepper id="past-pump-volume" label="" value={pastPumpVolume} onChange={setPastPumpVolume} min={FEED_LIMITS[pumpUnit].min} max={FEED_LIMITS[pumpUnit].max} step={FEED_LIMITS[pumpUnit].step} unit={pumpUnit} tone="lilac" />
+          </div>
+        </PastEntryDialog>
       </SectionCard>
       )}
 
@@ -964,6 +1095,17 @@ export function QuickActions() {
         <Button type="button" variant="ghost" onClick={() => void logDiaper()} className={cn(bigButton, sheetStyle.peach.action, "mt-3 w-full")}>
           Log Diaper
         </Button>
+        <PastEntryDialog title="Diaper" tone="peach" open={pastDiaperOpen} onOpenChange={(open) => {
+          setPastDiaperOpen(open);
+          if (open) { setPastDiaperKind(diaperKind ?? "Wet"); setPastDiaperTime(localDateTime(new Date())); }
+        }} onSave={savePastDiaper}>
+          <div className={cn("grid grid-cols-3", segmentTrack)} role="group" aria-label="Past diaper type">
+            {(["Wet", "Poop", "Mixed"] as const).map((kind) => (
+              <Button key={kind} type="button" variant="ghost" aria-pressed={pastDiaperKind === kind} onClick={() => setPastDiaperKind(kind)} className={cn(segmentBase, pastDiaperKind === kind && sheetStyle.peach.selected)}>{kind}</Button>
+            ))}
+          </div>
+          <PastEntryTime value={pastDiaperTime} onChange={setPastDiaperTime} />
+        </PastEntryDialog>
       </SectionCard>
 
       <SectionCard
@@ -1133,6 +1275,13 @@ export function QuickActions() {
             Log
           </Button>
         </div>
+        <PastEntryDialog title="Tummy Time" tone="tummy" open={pastTummyOpen} onOpenChange={(open) => {
+          setPastTummyOpen(open);
+          if (open) setPastTummyTime(localDateTime(new Date()));
+        }} onSave={savePastTummy}>
+          <AmountStepper id="past-tummy-min" label="Duration" value={pastTummyMin} onChange={setPastTummyMin} min={1} max={180} unit="min" tone="tummy" />
+          <PastEntryTime value={pastTummyTime} onChange={setPastTummyTime} />
+        </PastEntryDialog>
       </SectionCard>
 
       {prefs.notes && (
