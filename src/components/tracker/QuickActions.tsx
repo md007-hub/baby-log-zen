@@ -295,6 +295,19 @@ function parseLocal(v: string) {
   if (!m) return NaN;
   return new Date(+m[1]!, +m[2]! - 1, +m[3]!, +m[4]!, +m[5]!).getTime();
 }
+const ML_PER_OZ = 29.5735;
+const FEED_LIMITS = {
+  ml: { min: 1, max: 2000, step: 10 },
+  oz: { min: 0.5, max: 68, step: 0.5 },
+} as const;
+
+// Converts a stored amount between feed units, rounding to 0.5 oz or whole ml.
+function convertFeedAmount(value: string, to: "ml" | "oz") {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return to === "oz" ? String(Math.round((n / ML_PER_OZ) * 2) / 2) : String(Math.round(n * ML_PER_OZ));
+}
+
 export function defaultSleepKind(ts = Date.now()): "Nap" | "Night Sleep" {
   const h = new Date(ts).getHours();
   return h >= 7 && h < 19 ? "Nap" : "Night Sleep";
@@ -351,6 +364,7 @@ export function QuickActions() {
   }, [solidsOn, feedMode]);
   const [side, setSide] = useState<"Left" | "Right">("Left");
   const [bottleMl, setBottleMl] = useState("");
+  const [feedUnit, setFeedUnit] = useState<"ml" | "oz">("oz");
   const [diaperKind, setDiaperKind] = useState<"Wet" | "Poop" | "Mixed" | null>(null);
   const [napOpen, setNapOpen] = useState(false);
   const [sleepKind, setSleepKind] = useState<"Nap" | "Night Sleep">(() => defaultSleepKind());
