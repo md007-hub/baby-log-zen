@@ -285,6 +285,26 @@ function AmountStepper({ id, label, value, onChange, min, max, step = 1, unit, t
   );
 }
 
+// Compact oz | ml segmented control shared by the Feed card and Log Past Feed dialog.
+function FeedUnitToggle({ unit, onSwitch, label }: { unit: "ml" | "oz"; onSwitch: (unit: "ml" | "oz") => void; label: string }) {
+  return (
+    <div className={cn("flex shrink-0", segmentTrack)} role="group" aria-label={label}>
+      {(["oz", "ml"] as const).map((u) => (
+        <Button
+          key={u}
+          type="button"
+          variant="ghost"
+          aria-pressed={unit === u}
+          onClick={() => onSwitch(u)}
+          className={cn("h-8 rounded-full px-3 text-xs font-semibold uppercase", unit === u && sheetStyle.sage.selected)}
+        >
+          {u}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 function localDateTime(date: Date) {
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
