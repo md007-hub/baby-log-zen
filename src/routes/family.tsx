@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, Copy, CreditCard, FileText, Lock, LogOut, Sparkles, Users } from "lucide-react";
+import { BookOpen, Copy, FileText, Lock, LogOut, Sparkles, Users } from "lucide-react";
 import { usePro } from "@/hooks/usePro";
-import { createPortalSession } from "@/lib/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
 import { exportDoctorPdf, exportLogsCsv } from "@/lib/exportPdf";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -289,25 +287,6 @@ function FamilyPage() {
 function ProSection({ babyName }: { babyName: string | null }) {
   const { isPro, ownSub, openUpgrade, testPro, canTestPro, setTestPro } = usePro();
   const lifetime = ownSub?.price_id === "pro_lifetime";
-  const [busy, setBusy] = useState(false);
-
-  const manage = async () => {
-    const tab = window.open("", "_blank");
-    setBusy(true);
-    try {
-      const res = await createPortalSession({
-        data: { environment: getStripeEnvironment(), returnUrl: window.location.href },
-      });
-      if ("error" in res) throw new Error(res.error);
-      if (tab) tab.location.href = res.url;
-      else window.location.href = res.url;
-    } catch (e) {
-      tab?.close();
-      toast.error(e instanceof Error ? e.message : "Couldn't open subscription settings");
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const exportPdf = async () => {
     if (!isPro) return openUpgrade("The Doctor PDF export is part of Nestling Pro.");
@@ -359,11 +338,6 @@ function ProSection({ babyName }: { babyName: string | null }) {
       {canTestPro && testPro && (
         <Button variant="ghost" onClick={() => setTestPro(false)} className="h-10 w-full text-xs text-muted-foreground">
           Test mode: switch PRO off
-        </Button>
-      )}
-      {ownSub && !lifetime && (
-        <Button variant="outline" disabled={busy} onClick={manage} className="h-12 w-full text-base">
-          <CreditCard /> Manage Subscription
         </Button>
       )}
     </section>
