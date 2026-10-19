@@ -42,7 +42,7 @@ export async function initRevenueCat(): Promise<void> {
     const apiKey =
       Capacitor.getPlatform() === "ios"
         ? import.meta.env['VITE_REVENUECAT_IOS_KEY'] as string | undefined
-        : import.meta.env['VITE_REVENUECAT_ANDROID_KEY'] as string | undefined;
+        : "goog_JiDPWtsleJaGHEHYslElOicJtCe";
     if (apiKey) await Purchases.configure({ apiKey });
     await Purchases.addCustomerInfoUpdateListener(() => {
       void syncRevenueCatEntitlements("");
