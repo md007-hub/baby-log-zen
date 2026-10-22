@@ -50,11 +50,14 @@ export function startPasswordRecovery() {
   started = true;
   const url = new URL(window.location.href);
   const hash = new URLSearchParams(url.hash.slice(1));
+  if (url.searchParams.has("code") || hash.has("access_token") || hash.has("type")) clearPasswordRecovery();
   callbackError = [url.searchParams, hash].some(params => params.has("error") || params.has("error_code") || params.has("error_description"));
-  if (callbackError && url.pathname === "/reset-password") {
+  if (callbackError) {
     clearPasswordRecovery();
     publish({ status: "error", message: "This reset link has expired or is invalid. Request a new link and open the newest email." });
-    window.history.replaceState(window.history.state, "", "/reset-password");
+    if (url.pathname !== "/reset-password") {
+      window.location.replace(`/reset-password${url.search}${url.hash}`);
+    } else window.history.replaceState(window.history.state, "", "/reset-password");
   }
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === "PASSWORD_RECOVERY" && session) {

@@ -1,5 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, it as test } from "node:test";
+import { strict as assert } from "node:assert";
 import { isRecoveryProofValid, passwordResetRedirect, RECOVERY_WINDOW_MS } from "./passwordRecovery";
+
+const expect = (actual: unknown) => ({ toBe: (expected: unknown) => assert.equal(actual, expected) });
 
 describe("website password recovery", () => {
   test("published email returns to the reset page", () => {
