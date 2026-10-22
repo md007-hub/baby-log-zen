@@ -7,6 +7,7 @@ export type RecoveryProof = { userId: string; sessionId: string; expiresAt: numb
 export type RecoveryState = { status: "checking" | "ready" | "error"; message?: string };
 let started = false;
 let callbackError = false;
+let codeExchange: Promise<void> | null = null;
 let state: RecoveryState = { status: "checking" };
 const listeners = new Set<(state: RecoveryState) => void>();
 
@@ -84,7 +85,19 @@ export async function validatePasswordRecovery(): Promise<boolean> {
   if (callbackError) return false;
   try {
     // getUser waits for SDK URL initialization and revalidates with Auth.
-    const { data: userData, error } = await supabase.auth.getUser();
+    let { data: userData, error } = await supabase.auth.getUser();
+    const code = new URL(window.location.href).searchParams.get("code");
+    if (code) {
+      // This generated client uses implicit flow. Its SDK rejects a PKCE URL
+      // before exchange. Only exchange a code left AFTER initialization; PKCE
+      // clients remove it themselves. Share the promise to prevent double use.
+      codeExchange ??= (async () => {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) throw exchangeError;
+      })();
+      await codeExchange;
+      ({ data: userData, error } = await supabase.auth.getUser());
+    }
     // URL initialization schedules PASSWORD_RECOVERY on the next task.
     await new Promise(resolve => window.setTimeout(resolve, 0));
     const { data } = await supabase.auth.getSession();
