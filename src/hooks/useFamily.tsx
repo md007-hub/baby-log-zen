@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { supabase } from "@/integrations/supabase/client";
 import { setLocalChangeListener } from "@/lib/db";
 import { subscribeBaby, syncNow } from "@/lib/sync";
+import { startPasswordRecovery } from "@/lib/passwordRecovery";
 
 export type Baby = { id: string; name: string; invite_code: string; birth_date: string | null; date_kind: string; gender: string | null; birth_weight_kg: number | null; solids_enabled: boolean; milestones_enabled: boolean; photo_url: string | null };
 
@@ -57,6 +58,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    startPasswordRecovery();
     void initRevenueCat();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);

@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## App architecture
+- Password recovery uses the SDK's automatic URL exchange with an early PASSWORD_RECOVERY listener and session-bound, short-lived sessionStorage proof; never enable the reset form from URL hints or an ordinary login alone.
 - Keep local-first tracking in Dexie and derive dashboard totals from live log queries, so offline writes immediately update the tracker.
 - Pumping, Diaper and Tummy Time past entries share compact dialog/time controls and the existing logWithUndo helper; this preserves consistent styling, local-first saves and undo without changing completed Feed/Sleep forms.
 

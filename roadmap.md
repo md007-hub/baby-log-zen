@@ -1,4 +1,5 @@
 # Current polish
+- [ ] Repair password recovery links, validate recovery sessions, and verify errors and completion without changing existing accounts.
 - [x] Standardize Pumping units and add compact past-entry dialogs for Pumping, Diaper and Tummy Time without changing Feed, Sleep or navigation.
 - [x] Verify unit conversion, backdated saves and 5-second Undo for the three trackers.
 - [x] Make Tracker profile and action subtitles fully readable on narrow screens.
