@@ -69,7 +69,11 @@ export function startPasswordRecovery() {
       window.setTimeout(() => {
         if (window.location.pathname !== "/reset-password") window.location.replace("/reset-password");
       }, 0);
-    } else if (event === "SIGNED_OUT" || event === "SIGNED_IN") {
+    } else if (event === "SIGNED_OUT") {
+      clearPasswordRecovery();
+    } else if (event === "SIGNED_IN" && (!session || !isRecoveryProofValid(readProof(), session.user.id, sessionId(session), Date.now()))) {
+      // The SDK also emits SIGNED_IN when restoring an existing session.
+      // Keep proof only when it still belongs to this exact recovery session.
       clearPasswordRecovery();
     }
   });
