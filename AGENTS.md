@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## App architecture
+- Password recovery registers PASSWORD_RECOVERY before auth initialization, uses session-bound short-lived proof, and exchanges a PKCE code only if the SDK leaves it after initialization; never enable the form from URL hints or an ordinary login alone.
 - Keep local-first tracking in Dexie and derive dashboard totals from live log queries, so offline writes immediately update the tracker.
 - Pumping, Diaper and Tummy Time past entries share compact dialog/time controls and the existing logWithUndo helper; this preserves consistent styling, local-first saves and undo without changing completed Feed/Sleep forms.
 
