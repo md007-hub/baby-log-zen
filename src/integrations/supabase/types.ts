@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      admob_reward_requests: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          token?: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admob_verified_rewards: {
+        Row: {
+          day: string
+          transaction_id: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          day: string
+          transaction_id: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          day?: string
+          transaction_id?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
+      ai_question_reservations: {
+        Row: {
+          created_at: string
+          day: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_usage: {
         Row: {
           bonus: number
@@ -318,9 +387,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_verified_admob_reward: {
+        Args: {
+          _day: string
+          _token: string
+          _transaction_id: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       consume_ai_question: {
         Args: { _day: string; check_env: string }
         Returns: Json
+      }
+      create_admob_reward_request: {
+        Args: { _user_id: string }
+        Returns: string
       }
       create_baby: {
         Args: { _name: string }
@@ -344,6 +426,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      finish_ai_question: {
+        Args: { _reservation_id: string; _success: boolean }
+        Returns: boolean
       }
       grant_ai_bonus: { Args: { _day: string }; Returns: undefined }
       has_family_pro: { Args: { check_env: string }; Returns: boolean }
@@ -370,6 +456,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      reserve_ai_question: {
+        Args: { _day: string; _is_pro: boolean; _user_id: string }
+        Returns: string
       }
     }
     Enums: {
